@@ -1,0 +1,44 @@
+# dependencies
+node_modules/
+
+# build output
+web/dist/
+dist/
+
+# local config (commit config.example.ts instead)
+web/src/config.ts
+
+# environment files
+.env
+.env.*
+!.env.example
+
+# clasp — personal deployment config & credentials
+# (.clasp.json holds your own scriptId; cloners create theirs from .clasp.example.json)
+apps-script/.clasp.json
+.clasprc.json
+
+# logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# test coverage
+coverage/
+
+# caches
+.vite/
+.eslintcache
+*.tsbuildinfo
+
+# editors & IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
