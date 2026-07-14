@@ -43,5 +43,5 @@ coverage/
 .DS_Store
 Thumbs.db
 
-# temp filed
-temp/
+# temp files
+.temp/
