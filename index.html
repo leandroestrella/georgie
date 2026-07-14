@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>georgie — coming soon</title>
+  <meta name="description" content="georgie is a cozy little home for your home library. coming soon." />
+
+  <!-- favicon: drop your jpg next to this file as favicon.jpg -->
+  <link rel="icon" type="image/jpeg" href="favicon.jpg" />
+
+  <style>
+    :root {
+      --ink: #111111;
+      --paper: #ffffff;
+      --muted: #666666;
+      --line: #e2e2e2;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      filter: grayscale(100%);
+      -webkit-font-smoothing: antialiased;
+      text-transform: lowercase;
+    }
+
+    .lang {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      padding: 20px 16px 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    .lang button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 999px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .lang button:hover { color: var(--ink); }
+
+    .lang button.active {
+      color: var(--paper);
+      background: var(--ink);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px 24px 48px;
+    }
+
+    .figure {
+      width: 260px;
+      max-width: 70vw;
+      height: auto;
+      filter: grayscale(100%) contrast(105%);
+      user-select: none;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 12vw, 6rem);
+      letter-spacing: -0.02em;
+      margin: 8px 0 0;
+      font-weight: 700;
+    }
+
+    .tagline {
+      font-size: clamp(0.95rem, 3.5vw, 1.4rem);
+      color: var(--ink);
+      margin: 14px 0 0;
+      line-height: 1.4;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .subtag {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: clamp(0.75rem, 2.6vw, 0.95rem);
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      margin: 22px 0 0;
+      white-space: nowrap;
+      max-width: 100%;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 28px;
+      padding: 8px 18px;
+      border: 1.5px solid var(--ink);
+      border-radius: 999px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 480px) {
+      .figure { width: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="lang" aria-label="language">
+    <button data-lang="es">es</button>
+    <button data-lang="it">it</button>
+    <button data-lang="en">en</button>
+  </nav>
+
+  <main>
+    <!-- the gif: drop your animated file next to this page as georgie.gif -->
+    <img class="figure" src="georgie.gif" alt="georgie" />
+
+    <h1>georgie</h1>
+    <p class="tagline" data-i18n="tagline"></p>
+    <p class="subtag" data-i18n="subtag"></p>
+
+    <span class="badge" data-i18n="badge"></span>
+  </main>
+
+  <script>
+    const i18n = {
+      es: {
+        tagline: "un hogar acogedor para tu biblioteca de casa.",
+        subtag: "cada libro de tu estantería, por fin sabiendo dónde vive.",
+        badge: "acomodando libros · muy pronto"
+      },
+      it: {
+        tagline: "una casa accogliente per la tua biblioteca di casa.",
+        subtag: "ogni libro sul tuo scaffale, che finalmente sa dove vive.",
+        badge: "sistemando i libri · in arrivo"
+      },
+      en: {
+        tagline: "a cozy little home for your home library.",
+        subtag: "every book on your shelf, finally knowing where it lives.",
+        badge: "shelving things · coming soon"
+      }
+    };
+
+    const buttons = document.querySelectorAll(".lang button");
+
+    function setLang(lang) {
+      document.documentElement.lang = lang;
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        el.textContent = i18n[lang][el.dataset.i18n];
+      });
+      buttons.forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+    }
+
+    buttons.forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+
+    // default: match browser, else english
+    const nav = (navigator.language || "en").slice(0, 2);
+    setLang(i18n[nav] ? nav : "en");
+  </script>
+</body>
+</html>
