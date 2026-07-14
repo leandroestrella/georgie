@@ -1,5 +1,7 @@
 # georgie
 
+![georgie animated avatar](assets/georgie.gif)
+
 a web app for managing our physical home library — browsing, cataloguing, lending, and exchanging the books on our shelves.
 
 **georgie** was the family nickname of jorge luis borges, inherited from the english side of his family. before he was the writer who imagined paradise as a kind of library, he was a boy called georgie who grew up roaming his father's library in buenos aires — the place he would mythologize for the rest of his life, and to which he eventually returned as director of argentina's national library. this project borrows his nickname for a much smaller library: the one at home.
