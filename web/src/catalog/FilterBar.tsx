@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { LayoutGridIcon, ListIcon, SearchIcon, XIcon } from 'lucide-react'
+import { LayoutGridIcon, ListIcon, SearchIcon, UserIcon, XIcon } from 'lucide-react'
 import type { Taxonomies } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { useVocab } from '@/i18n/vocab'
 import {
   hasActiveFilters,
   type CatalogFilters,
@@ -21,6 +22,11 @@ import {
 
 const ALL = '__all__'
 
+interface Option {
+  value: string
+  label: string
+}
+
 /** A single labelled facet dropdown; empty selection is represented by `null`. */
 function Facet({
   label,
@@ -30,7 +36,7 @@ function Facet({
 }: {
   label: string
   value: string | null
-  options: string[]
+  options: Option[]
   onChange: (v: string | null) => void
 }) {
   return (
@@ -41,8 +47,8 @@ function Facet({
       <SelectContent>
         <SelectItem value={ALL}>{label}</SelectItem>
         {options.map((o) => (
-          <SelectItem key={o} value={o}>
-            {o}
+          <SelectItem key={o.value} value={o.value}>
+            {o.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -66,11 +72,18 @@ export interface FilterBarProps {
 export function FilterBar(props: FilterBarProps) {
   const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, readers, onClear } = props
   const { t } = useTranslation()
+  const tv = useVocab()
 
   // Themes narrow to the selected zone; otherwise show every theme.
-  const themeOptions = filters.zone
+  const themeNames = filters.zone
     ? (taxonomies.zones.find((z) => z.name === filters.zone)?.themes ?? [])
     : taxonomies.zones.flatMap((z) => z.themes)
+
+  const zoneOptions = taxonomies.zones.map((z) => ({ value: z.name, label: tv('zone', z.name) }))
+  const themeOptions = themeNames.map((name) => ({ value: name, label: tv('theme', name) }))
+  const ownerOptions = taxonomies.owners.map((o) => ({ value: o, label: o }))
+  const languageOptions = taxonomies.languages.map((l) => ({ value: l, label: tv('language', l) }))
+  const readerOptions = readers.map((r) => ({ value: r, label: r }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -88,14 +101,14 @@ export function FilterBar(props: FilterBarProps) {
         <Facet
           label={t('filters.zone')}
           value={filters.zone}
-          options={taxonomies.zones.map((z) => z.name)}
+          options={zoneOptions}
           onChange={(v) => onFilters({ zone: v, theme: null })}
         />
         <Facet label={t('filters.theme')} value={filters.theme} options={themeOptions} onChange={(v) => onFilters({ theme: v })} />
-        <Facet label={t('filters.owner')} value={filters.owner} options={taxonomies.owners} onChange={(v) => onFilters({ owner: v })} />
-        <Facet label={t('filters.language')} value={filters.language} options={taxonomies.languages} onChange={(v) => onFilters({ language: v })} />
+        <Facet label={t('filters.owner')} value={filters.owner} options={ownerOptions} onChange={(v) => onFilters({ owner: v })} />
+        <Facet label={t('filters.language')} value={filters.language} options={languageOptions} onChange={(v) => onFilters({ language: v })} />
         {readers.length > 0 && (
-          <Facet label={t('filters.readBy')} value={filters.readBy} options={readers} onChange={(v) => onFilters({ readBy: v })} />
+          <Facet label={t('filters.readBy')} value={filters.readBy} options={readerOptions} onChange={(v) => onFilters({ readBy: v })} />
         )}
 
         <Select
@@ -112,6 +125,19 @@ export function FilterBar(props: FilterBarProps) {
             <SelectItem value="exchange">{t('filters.exchange')}</SelectItem>
           </SelectContent>
         </Select>
+
+        {filters.author && (
+          <button
+            type="button"
+            onClick={() => onFilters({ author: null })}
+            className="border-primary/40 bg-primary/10 text-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs"
+            title={t('book.author')}
+          >
+            <UserIcon className="size-3" />
+            {filters.author}
+            <XIcon className="size-3" />
+          </button>
+        )}
 
         {hasActiveFilters(filters) && (
           <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">

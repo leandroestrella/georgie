@@ -7,7 +7,7 @@
     "count_one": "{{count}} book",
     "count_other": "{{count}} books",
     "empty": "no books match your filters.",
-    "loading": "loading the shelves…",
+    "loading": "loading the shelves",
     "clearFilters": "clear filters"
   },
   "filters": {

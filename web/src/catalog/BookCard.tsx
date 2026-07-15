@@ -4,12 +4,14 @@ import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { useVocab } from '@/i18n/vocab'
 import { BookCover } from './BookCover'
 import type { ZoneColors } from './zoneColors'
 
 /** A single catalog card linking to the book's detail page. */
 export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
   const { t } = useTranslation()
+  const tv = useVocab()
   return (
     <Link to={`/book/${encodeURIComponent(book.id)}`} className="group">
       <Card className="h-full overflow-hidden p-0 transition-shadow hover:shadow-md">
@@ -22,7 +24,7 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
               className="w-fit rounded-full border px-2 py-0.5 text-[10px] font-medium"
               style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
             >
-              {book.theme}
+              {tv('theme', book.theme)}
             </span>
           )}
           <h3 className="line-clamp-2 text-sm leading-snug font-medium">{book.title}</h3>

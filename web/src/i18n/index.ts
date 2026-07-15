@@ -30,8 +30,10 @@ void i18n
     // Match only the base language (so "it-IT" resolves to "it").
     load: 'languageOnly',
     detection: {
-      order: ['localStorage', 'navigator'],
+      // `?lng=es` wins (shareable links), then the saved choice, then the browser.
+      order: ['querystring', 'localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupQuerystring: 'lng',
       lookupLocalStorage: STORAGE_KEY,
     },
     interpolation: { escapeValue: false },

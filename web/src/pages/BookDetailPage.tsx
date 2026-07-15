@@ -6,6 +6,7 @@ import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCover } from '@/catalog/BookCover'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useVocab } from '@/i18n/vocab'
 
 /** One label/value row in the detail sheet; renders nothing when empty. */
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -21,6 +22,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 export function BookDetailPage() {
   const { id = '' } = useParams()
   const { t } = useTranslation()
+  const tv = useVocab()
   const { getBook, loading, zoneColor } = useCatalog()
   const book = getBook(decodeURIComponent(id))
 
@@ -71,17 +73,25 @@ export function BookDetailPage() {
 
         <div className="flex flex-col gap-3">
           {book.zone && (
-            <span
-              className="w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium"
+            <Link
+              to={`/?theme=${encodeURIComponent(book.theme)}`}
+              className="w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
               style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
             >
-              {book.zone} · {book.theme}
-            </span>
+              {tv('zone', book.zone)} · {tv('theme', book.theme)}
+            </Link>
           )}
           <div>
             <h1 className="text-2xl leading-tight font-semibold">{book.title}</h1>
             <p className="text-muted-foreground mt-1">
-              {book.author} · {yearText}
+              <Link
+                to={`/?author=${encodeURIComponent(book.author)}`}
+                className="hover:text-foreground hover:underline"
+              >
+                {book.author}
+              </Link>
+              {' · '}
+              {yearText}
             </p>
           </div>
 
@@ -105,12 +115,20 @@ export function BookDetailPage() {
 
           <dl className="divide-y">
             <Row label={t('book.publisher')}>{book.publisher}</Row>
-            <Row label={t('book.language')}>{book.language.join(', ')}</Row>
-            <Row label={t('book.originalLanguage')}>{book.originalLanguage}</Row>
+            <Row label={t('book.language')}>
+              {book.language.map((l) => tv('language', l)).join(', ')}
+            </Row>
+            <Row label={t('book.originalLanguage')}>
+              {book.originalLanguage ? tv('language', book.originalLanguage) : ''}
+            </Row>
             <Row label={t('book.isbn')}>
               {book.isbn && book.isbn.toUpperCase() !== 'N/A' ? book.isbn : t('book.noIsbn')}
             </Row>
-            <Row label={t('book.owner')}>{book.owner}</Row>
+            <Row label={t('book.owner')}>
+              <Link to={`/?owner=${encodeURIComponent(book.owner)}`} className="hover:underline">
+                {book.owner}
+              </Link>
+            </Row>
             <Row label={t('book.readBy')}>{book.readBy.join(', ')}</Row>
             <Row label={t('book.reference')}>
               {book.referenceUrl && (

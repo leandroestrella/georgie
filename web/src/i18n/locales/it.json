@@ -7,7 +7,7 @@
     "count_one": "{{count}} libro",
     "count_other": "{{count}} libri",
     "empty": "nessun libro corrisponde ai filtri.",
-    "loading": "carico gli scaffali…",
+    "loading": "carico gli scaffali",
     "clearFilters": "azzera filtri"
   },
   "filters": {

@@ -10,6 +10,7 @@ export type SortDir = 'asc' | 'desc'
 
 export interface CatalogFilters {
   search: string
+  author: string | null
   zone: string | null
   theme: string | null
   owner: string | null
@@ -20,6 +21,7 @@ export interface CatalogFilters {
 
 export const EMPTY_FILTERS: CatalogFilters = {
   search: '',
+  author: null,
   zone: null,
   theme: null,
   owner: null,
@@ -32,6 +34,7 @@ export const EMPTY_FILTERS: CatalogFilters = {
 export function hasActiveFilters(f: CatalogFilters): boolean {
   return (
     f.search.trim() !== '' ||
+    f.author !== null ||
     f.zone !== null ||
     f.theme !== null ||
     f.owner !== null ||
@@ -75,6 +78,7 @@ export function filterBooks(books: Book[], f: CatalogFilters): Book[] {
   return books.filter(
     (b) =>
       matchesSearch(b, f.search) &&
+      (f.author === null || b.author === f.author) &&
       (f.zone === null || b.zone === f.zone) &&
       (f.theme === null || b.theme === f.theme) &&
       (f.owner === null || b.owner === f.owner) &&

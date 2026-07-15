@@ -5,6 +5,7 @@ import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCard } from '@/catalog/BookCard'
 import { FilterBar } from '@/catalog/FilterBar'
 import { BookTable } from '@/catalog/BookTable'
+import { LoadingDots } from '@/components/LoadingDots'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   filterBooks,
@@ -20,6 +21,7 @@ import {
 function readState(params: URLSearchParams) {
   const filters: CatalogFilters = {
     search: params.get('q') ?? '',
+    author: params.get('author'),
     zone: params.get('zone'),
     theme: params.get('theme'),
     owner: params.get('owner'),
@@ -37,6 +39,7 @@ function readState(params: URLSearchParams) {
 
 const FILTER_TO_PARAM: Record<keyof CatalogFilters, string> = {
   search: 'q',
+  author: 'author',
   zone: 'zone',
   theme: 'theme',
   owner: 'owner',
@@ -80,7 +83,7 @@ export function CatalogPage() {
   )
 
   const onClear = useCallback(() => {
-    setParam({ q: null, zone: null, theme: null, owner: null, lang: null, reader: null, status: null })
+    setParam({ q: null, author: null, zone: null, theme: null, owner: null, lang: null, reader: null, status: null })
   }, [setParam])
 
   const visible = useMemo(
@@ -111,7 +114,14 @@ export function CatalogPage() {
       )}
 
       <p className="text-muted-foreground text-sm">
-        {loading ? t('catalog.loading') : t('catalog.count', { count: visible.length })}
+        {loading ? (
+          <>
+            {t('catalog.loading')}
+            <LoadingDots />
+          </>
+        ) : (
+          t('catalog.count', { count: visible.length })
+        )}
       </p>
 
       {loading ? (

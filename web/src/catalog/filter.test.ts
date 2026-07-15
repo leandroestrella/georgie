@@ -48,6 +48,10 @@ describe('search', () => {
 })
 
 describe('facet filters', () => {
+  it('filters by exact author', () => {
+    expect(filterBooks(books, { ...EMPTY_FILTERS, author: 'George Orwell' }).map((b) => b.id)).toEqual(['1'])
+  })
+
   it('filters by zone, owner, language (multi-value), and read-by', () => {
     expect(filterBooks(books, { ...EMPTY_FILTERS, zone: 'Fiction' }).map((b) => b.id)).toEqual(['1', '2'])
     expect(filterBooks(books, { ...EMPTY_FILTERS, owner: 'maria' }).map((b) => b.id)).toEqual(['2'])

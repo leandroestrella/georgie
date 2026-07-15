@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
+import { useVocab } from '@/i18n/vocab'
 import type { ZoneColors } from './zoneColors'
 
 /** Compact, scrollable table view of the catalog. Rows link to book detail. */
@@ -13,6 +14,7 @@ export function BookTable({
   zoneColor: (zone: string) => ZoneColors
 }) {
   const { t } = useTranslation()
+  const tv = useVocab()
   const navigate = useNavigate()
 
   return (
@@ -43,10 +45,10 @@ export function BookTable({
                 <td className="p-3">
                   {book.theme && (
                     <span
-                      className="rounded-full border px-2 py-0.5 text-xs"
+                      className="inline-block whitespace-nowrap rounded-full border px-2 py-0.5 text-xs"
                       style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
                     >
-                      {book.theme}
+                      {tv('theme', book.theme)}
                     </span>
                   )}
                 </td>
