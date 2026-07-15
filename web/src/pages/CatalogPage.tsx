@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useCatalog } from '@/catalog/CatalogProvider'
@@ -6,6 +7,7 @@ import { BookCard } from '@/catalog/BookCard'
 import { FilterBar } from '@/catalog/FilterBar'
 import { BookTable } from '@/catalog/BookTable'
 import { LoadingDots } from '@/components/LoadingDots'
+import { useSubHeaderContainer } from '@/components/subheader'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   authorOptions,
@@ -93,6 +95,7 @@ export function CatalogPage() {
   )
   const readers = useMemo(() => readerOptions(books), [books])
   const authors = useMemo(() => authorOptions(books), [books])
+  const subHeader = useSubHeaderContainer()
 
   if (error) {
     return <p className="text-destructive py-12 text-center">{t('error.load')}</p>
@@ -100,21 +103,27 @@ export function CatalogPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      {taxonomies && (
-        <FilterBar
-          filters={filters}
-          onFilters={onFilters}
-          sortKey={sortKey}
-          sortDir={sortDir}
-          onSort={(key, dir) => setParam({ sort: key, dir })}
-          view={view}
-          onView={(v) => setParam({ view: v === 'cards' ? null : v })}
-          taxonomies={taxonomies}
-          authors={authors}
-          readers={readers}
-          onClear={onClear}
-        />
-      )}
+      {/* The filter bar lives in the sticky header slot so it anchors while scrolling. */}
+      {subHeader &&
+        taxonomies &&
+        createPortal(
+          <div className="mx-auto w-full max-w-6xl px-4 pb-3 sm:px-6">
+            <FilterBar
+              filters={filters}
+              onFilters={onFilters}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSort={(key, dir) => setParam({ sort: key, dir })}
+              view={view}
+              onView={(v) => setParam({ view: v === 'cards' ? null : v })}
+              taxonomies={taxonomies}
+              authors={authors}
+              readers={readers}
+              onClear={onClear}
+            />
+          </div>,
+          subHeader,
+        )}
 
       <p className="text-muted-foreground text-sm">
         {loading ? (
