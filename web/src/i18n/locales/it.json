@@ -1,0 +1,67 @@
+{
+  "app": {
+    "tagline": "una casa accogliente per la tua biblioteca di casa."
+  },
+  "catalog": {
+    "search": "cerca titolo o autore…",
+    "count_one": "{{count}} libro",
+    "count_other": "{{count}} libri",
+    "empty": "nessun libro corrisponde ai filtri.",
+    "loading": "carico gli scaffali…",
+    "clearFilters": "azzera filtri"
+  },
+  "filters": {
+    "zone": "Zona",
+    "theme": "Tema",
+    "owner": "Proprietario",
+    "language": "Lingua",
+    "readBy": "Letto da",
+    "status": "Stato",
+    "all": "Tutti",
+    "borrowed": "In prestito",
+    "exchange": "Da scambiare",
+    "available": "Disponibile"
+  },
+  "sort": {
+    "label": "Ordina",
+    "title": "Titolo",
+    "author": "Autore",
+    "year": "Anno"
+  },
+  "view": {
+    "cards": "Schede",
+    "table": "Tabella"
+  },
+  "book": {
+    "author": "Autore",
+    "year": "Anno",
+    "firstPublished": "prima pubblicazione",
+    "unknownYear": "sconosciuto",
+    "publisher": "Editore",
+    "language": "Lingua",
+    "originalLanguage": "Lingua originale",
+    "isbn": "ISBN / EAN",
+    "noIsbn": "nessuno",
+    "theme": "Tema",
+    "zone": "Zona",
+    "owner": "Proprietario",
+    "readBy": "Letto da",
+    "reference": "Riferimento",
+    "openReference": "apri link",
+    "borrowedBy": "In prestito a {{name}}",
+    "loanSince": "dal {{date}}",
+    "loanSinceUnknown": "da data sconosciuta",
+    "forExchange": "Offerto per lo scambio",
+    "back": "torna al catalogo",
+    "notFound": "libro non trovato"
+  },
+  "auth": {
+    "signOut": "esci",
+    "admin": "admin · {{owner}}",
+    "notAdmin": "non sei admin",
+    "notConfigured": "accesso non configurato"
+  },
+  "error": {
+    "load": "impossibile caricare il catalogo"
+  }
+}

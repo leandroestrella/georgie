@@ -1,0 +1,67 @@
+{
+  "app": {
+    "tagline": "un hogar acogedor para tu biblioteca de casa."
+  },
+  "catalog": {
+    "search": "busca título o autor…",
+    "count_one": "{{count}} libro",
+    "count_other": "{{count}} libros",
+    "empty": "ningún libro coincide con los filtros.",
+    "loading": "cargando las estanterías…",
+    "clearFilters": "limpiar filtros"
+  },
+  "filters": {
+    "zone": "Zona",
+    "theme": "Tema",
+    "owner": "Propietario",
+    "language": "Idioma",
+    "readBy": "Leído por",
+    "status": "Estado",
+    "all": "Todos",
+    "borrowed": "Prestado",
+    "exchange": "Para intercambio",
+    "available": "Disponible"
+  },
+  "sort": {
+    "label": "Ordenar",
+    "title": "Título",
+    "author": "Autor",
+    "year": "Año"
+  },
+  "view": {
+    "cards": "Tarjetas",
+    "table": "Tabla"
+  },
+  "book": {
+    "author": "Autor",
+    "year": "Año",
+    "firstPublished": "primera publicación",
+    "unknownYear": "desconocido",
+    "publisher": "Editorial",
+    "language": "Idioma",
+    "originalLanguage": "Idioma original",
+    "isbn": "ISBN / EAN",
+    "noIsbn": "ninguno",
+    "theme": "Tema",
+    "zone": "Zona",
+    "owner": "Propietario",
+    "readBy": "Leído por",
+    "reference": "Referencia",
+    "openReference": "abrir enlace",
+    "borrowedBy": "Prestado a {{name}}",
+    "loanSince": "desde {{date}}",
+    "loanSinceUnknown": "desde fecha desconocida",
+    "forExchange": "Ofrecido para intercambio",
+    "back": "volver al catálogo",
+    "notFound": "libro no encontrado"
+  },
+  "auth": {
+    "signOut": "cerrar sesión",
+    "admin": "admin · {{owner}}",
+    "notAdmin": "no eres admin",
+    "notConfigured": "acceso no configurado"
+  },
+  "error": {
+    "load": "no se pudo cargar el catálogo"
+  }
+}

@@ -1,0 +1,157 @@
+import { useTranslation } from 'react-i18next'
+import { LayoutGridIcon, ListIcon, SearchIcon, XIcon } from 'lucide-react'
+import type { Taxonomies } from '@/api/types'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import {
+  hasActiveFilters,
+  type CatalogFilters,
+  type SortDir,
+  type SortKey,
+  type StatusFilter,
+} from './filter'
+
+const ALL = '__all__'
+
+/** A single labelled facet dropdown; empty selection is represented by `null`. */
+function Facet({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: string | null
+  options: string[]
+  onChange: (v: string | null) => void
+}) {
+  return (
+    <Select value={value ?? ALL} onValueChange={(v) => onChange(v === ALL ? null : v)}>
+      <SelectTrigger size="sm" className="w-full sm:w-auto">
+        <SelectValue placeholder={label} />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={ALL}>{label}</SelectItem>
+        {options.map((o) => (
+          <SelectItem key={o} value={o}>
+            {o}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
+export interface FilterBarProps {
+  filters: CatalogFilters
+  onFilters: (patch: Partial<CatalogFilters>) => void
+  sortKey: SortKey
+  sortDir: SortDir
+  onSort: (key: SortKey, dir: SortDir) => void
+  view: 'cards' | 'table'
+  onView: (v: 'cards' | 'table') => void
+  taxonomies: Taxonomies
+  readers: string[]
+  onClear: () => void
+}
+
+export function FilterBar(props: FilterBarProps) {
+  const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, readers, onClear } = props
+  const { t } = useTranslation()
+
+  // Themes narrow to the selected zone; otherwise show every theme.
+  const themeOptions = filters.zone
+    ? (taxonomies.zones.find((z) => z.name === filters.zone)?.themes ?? [])
+    : taxonomies.zones.flatMap((z) => z.themes)
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="relative">
+        <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+        <Input
+          value={filters.search}
+          onChange={(e) => onFilters({ search: e.target.value })}
+          placeholder={t('catalog.search')}
+          className="pl-9"
+        />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Facet
+          label={t('filters.zone')}
+          value={filters.zone}
+          options={taxonomies.zones.map((z) => z.name)}
+          onChange={(v) => onFilters({ zone: v, theme: null })}
+        />
+        <Facet label={t('filters.theme')} value={filters.theme} options={themeOptions} onChange={(v) => onFilters({ theme: v })} />
+        <Facet label={t('filters.owner')} value={filters.owner} options={taxonomies.owners} onChange={(v) => onFilters({ owner: v })} />
+        <Facet label={t('filters.language')} value={filters.language} options={taxonomies.languages} onChange={(v) => onFilters({ language: v })} />
+        {readers.length > 0 && (
+          <Facet label={t('filters.readBy')} value={filters.readBy} options={readers} onChange={(v) => onFilters({ readBy: v })} />
+        )}
+
+        <Select
+          value={filters.status}
+          onValueChange={(v) => onFilters({ status: v as StatusFilter })}
+        >
+          <SelectTrigger size="sm" className="w-full sm:w-auto">
+            <SelectValue placeholder={t('filters.status')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('filters.status')}</SelectItem>
+            <SelectItem value="available">{t('filters.available')}</SelectItem>
+            <SelectItem value="borrowed">{t('filters.borrowed')}</SelectItem>
+            <SelectItem value="exchange">{t('filters.exchange')}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {hasActiveFilters(filters) && (
+          <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">
+            <XIcon className="size-3.5" /> {t('catalog.clearFilters')}
+          </Button>
+        )}
+
+        <div className="ml-auto flex items-center gap-2">
+          <Select value={`${sortKey}:${sortDir}`} onValueChange={(v) => {
+            const [key, dir] = v.split(':') as [SortKey, SortDir]
+            onSort(key, dir)
+          }}>
+            <SelectTrigger size="sm" aria-label={t('sort.label')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="title:asc">{t('sort.title')} A–Z</SelectItem>
+              <SelectItem value="title:desc">{t('sort.title')} Z–A</SelectItem>
+              <SelectItem value="author:asc">{t('sort.author')} A–Z</SelectItem>
+              <SelectItem value="year:asc">{t('sort.year')} ↑</SelectItem>
+              <SelectItem value="year:desc">{t('sort.year')} ↓</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <ToggleGroup
+            type="single"
+            value={view}
+            onValueChange={(v) => v && onView(v as 'cards' | 'table')}
+            variant="outline"
+            size="sm"
+          >
+            <ToggleGroupItem value="cards" aria-label={t('view.cards')}>
+              <LayoutGridIcon className="size-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="table" aria-label={t('view.table')}>
+              <ListIcon className="size-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -1,0 +1,67 @@
+{
+  "app": {
+    "tagline": "a cozy little home for your home library."
+  },
+  "catalog": {
+    "search": "search title or author…",
+    "count_one": "{{count}} book",
+    "count_other": "{{count}} books",
+    "empty": "no books match your filters.",
+    "loading": "loading the shelves…",
+    "clearFilters": "clear filters"
+  },
+  "filters": {
+    "zone": "Zone",
+    "theme": "Theme",
+    "owner": "Owner",
+    "language": "Language",
+    "readBy": "Read by",
+    "status": "Status",
+    "all": "All",
+    "borrowed": "On loan",
+    "exchange": "For exchange",
+    "available": "Available"
+  },
+  "sort": {
+    "label": "Sort",
+    "title": "Title",
+    "author": "Author",
+    "year": "Year"
+  },
+  "view": {
+    "cards": "Cards",
+    "table": "Table"
+  },
+  "book": {
+    "author": "Author",
+    "year": "Year",
+    "firstPublished": "first published",
+    "unknownYear": "unknown",
+    "publisher": "Publisher",
+    "language": "Language",
+    "originalLanguage": "Original language",
+    "isbn": "ISBN / EAN",
+    "noIsbn": "none",
+    "theme": "Theme",
+    "zone": "Zone",
+    "owner": "Owner",
+    "readBy": "Read by",
+    "reference": "Reference",
+    "openReference": "open link",
+    "borrowedBy": "On loan to {{name}}",
+    "loanSince": "since {{date}}",
+    "loanSinceUnknown": "since unknown",
+    "forExchange": "Offered for exchange",
+    "back": "back to catalog",
+    "notFound": "book not found"
+  },
+  "auth": {
+    "signOut": "sign out",
+    "admin": "admin · {{owner}}",
+    "notAdmin": "not an admin",
+    "notConfigured": "sign-in not configured"
+  },
+  "error": {
+    "load": "couldn't load the catalog"
+  }
+}

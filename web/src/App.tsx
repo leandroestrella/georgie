@@ -1,82 +1,44 @@
-import { useEffect, useState } from 'react'
-import { getBooks, getTaxonomies } from '@/api/client'
-import { hasBackend } from '@/config'
-import type { Book, Taxonomies } from '@/api/types'
+import { Link, Navigate, Route, Routes } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import type { ReactNode } from 'react'
 import { AuthBar } from '@/auth/AuthBar'
-import { useAuth } from '@/auth/AuthProvider'
+import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
+import { CatalogPage } from '@/pages/CatalogPage'
+import { BookDetailPage } from '@/pages/BookDetailPage'
 
-/**
- * Root application shell.
- *
- * Phase 1 wires the shell to the data layer: it loads the catalog + taxonomy
- * through the API client (mock data until a backend is configured) and shows a
- * minimal summary, proving the whole read path works in the browser. The real
- * catalog UI (search, filters, detail) arrives in Phase 3.
- */
-function App() {
-  const [books, setBooks] = useState<Book[] | null>(null)
-  const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const { status, isAdmin } = useAuth()
-
-  useEffect(() => {
-    Promise.all([getBooks(), getTaxonomies()])
-      .then(([b, t]) => {
-        setBooks(b)
-        setTaxonomies(t)
-      })
-      .catch((e) => setError(String(e)))
-  }, [])
-
+/** App shell: sticky header (brand · language · sign-in) around the routed page. */
+function Layout({ children }: { children: ReactNode }) {
+  const { t } = useTranslation()
   return (
-    <div className="mx-auto flex min-h-svh max-w-3xl flex-col gap-8 p-8">
-      <header className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <img src="/georgie.gif" alt="georgie" className="w-16" />
+    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-6 p-4 sm:p-6">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <Link to="/" className="flex items-center gap-3">
+          <img src="/georgie.gif" alt="" className="w-11" />
           <div>
-            <h1 className="text-3xl font-semibold lowercase tracking-tight">georgie</h1>
-            <p className="text-muted-foreground text-sm lowercase">
-              a cozy little home for your home library.
-            </p>
+            <h1 className="text-2xl leading-none font-semibold lowercase tracking-tight">georgie</h1>
+            <p className="text-muted-foreground text-xs lowercase">{t('app.tagline')}</p>
           </div>
+        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <AuthBar />
         </div>
-        <AuthBar />
       </header>
 
-      <section className="rounded-lg border p-4">
-        <p className="text-muted-foreground mb-3 text-xs uppercase tracking-wide">
-          data layer · {hasBackend ? 'live backend' : 'mock data'} · auth ·{' '}
-          {status === 'signed-in' ? (isAdmin ? 'admin' : 'signed in') : 'anonymous'}
-        </p>
-
-        {error && <p className="text-destructive text-sm">{error}</p>}
-        {!error && !books && <p className="text-muted-foreground text-sm">loading…</p>}
-
-        {books && taxonomies && (
-          <>
-            <p className="text-sm">
-              <strong>{books.length}</strong> books ·{' '}
-              <strong>{taxonomies.zones.length}</strong> zones ·{' '}
-              <strong>{taxonomies.owners.length}</strong> owners ·{' '}
-              <strong>{taxonomies.languages.length}</strong> languages
-            </p>
-            <ul className="mt-4 space-y-1 text-sm">
-              {books.slice(0, 8).map((b) => (
-                <li key={b.id} className="flex justify-between gap-4">
-                  <span className="truncate">
-                    <span className="text-muted-foreground font-mono text-xs">{b.id}</span>{' '}
-                    {b.title}
-                  </span>
-                  <span className="text-muted-foreground shrink-0">
-                    {b.zone || '—'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </section>
+      <main className="flex-1">{children}</main>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<CatalogPage />} />
+        <Route path="/book/:id" element={<BookDetailPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Layout>
   )
 }
 
