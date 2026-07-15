@@ -5,10 +5,9 @@ node_modules/
 web/dist/
 dist/
 
-# local config (commit config.example.ts instead)
-web/src/config.ts
-
 # environment files
+# (config.ts is committed — it reads public values from VITE_* env vars; put
+#  your own values in web/.env.local, which is ignored below)
 .env
 .env.*
 !.env.example

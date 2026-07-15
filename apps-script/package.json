@@ -1,0 +1,17 @@
+{
+  "name": "georgie-apps-script",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Georgie backend — Google Apps Script web app bound to the library spreadsheet, synced with clasp.",
+  "scripts": {
+    "login": "clasp login",
+    "pull": "clasp pull",
+    "push": "clasp push",
+    "deploy": "clasp deploy",
+    "open": "clasp open",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.5.0"
+  }
+}

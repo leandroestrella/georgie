@@ -57,14 +57,14 @@ apps-script/  the backend api (synced with clasp)
 
 georgie is a template for anyone who wants to catalog their own shelves:
 
-1. copy the google sheet template (a `Catalog` tab with the book columns, a `Zones` tab defining your categories)
-2. create a bound apps script on your sheet, push the code in `apps-script/` with clasp, and deploy it as a web app ("execute as: me", "access: anyone")
+1. copy the google sheet template (a `Catalog` tab with the book columns, a `Zones` tab defining your categories, a `Lists` tab for owners/languages)
+2. create a bound apps script on your sheet: `cd apps-script`, `npm install`, `npx clasp login`, then `clasp clone <scriptId>` (or create the project in the sheet's Extensions → Apps Script and `clasp push`). deploy it as a web app ("execute as: me", "access: anyone")
 3. create a google oauth client id for the sign-in button
 4. set your admin emails in the script properties
-5. configure `web/src/config.ts` with your `/exec` url and client id
+5. copy `web/.env.example` to `web/.env.local` and fill in `VITE_API_URL` (your `/exec` url) and `VITE_GOOGLE_CLIENT_ID` — both are public, so they can also live in github repo secrets for the deploy action
 6. `npm install && npm run build` in `web/`, and host the `dist/` folder anywhere static files live
 
-detailed setup instructions will land here as the build progresses.
+both config values are safe to publish (the oauth client id is public by design, and writes are gated server-side by token verification) — nothing secret ever lands in the repo.
 
 ## development
 
