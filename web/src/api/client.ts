@@ -55,6 +55,24 @@ export async function getTaxonomies(): Promise<Taxonomies> {
   return data.taxonomies
 }
 
+/** The caller's admin status, resolved server-side from their ID token. */
+export interface Me {
+  admin: boolean
+  email: string
+  owner: string
+  reason: string
+}
+
+/**
+ * Asks the backend whether the current ID token belongs to an admin. In mock
+ * mode (offline dev) there is no sign-in, so we grant admin to keep the write
+ * UI reachable against the in-memory store.
+ */
+export async function fetchMe(): Promise<Me> {
+  if (!hasBackend) return { admin: true, email: 'dev@local', owner: 'leandro', reason: 'mock mode' }
+  return post<Me>({ action: 'me' })
+}
+
 // ---------------------------------------------------------------------------
 // Writes
 // ---------------------------------------------------------------------------

@@ -22,7 +22,8 @@
 var CATALOG_SHEET = 'Catalog'
 var ZONES_SHEET = 'Zones'
 var LISTS_SHEET = 'Lists'
-var VERSION = '0.1.0'
+var USERS_SHEET = 'Users'
+var VERSION = '0.2.0'
 
 /**
  * GET entry point. Reads are public.
@@ -55,7 +56,11 @@ function doGet(e) {
 function doPost(e) {
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}')
-    var admin = requireAdmin_(body) // throws if not an allowed admin (Phase 2)
+    // "me" reports the caller's admin status without throwing — the SPA uses it
+    // to decide whether to show edit controls after sign-in.
+    if (body.action === 'me') return json(whoAmI_(body))
+
+    var admin = requireAdmin_(body) // throws unless the caller is an allowed admin
     switch (body.action) {
       case 'addBook':
         return json({ ok: true, book: addBook_(body.book, admin) })
@@ -202,22 +207,118 @@ function setLoan_(id, loan) {
 }
 
 // ---------------------------------------------------------------------------
-// Auth (Phase 2 fills this in)
+// Auth
 // ---------------------------------------------------------------------------
 
 /**
- * Verifies the caller is an allowed admin and returns their identity.
- *
- * ⚠️ STUB — Phase 2 will verify `body.idToken` via Google's tokeninfo endpoint
- * (audience = OAuth client ID) and match the email against the admin allowlist
- * in Script Properties. Until then this performs NO enforcement and must only
- * run against the dev sheet copy.
- *
- * @param {Object} body the parsed POST body
+ * Reports the caller's identity + admin status. Never throws — returns
+ * `admin: false` (with a reason) for anonymous or non-admin callers.
+ * @param {Object} body parsed POST body (expects `idToken`)
+ * @return {{ok: true, admin: boolean, email: string, owner: string, reason: string}}
+ */
+function whoAmI_(body) {
+  var r = authorize_(body)
+  return { ok: true, admin: r.admin, email: r.email, owner: r.owner, reason: r.reason }
+}
+
+/**
+ * Verifies the caller is an allowed admin, or throws. Returns their identity so
+ * write handlers can attribute the change (email → owner label).
+ * @param {Object} body parsed POST body (expects `idToken`)
  * @return {{email: string, owner: string}}
  */
 function requireAdmin_(body) {
-  return { email: '', owner: (body && body.owner) || '' }
+  var r = authorize_(body)
+  if (!r.admin) throw new Error('Not authorized: ' + r.reason)
+  return { email: r.email, owner: r.owner }
+}
+
+/**
+ * Runs the full authorization decision for a request: validate the ID token with
+ * Google, then apply audience + allowlist checks (pure logic in auth.js).
+ * @param {Object} body
+ * @return {{admin: boolean, email: string, owner: string, reason: string}}
+ */
+function authorize_(body) {
+  var token = body && body.idToken
+  if (!token) return { admin: false, email: '', owner: '', reason: 'sign-in required' }
+  var claims = verifyIdToken_(token)
+  return evaluateAdmin(claims, getClientId_(), getAdmins_())
+}
+
+/**
+ * Validates a Google ID token via the public tokeninfo endpoint (checks the
+ * signature and expiry server-side) and returns its claims, or null if invalid.
+ * @param {string} idToken
+ * @return {Object|null}
+ */
+function verifyIdToken_(idToken) {
+  try {
+    var res = UrlFetchApp.fetch(
+      'https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken),
+      { muteHttpExceptions: true },
+    )
+    if (res.getResponseCode() !== 200) return null
+    return JSON.parse(res.getContentText())
+  } catch (err) {
+    return null
+  }
+}
+
+/** @return {string} the OAuth client ID this backend accepts tokens for. */
+function getClientId_() {
+  return PropertiesService.getScriptProperties().getProperty('OAUTH_CLIENT_ID') || ''
+}
+
+/**
+ * Reads the admin allowlist from the `Users` tab (email→owner). Returns an empty
+ * allowlist when the tab is absent, so writes simply fail closed.
+ * @return {Object<string, string>}
+ */
+function getAdmins_() {
+  var sheet = getSpreadsheet_().getSheetByName(USERS_SHEET)
+  if (!sheet) return {}
+  return parseUsers(sheet.getDataRange().getValues())
+}
+
+/**
+ * One-time maintenance: hard-deletes the throwaway rows an early test run wrote
+ * to the dev sheet (IDs based on "1984"/"George Orwell" and the "Test Book"
+ * fixture). Matches by ID prefix and hard-deletes bottom-up so row numbers stay
+ * valid. Safe to re-run (a no-op once clean). Delete this function afterwards.
+ * @return {string} how many rows were removed.
+ */
+function cleanupTestRows() {
+  var sheet = getSheet_(CATALOG_SHEET)
+  var values = sheet.getDataRange().getValues()
+  var headerIndex = indexHeaders(values[0])
+  var iId = headerIndex[COLUMNS.id]
+  var junk = /^(ORW-198-1950|AUT-TES-2021)(-\d+)?$/
+  var removed = 0
+  for (var r = values.length - 1; r >= 1; r--) {
+    if (junk.test(cellToString(values[r][iId]))) {
+      sheet.deleteRow(r + 1)
+      removed++
+    }
+  }
+  return 'Removed ' + removed + ' test row(s).'
+}
+
+/**
+ * One-time setup: creates the `Users` admin-allowlist tab if missing and seeds
+ * it with the deploying account. Run once from the editor, then edit the tab to
+ * add/remove admins (Email, Owner columns). Safe to re-run.
+ * @return {string} a human-readable status.
+ */
+function setupUsersTab() {
+  var ss = getSpreadsheet_()
+  var sheet = ss.getSheetByName(USERS_SHEET)
+  if (!sheet) {
+    sheet = ss.insertSheet(USERS_SHEET)
+    sheet.appendRow(['Email', 'Owner'])
+    sheet.appendRow([Session.getEffectiveUser().getEmail(), 'leandro'])
+  }
+  return USERS_SHEET + ' tab ready with ' + Math.max(0, sheet.getLastRow() - 1) + ' admin(s).'
 }
 
 // ---------------------------------------------------------------------------

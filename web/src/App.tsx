@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { getBooks, getTaxonomies } from '@/api/client'
 import { hasBackend } from '@/config'
 import type { Book, Taxonomies } from '@/api/types'
+import { AuthBar } from '@/auth/AuthBar'
+import { useAuth } from '@/auth/AuthProvider'
 
 /**
  * Root application shell.
@@ -15,6 +17,7 @@ function App() {
   const [books, setBooks] = useState<Book[] | null>(null)
   const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { status, isAdmin } = useAuth()
 
   useEffect(() => {
     Promise.all([getBooks(), getTaxonomies()])
@@ -27,19 +30,23 @@ function App() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-3xl flex-col gap-8 p-8">
-      <header className="flex items-center gap-4">
-        <img src="/georgie.gif" alt="georgie" className="w-16" />
-        <div>
-          <h1 className="text-3xl font-semibold lowercase tracking-tight">georgie</h1>
-          <p className="text-muted-foreground text-sm lowercase">
-            a cozy little home for your home library.
-          </p>
+      <header className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <img src="/georgie.gif" alt="georgie" className="w-16" />
+          <div>
+            <h1 className="text-3xl font-semibold lowercase tracking-tight">georgie</h1>
+            <p className="text-muted-foreground text-sm lowercase">
+              a cozy little home for your home library.
+            </p>
+          </div>
         </div>
+        <AuthBar />
       </header>
 
       <section className="rounded-lg border p-4">
         <p className="text-muted-foreground mb-3 text-xs uppercase tracking-wide">
-          data layer · {hasBackend ? 'live backend' : 'mock data'}
+          data layer · {hasBackend ? 'live backend' : 'mock data'} · auth ·{' '}
+          {status === 'signed-in' ? (isAdmin ? 'admin' : 'signed in') : 'anonymous'}
         </p>
 
         {error && <p className="text-destructive text-sm">{error}</p>}
