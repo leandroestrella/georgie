@@ -8,6 +8,7 @@ import { BookTable } from '@/catalog/BookTable'
 import { LoadingDots } from '@/components/LoadingDots'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
+  authorOptions,
   filterBooks,
   readerOptions,
   sortBooks,
@@ -91,6 +92,7 @@ export function CatalogPage() {
     [books, filters, sortKey, sortDir],
   )
   const readers = useMemo(() => readerOptions(books), [books])
+  const authors = useMemo(() => authorOptions(books), [books])
 
   if (error) {
     return <p className="text-destructive py-12 text-center">{t('error.load')}</p>
@@ -108,6 +110,7 @@ export function CatalogPage() {
           view={view}
           onView={(v) => setParam({ view: v === 'cards' ? null : v })}
           taxonomies={taxonomies}
+          authors={authors}
           readers={readers}
           onClear={onClear}
         />

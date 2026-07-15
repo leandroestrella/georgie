@@ -11,6 +11,7 @@
     "clearFilters": "clear filters"
   },
   "filters": {
+    "author": "Author",
     "zone": "Zone",
     "theme": "Theme",
     "owner": "Owner",

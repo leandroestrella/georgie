@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { LayoutGridIcon, ListIcon, SearchIcon, UserIcon, XIcon } from 'lucide-react'
+import { LayoutGridIcon, ListIcon, SearchIcon, XIcon } from 'lucide-react'
 import type { Taxonomies } from '@/api/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -65,12 +65,13 @@ export interface FilterBarProps {
   view: 'cards' | 'table'
   onView: (v: 'cards' | 'table') => void
   taxonomies: Taxonomies
+  authors: string[]
   readers: string[]
   onClear: () => void
 }
 
 export function FilterBar(props: FilterBarProps) {
-  const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, readers, onClear } = props
+  const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, authors, readers, onClear } = props
   const { t } = useTranslation()
   const tv = useVocab()
 
@@ -83,6 +84,7 @@ export function FilterBar(props: FilterBarProps) {
   const themeOptions = themeNames.map((name) => ({ value: name, label: tv('theme', name) }))
   const ownerOptions = taxonomies.owners.map((o) => ({ value: o, label: o }))
   const languageOptions = taxonomies.languages.map((l) => ({ value: l, label: tv('language', l) }))
+  const authorOpts = authors.map((a) => ({ value: a, label: a }))
   const readerOptions = readers.map((r) => ({ value: r, label: r }))
 
   return (
@@ -98,6 +100,7 @@ export function FilterBar(props: FilterBarProps) {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
+        <Facet label={t('filters.author')} value={filters.author} options={authorOpts} onChange={(v) => onFilters({ author: v })} />
         <Facet
           label={t('filters.zone')}
           value={filters.zone}
@@ -125,19 +128,6 @@ export function FilterBar(props: FilterBarProps) {
             <SelectItem value="exchange">{t('filters.exchange')}</SelectItem>
           </SelectContent>
         </Select>
-
-        {filters.author && (
-          <button
-            type="button"
-            onClick={() => onFilters({ author: null })}
-            className="border-primary/40 bg-primary/10 text-foreground inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs"
-            title={t('book.author')}
-          >
-            <UserIcon className="size-3" />
-            {filters.author}
-            <XIcon className="size-3" />
-          </button>
-        )}
 
         {hasActiveFilters(filters) && (
           <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">

@@ -6,26 +6,28 @@ import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { BookDetailPage } from '@/pages/BookDetailPage'
 
-/** App shell: sticky header (brand · language · sign-in) around the routed page. */
+/** App shell: a sticky, full-width header (brand · language · sign-in) over the routed page. */
 function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   return (
-    <div className="mx-auto flex min-h-svh max-w-6xl flex-col gap-6 p-4 sm:p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <Link to="/" className="flex items-center gap-3">
-          <img src="/georgie.gif" alt="" className="w-11" />
-          <div>
-            <h1 className="text-2xl leading-none font-semibold lowercase tracking-tight">georgie</h1>
-            <p className="text-muted-foreground text-xs lowercase">{t('app.tagline')}</p>
+    <div className="flex min-h-svh flex-col">
+      <header className="bg-background/90 sticky top-0 z-30 border-b backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/georgie.gif" alt="" className="w-10" />
+            <div>
+              <h1 className="text-xl leading-none font-semibold lowercase tracking-tight">georgie</h1>
+              <p className="text-muted-foreground text-xs lowercase">{t('app.tagline')}</p>
+            </div>
+          </Link>
+          <div className="flex items-center gap-2">
+            <LanguageSwitcher />
+            <AuthBar />
           </div>
-        </Link>
-        <div className="flex items-center gap-2">
-          <LanguageSwitcher />
-          <AuthBar />
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
     </div>
   )
 }

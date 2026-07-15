@@ -111,3 +111,10 @@ export function readerOptions(books: Book[]): string[] {
   for (const b of books) for (const r of b.readBy) set.add(r)
   return [...set].sort((a, b) => a.localeCompare(b))
 }
+
+/** The distinct, sorted authors present across the catalog (for the filter). */
+export function authorOptions(books: Book[]): string[] {
+  const set = new Set<string>()
+  for (const b of books) if (b.author) set.add(b.author)
+  return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+}
