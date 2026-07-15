@@ -24,10 +24,11 @@ export function AuthBar() {
     return (
       <div className="flex items-center gap-3">
         <div className="text-right leading-tight">
-          <div className="text-sm">{user.name}</div>
+          <div className="text-sm">{user.email || user.name}</div>
           <div className="text-muted-foreground text-xs">
             {isAdmin ? `admin · ${owner}` : 'not an admin'}
           </div>
+          {!isAdmin && error && <div className="text-destructive text-xs">{error}</div>}
         </div>
         {user.picture && (
           <img src={user.picture} alt="" className="size-8 rounded-full" referrerPolicy="no-referrer" />

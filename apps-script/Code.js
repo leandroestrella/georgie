@@ -6,13 +6,13 @@
  *   - doGet  → public reads  (?action=books, ?action=taxonomies)
  *   - doPost → admin writes   (addBook, updateBook, deleteBook, restoreBook, setLoan)
  *
- * All pure logic (mapping, taxonomy, ID generation) lives in catalog.js and is
- * unit-tested in Node. This file is just the glue: read values → call pure fn →
- * write values. Columns are resolved by header name (see catalog.js).
+ * All pure logic (mapping, taxonomy, ID generation, auth decisions) lives in
+ * catalog.js / auth.js and is unit-tested in Node. This file is just the glue:
+ * read values → call pure fn → write values. Columns are resolved by header name.
  *
- * ⚠️  AUTH: write handlers are NOT yet protected — Phase 2 fills in
- *     `requireAdmin_` with Google ID-token verification + the admin allowlist.
- *     Until then, only deploy this against the throwaway DEV sheet copy.
+ * AUTH: reads are public; every write verifies the caller's Google ID token
+ * (via Google's tokeninfo endpoint) and checks the email against the admin
+ * allowlist in the `Users` tab before touching the sheet (see requireAdmin_).
  *
  * Cross-origin note: browsers can't send a JSON preflight to Apps Script, so the
  * SPA POSTs with Content-Type text/plain and a JSON string body — hence the
@@ -279,29 +279,6 @@ function getAdmins_() {
   var sheet = getSpreadsheet_().getSheetByName(USERS_SHEET)
   if (!sheet) return {}
   return parseUsers(sheet.getDataRange().getValues())
-}
-
-/**
- * One-time maintenance: hard-deletes the throwaway rows an early test run wrote
- * to the dev sheet (IDs based on "1984"/"George Orwell" and the "Test Book"
- * fixture). Matches by ID prefix and hard-deletes bottom-up so row numbers stay
- * valid. Safe to re-run (a no-op once clean). Delete this function afterwards.
- * @return {string} how many rows were removed.
- */
-function cleanupTestRows() {
-  var sheet = getSheet_(CATALOG_SHEET)
-  var values = sheet.getDataRange().getValues()
-  var headerIndex = indexHeaders(values[0])
-  var iId = headerIndex[COLUMNS.id]
-  var junk = /^(ORW-198-1950|AUT-TES-2021)(-\d+)?$/
-  var removed = 0
-  for (var r = values.length - 1; r >= 1; r--) {
-    if (junk.test(cellToString(values[r][iId]))) {
-      sheet.deleteRow(r + 1)
-      removed++
-    }
-  }
-  return 'Removed ' + removed + ' test row(s).'
 }
 
 /**
