@@ -17,7 +17,7 @@ export function OwnerBadge({ owner, className }: { owner: string; className?: st
       <TooltipTrigger asChild>
         <span
           className={cn(
-            'ring-background bg-background grid size-6 place-items-center overflow-hidden rounded-full shadow ring-2',
+            'ring-background bg-background grid size-5 place-items-center overflow-hidden rounded-full shadow-sm ring-1',
             className,
           )}
         >
