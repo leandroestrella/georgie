@@ -16,11 +16,10 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
   return (
     <Link to={`/book/${encodeURIComponent(book.id)}`} className="group">
       <Card className="h-full overflow-hidden p-0 transition-shadow hover:shadow-md">
-        <div className="bg-muted relative aspect-[3/4] w-full overflow-hidden">
+        <div className="bg-muted aspect-[3/4] w-full overflow-hidden">
           <BookCover book={book} colors={colors} className="size-full transition-transform group-hover:scale-[1.03]" />
-          <OwnerBadge owner={book.owner} className="absolute right-2 bottom-2" />
         </div>
-        <div className="flex flex-col gap-1.5 p-3">
+        <div className="flex flex-1 flex-col gap-1.5 p-3">
           {book.zone && (
             <span
               className="w-fit rounded-full border px-2 py-0.5 text-[10px] font-medium"
@@ -34,8 +33,9 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
             {book.author}
             {book.year ? ` · ${book.year}` : ''}
           </p>
-          {(book.borrowed || book.exchange) && (
-            <div className="mt-1 flex flex-wrap gap-1">
+          {/* Bottom row: status flags on the left, owner logo on the right. */}
+          <div className="mt-auto flex items-end justify-between gap-1 pt-1">
+            <div className="flex flex-wrap gap-1">
               {book.borrowed && (
                 <Badge variant="secondary" className="gap-1 text-[10px]">
                   <HandCoinsIcon className="size-3" /> {t('filters.borrowed')}
@@ -47,7 +47,8 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
                 </Badge>
               )}
             </div>
-          )}
+            <OwnerBadge owner={book.owner} className="shrink-0" />
+          </div>
         </div>
       </Card>
     </Link>
