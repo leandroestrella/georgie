@@ -21,7 +21,8 @@
     "all": "Tutti",
     "borrowed": "In prestito",
     "exchange": "Da scambiare",
-    "available": "Disponibile"
+    "available": "Disponibile",
+    "attention": "Da completare"
   },
   "sort": {
     "label": "Ordina",
@@ -64,5 +65,59 @@
   },
   "error": {
     "load": "impossibile caricare il catalogo"
+  },
+  "form": {
+    "addTitle": "Aggiungi un libro",
+    "editTitle": "Modifica libro",
+    "title": "Titolo",
+    "author": "Autore",
+    "year": "Anno",
+    "yearHint": "Lascia vuoto se sconosciuto.",
+    "circa": "Anno di prima pubblicazione (circa)",
+    "publisher": "Editore",
+    "isbn": "ISBN / EAN",
+    "isbnHint": "ISBN-10 o ISBN-13. Spunta “nessun ISBN” se questa stampa non ne ha.",
+    "noIsbn": "nessun ISBN",
+    "theme": "Tema",
+    "themeHint": "La zona deriva dal tema.",
+    "zone": "Zona",
+    "language": "Lingua",
+    "originalLanguage": "Lingua originale",
+    "coverUrl": "URL copertina",
+    "coverHint": "URL esterno. In mancanza usa Open Library tramite ISBN.",
+    "owner": "Proprietario",
+    "readBy": "Letto da",
+    "referenceUrl": "URL di riferimento",
+    "exchange": "Offerto per lo scambio",
+    "idPreview": "L'ID sarà:",
+    "select": "Seleziona…",
+    "search": "Cerca…",
+    "noResults": "Nessun risultato.",
+    "save": "Salva",
+    "saving": "Salvataggio…",
+    "cancel": "Annulla",
+    "errors": {
+      "titleRequired": "Il titolo è obbligatorio.",
+      "yearInvalid": "Inserisci un anno valido di 4 cifre.",
+      "isbnInvalid": "ISBN-10 o ISBN-13 non valido.",
+      "themeRequired": "Scegli un tema."
+    }
+  },
+  "admin": {
+    "add": "Aggiungi libro",
+    "edit": "Modifica",
+    "archive": "Archivia",
+    "restore": "Ripristina",
+    "archived": "Archiviati",
+    "archivedBadge": "Archiviato",
+    "archivedEmpty": "Nessun libro archiviato.",
+    "confirmArchiveTitle": "Archiviare questo libro?",
+    "confirmArchiveBody": "«{{title}}» sparirà dal catalogo pubblico. Nulla viene eliminato — puoi ripristinarlo dagli Archiviati."
+  },
+  "attention": {
+    "missingYear": "anno mancante",
+    "circaYear": "anno da verificare",
+    "missingCover": "senza copertina",
+    "missingOriginalLanguage": "lingua originale mancante"
   }
 }

@@ -6,6 +6,8 @@ import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { SubHeaderContext } from '@/components/subheader'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { BookDetailPage } from '@/pages/BookDetailPage'
+import { BookFormPage } from '@/pages/BookFormPage'
+import { ArchivedPage } from '@/pages/ArchivedPage'
 
 /**
  * App shell: a sticky, full-width header (brand · language · sign-in) over the
@@ -47,7 +49,11 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<CatalogPage />} />
+        {/* `new` before `:id` so it isn't swallowed by the detail route. */}
+        <Route path="/book/new" element={<BookFormPage mode="add" />} />
+        <Route path="/book/:id/edit" element={<BookFormPage mode="edit" />} />
         <Route path="/book/:id" element={<BookDetailPage />} />
+        <Route path="/archived" element={<ArchivedPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

@@ -1,7 +1,10 @@
 import { useCallback, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { ArchiveIcon, PlusIcon } from 'lucide-react'
+import { useAuth } from '@/auth/AuthProvider'
+import { Button } from '@/components/ui/button'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCard } from '@/catalog/BookCard'
 import { FilterBar } from '@/catalog/FilterBar'
@@ -31,6 +34,7 @@ function readState(params: URLSearchParams) {
     language: params.get('lang'),
     readBy: params.get('reader'),
     status: (params.get('status') as StatusFilter) || 'all',
+    attention: params.get('attention') === '1',
   }
   return {
     filters,
@@ -49,10 +53,13 @@ const FILTER_TO_PARAM: Record<keyof CatalogFilters, string> = {
   language: 'lang',
   readBy: 'reader',
   status: 'status',
+  attention: 'attention',
 }
 
 export function CatalogPage() {
-  const { books, taxonomies, loading, error, zoneColor } = useCatalog()
+  // activeBooks, not books: admins also load archived ones, which stay out of the catalog.
+  const { activeBooks: books, archivedBooks, taxonomies, loading, error, zoneColor } = useCatalog()
+  const { isAdmin } = useAuth()
   const { t } = useTranslation()
   const [params, setParams] = useSearchParams()
   const { filters, sortKey, sortDir, view } = readState(params)
@@ -78,7 +85,10 @@ export function CatalogPage() {
     (patch: Partial<CatalogFilters>) => {
       const updates: Record<string, string | null> = {}
       for (const [key, value] of Object.entries(patch)) {
-        updates[FILTER_TO_PARAM[key as keyof CatalogFilters]] = value === undefined ? null : (value as string | null)
+        const param = FILTER_TO_PARAM[key as keyof CatalogFilters]
+        // Booleans live in the URL as "1" / absent; everything else as its value.
+        updates[param] =
+          typeof value === 'boolean' ? (value ? '1' : null) : ((value ?? null) as string | null)
       }
       setParam(updates)
     },
@@ -86,7 +96,7 @@ export function CatalogPage() {
   )
 
   const onClear = useCallback(() => {
-    setParam({ q: null, author: null, zone: null, theme: null, owner: null, lang: null, reader: null, status: null })
+    setParam({ q: null, author: null, zone: null, theme: null, owner: null, lang: null, reader: null, status: null, attention: null })
   }, [setParam])
 
   const visible = useMemo(
@@ -125,16 +135,34 @@ export function CatalogPage() {
           subHeader,
         )}
 
-      <p className="text-muted-foreground text-sm">
-        {loading ? (
-          <>
-            {t('catalog.loading')}
-            <LoadingDots />
-          </>
-        ) : (
-          t('catalog.count', { count: visible.length })
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-muted-foreground text-sm">
+          {loading ? (
+            <>
+              {t('catalog.loading')}
+              <LoadingDots />
+            </>
+          ) : (
+            t('catalog.count', { count: visible.length })
+          )}
+        </p>
+
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <Button asChild size="sm" className="gap-1">
+              <Link to="/book/new">
+                <PlusIcon className="size-3.5" /> {t('admin.add')}
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="gap-1">
+              <Link to="/archived">
+                <ArchiveIcon className="size-3.5" /> {t('admin.archived')}
+                {archivedBooks.length > 0 && ` (${archivedBooks.length})`}
+              </Link>
+            </Button>
+          </div>
         )}
-      </p>
+      </div>
 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

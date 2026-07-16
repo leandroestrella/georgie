@@ -4,6 +4,7 @@ import { ArrowLeftIcon, ExternalLinkIcon, HandCoinsIcon, RepeatIcon } from 'luci
 import type { ReactNode } from 'react'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCover } from '@/catalog/BookCover'
+import { AdminBookActions } from '@/catalog/AdminBookActions'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useVocab } from '@/i18n/vocab'
@@ -64,7 +65,10 @@ export function BookDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {back}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {back}
+        <AdminBookActions book={book} />
+      </div>
 
       <div className="grid gap-6 sm:grid-cols-[220px_1fr]">
         <div className="bg-muted aspect-[3/4] w-full max-w-[220px] overflow-hidden rounded-lg border">
@@ -95,8 +99,9 @@ export function BookDetailPage() {
             </p>
           </div>
 
-          {(book.borrowed || book.exchange) && (
+          {(book.borrowed || book.exchange || book.archived) && (
             <div className="flex flex-wrap gap-2">
+              {book.archived && <Badge variant="outline" className="text-destructive">{t('admin.archivedBadge')}</Badge>}
               {book.borrowed && (
                 <Badge variant="secondary" className="gap-1">
                   <HandCoinsIcon className="size-3.5" />

@@ -21,7 +21,8 @@
     "all": "All",
     "borrowed": "On loan",
     "exchange": "For exchange",
-    "available": "Available"
+    "available": "Available",
+    "attention": "Needs attention"
   },
   "sort": {
     "label": "Sort",
@@ -64,5 +65,59 @@
   },
   "error": {
     "load": "couldn't load the catalog"
+  },
+  "form": {
+    "addTitle": "Add a book",
+    "editTitle": "Edit book",
+    "title": "Title",
+    "author": "Author",
+    "year": "Year",
+    "yearHint": "Leave blank if unknown.",
+    "circa": "First-publication year (circa)",
+    "publisher": "Publisher",
+    "isbn": "ISBN / EAN",
+    "isbnHint": "ISBN-10 or ISBN-13. Tick “no ISBN” if this printing has none.",
+    "noIsbn": "no ISBN",
+    "theme": "Theme",
+    "themeHint": "The zone is derived from the theme.",
+    "zone": "Zone",
+    "language": "Language",
+    "originalLanguage": "Original language",
+    "coverUrl": "Cover URL",
+    "coverHint": "External image URL. Falls back to Open Library by ISBN.",
+    "owner": "Owner",
+    "readBy": "Read by",
+    "referenceUrl": "Reference URL",
+    "exchange": "Offered for exchange",
+    "idPreview": "ID will be:",
+    "select": "Select…",
+    "search": "Search…",
+    "noResults": "Nothing found.",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "errors": {
+      "titleRequired": "Title is required.",
+      "yearInvalid": "Enter a valid 4-digit year.",
+      "isbnInvalid": "Not a valid ISBN-10 or ISBN-13.",
+      "themeRequired": "Pick a theme."
+    }
+  },
+  "admin": {
+    "add": "Add book",
+    "edit": "Edit",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archived": "Archived",
+    "archivedBadge": "Archived",
+    "archivedEmpty": "Nothing is archived.",
+    "confirmArchiveTitle": "Archive this book?",
+    "confirmArchiveBody": "“{{title}}” will disappear from the public catalog. Nothing is deleted — you can restore it from the Archived view."
+  },
+  "attention": {
+    "missingYear": "missing year",
+    "circaYear": "year needs checking",
+    "missingCover": "no cover",
+    "missingOriginalLanguage": "no original language"
   }
 }

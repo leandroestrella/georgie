@@ -48,6 +48,16 @@ export async function getBook(id: string): Promise<Book | null> {
   return books.find((b) => b.id === id) ?? null
 }
 
+/**
+ * Admin-only read that INCLUDES archived books (the public read hides them).
+ * Goes through POST so it passes the ID-token gate.
+ */
+export async function getAllBooks(): Promise<Book[]> {
+  if (!hasBackend) return clone(mock.books)
+  const data = await post<{ books: Book[] }>({ action: 'allBooks' })
+  return data.books
+}
+
 /** Fetches the taxonomy (zones/themes/owners/languages). */
 export async function getTaxonomies(): Promise<Taxonomies> {
   if (!hasBackend) return clone(mock.taxonomies)

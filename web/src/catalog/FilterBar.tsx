@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { LayoutGridIcon, ListIcon, SearchIcon, XIcon } from 'lucide-react'
+import { LayoutGridIcon, ListIcon, SearchIcon, TriangleAlertIcon, XIcon } from 'lucide-react'
 import type { Taxonomies } from '@/api/types'
+import { useAuth } from '@/auth/AuthProvider'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -74,6 +75,7 @@ export function FilterBar(props: FilterBarProps) {
   const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, authors, readers, onClear } = props
   const { t } = useTranslation()
   const tv = useVocab()
+  const { isAdmin } = useAuth()
 
   // Themes narrow to the selected zone; otherwise show every theme.
   const themeNames = filters.zone
@@ -128,6 +130,19 @@ export function FilterBar(props: FilterBarProps) {
             <SelectItem value="exchange">{t('filters.exchange')}</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Admin-only: the tool for finishing the catalog from the shelf. */}
+        {isAdmin && (
+          <Button
+            type="button"
+            size="sm"
+            variant={filters.attention ? 'default' : 'outline'}
+            onClick={() => onFilters({ attention: !filters.attention })}
+            className="gap-1"
+          >
+            <TriangleAlertIcon className="size-3.5" /> {t('filters.attention')}
+          </Button>
+        )}
 
         {hasActiveFilters(filters) && (
           <Button variant="ghost" size="sm" onClick={onClear} className="gap-1">

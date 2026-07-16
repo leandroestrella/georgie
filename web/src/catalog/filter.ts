@@ -3,6 +3,7 @@
  * The catalog page keeps its filter state and hands it here.
  */
 import type { Book } from '@/api/types'
+import { needsAttention } from './validation'
 
 export type StatusFilter = 'all' | 'available' | 'borrowed' | 'exchange'
 export type SortKey = 'title' | 'author' | 'year'
@@ -17,6 +18,8 @@ export interface CatalogFilters {
   language: string | null
   readBy: string | null
   status: StatusFilter
+  /** Admin-only: show only records that still need work (see `needsAttention`). */
+  attention: boolean
 }
 
 export const EMPTY_FILTERS: CatalogFilters = {
@@ -28,6 +31,7 @@ export const EMPTY_FILTERS: CatalogFilters = {
   language: null,
   readBy: null,
   status: 'all',
+  attention: false,
 }
 
 /** True when any filter is narrowing the catalog. */
@@ -40,7 +44,8 @@ export function hasActiveFilters(f: CatalogFilters): boolean {
     f.owner !== null ||
     f.language !== null ||
     f.readBy !== null ||
-    f.status !== 'all'
+    f.status !== 'all' ||
+    f.attention
   )
 }
 
@@ -84,7 +89,8 @@ export function filterBooks(books: Book[], f: CatalogFilters): Book[] {
       (f.owner === null || b.owner === f.owner) &&
       (f.language === null || b.language.includes(f.language)) &&
       (f.readBy === null || b.readBy.includes(f.readBy)) &&
-      matchesStatus(b, f.status),
+      matchesStatus(b, f.status) &&
+      (!f.attention || needsAttention(b)),
   )
 }
 

@@ -62,6 +62,10 @@ function doPost(e) {
 
     var admin = requireAdmin_(body) // throws unless the caller is an allowed admin
     switch (body.action) {
+      // Admin-only read: the public GET hides archived books, but admins need to
+      // see them (Archived view / restore), so this goes through the auth gate.
+      case 'allBooks':
+        return json({ ok: true, books: getBooks_(true) })
       case 'addBook':
         return json({ ok: true, book: addBook_(body.book, admin) })
       case 'updateBook':
