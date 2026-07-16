@@ -18,7 +18,7 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
       <Card className="h-full overflow-hidden p-0 transition-shadow hover:shadow-md">
         <div className="bg-muted relative aspect-[3/4] w-full overflow-hidden">
           <BookCover book={book} colors={colors} className="size-full transition-transform group-hover:scale-[1.03]" />
-          <OwnerBadge owner={book.owner} className="absolute bottom-2 left-2" />
+          <OwnerBadge owner={book.owner} className="absolute right-2 bottom-2" />
         </div>
         <div className="flex flex-col gap-1.5 p-3">
           {book.zone && (
