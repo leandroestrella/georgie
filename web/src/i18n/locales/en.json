@@ -119,5 +119,15 @@
     "circaYear": "year needs checking",
     "missingCover": "no cover",
     "missingOriginalLanguage": "no original language"
+  },
+  "loan": {
+    "lend": "Lend",
+    "editLoan": "Edit loan",
+    "return": "Return",
+    "dialogTitle": "Lend this book",
+    "borrower": "Borrower",
+    "borrowerPlaceholder": "first name or nickname",
+    "borrowerHint": "First name or nickname only — the catalog is public.",
+    "loanDate": "Loan date"
   }
 }

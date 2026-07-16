@@ -7,6 +7,7 @@ import type { Book } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { Button } from '@/components/ui/button'
+import { LoanControl } from './LoanControl'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +57,8 @@ export function AdminBookActions({ book }: { book: Book }) {
             <PencilIcon className="size-3.5" /> {t('admin.edit')}
           </Link>
         </Button>
+
+        {!book.archived && <LoanControl book={book} />}
 
         {book.archived ? (
           <Button

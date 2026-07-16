@@ -119,5 +119,15 @@
     "circaYear": "año por verificar",
     "missingCover": "sin portada",
     "missingOriginalLanguage": "falta idioma original"
+  },
+  "loan": {
+    "lend": "Prestar",
+    "editLoan": "Editar préstamo",
+    "return": "Devolver",
+    "dialogTitle": "Prestar este libro",
+    "borrower": "Prestatario",
+    "borrowerPlaceholder": "nombre o apodo",
+    "borrowerHint": "Solo nombre o apodo — el catálogo es público.",
+    "loanDate": "Fecha del préstamo"
   }
 }

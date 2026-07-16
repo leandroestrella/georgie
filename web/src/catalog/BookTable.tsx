@@ -2,8 +2,23 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useVocab } from '@/i18n/vocab'
 import type { ZoneColors } from './zoneColors'
+
+/** An icon with a hover/focus tooltip. */
+function IconWithTip({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span tabIndex={0} aria-label={label}>
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  )
+}
 
 /** Compact, scrollable table view of the catalog. Rows link to book detail. */
 export function BookTable({
@@ -54,9 +69,23 @@ export function BookTable({
                 </td>
                 <td className="text-muted-foreground p-3">{book.owner}</td>
                 <td className="p-3">
-                  <div className="flex gap-1 text-muted-foreground">
-                    {book.borrowed && <HandCoinsIcon className="size-4" aria-label={t('filters.borrowed')} />}
-                    {book.exchange && <RepeatIcon className="size-4" aria-label={t('filters.exchange')} />}
+                  <div className="text-muted-foreground flex gap-1.5">
+                    {book.borrowed && (
+                      <IconWithTip
+                        label={
+                          book.borrowerName
+                            ? t('book.borrowedBy', { name: book.borrowerName })
+                            : t('filters.borrowed')
+                        }
+                      >
+                        <HandCoinsIcon className="size-4" />
+                      </IconWithTip>
+                    )}
+                    {book.exchange && (
+                      <IconWithTip label={t('book.forExchange')}>
+                        <RepeatIcon className="size-4" />
+                      </IconWithTip>
+                    )}
                   </div>
                 </td>
               </tr>

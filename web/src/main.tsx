@@ -6,13 +6,16 @@ import './i18n'
 import App from './App.tsx'
 import { AuthProvider } from './auth/AuthProvider.tsx'
 import { CatalogProvider } from './catalog/CatalogProvider.tsx'
+import { TooltipProvider } from './components/ui/tooltip.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
         <CatalogProvider>
-          <App />
+          <TooltipProvider delayDuration={200}>
+            <App />
+          </TooltipProvider>
         </CatalogProvider>
       </AuthProvider>
     </BrowserRouter>

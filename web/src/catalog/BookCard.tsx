@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useVocab } from '@/i18n/vocab'
 import { BookCover } from './BookCover'
+import { OwnerBadge } from './OwnerBadge'
 import type { ZoneColors } from './zoneColors'
 
 /** A single catalog card linking to the book's detail page. */
@@ -15,8 +16,9 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
   return (
     <Link to={`/book/${encodeURIComponent(book.id)}`} className="group">
       <Card className="h-full overflow-hidden p-0 transition-shadow hover:shadow-md">
-        <div className="bg-muted aspect-[3/4] w-full overflow-hidden">
+        <div className="bg-muted relative aspect-[3/4] w-full overflow-hidden">
           <BookCover book={book} colors={colors} className="size-full transition-transform group-hover:scale-[1.03]" />
+          <OwnerBadge owner={book.owner} className="absolute bottom-2 left-2" />
         </div>
         <div className="flex flex-col gap-1.5 p-3">
           {book.zone && (
