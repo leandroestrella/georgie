@@ -1,7 +1,17 @@
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutGridIcon, ListIcon, SearchIcon, TriangleAlertIcon, XIcon } from 'lucide-react'
+import {
+  LayoutGridIcon,
+  ListIcon,
+  SearchIcon,
+  SlidersHorizontalIcon,
+  TriangleAlertIcon,
+  XIcon,
+} from 'lucide-react'
 import type { Taxonomies } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
+import { useHideOnScroll } from '@/hooks/useHideOnScroll'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -14,6 +24,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useVocab } from '@/i18n/vocab'
 import {
+  activeFilterCount,
   hasActiveFilters,
   type CatalogFilters,
   type SortDir,
@@ -77,6 +88,18 @@ export function FilterBar(props: FilterBarProps) {
   const tv = useVocab()
   const { isAdmin } = useAuth()
 
+  // On phones the facets stack full-width — seven of them fill the screen — so
+  // they collapse behind a toggle. Desktop keeps them inline (`sm:` styles win).
+  const [expanded, setExpanded] = useState(false)
+  const scrollingDown = useHideOnScroll()
+  const activeCount = activeFilterCount(filters)
+
+  // Collapse whenever the reader goes back to the catalog: on scroll, and after
+  // a search — the two moments they want the screen back.
+  useEffect(() => {
+    if (scrollingDown) setExpanded(false)
+  }, [scrollingDown])
+
   // Themes narrow to the selected zone; otherwise show every theme.
   const themeNames = filters.zone
     ? (taxonomies.zones.find((z) => z.name === filters.zone)?.themes ?? [])
@@ -90,18 +113,44 @@ export function FilterBar(props: FilterBarProps) {
   const readerOptions = readers.map((r) => ({ value: r, label: r }))
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="relative">
-        <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-        <Input
-          value={filters.search}
-          onChange={(e) => onFilters({ search: e.target.value })}
-          placeholder={t('catalog.search')}
-          className="pl-9"
-        />
+    <div className="flex flex-col gap-2 sm:gap-3">
+      {/* Search, plus (on phones) the toggle that reveals the facets. */}
+      <div className="flex items-center gap-2">
+        <form
+          className="relative flex-1"
+          onSubmit={(e) => {
+            e.preventDefault()
+            // "Made a search" — hand the screen back to the results.
+            setExpanded(false)
+            e.currentTarget.querySelector('input')?.blur()
+          }}
+        >
+          <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Input
+            value={filters.search}
+            onChange={(e) => onFilters({ search: e.target.value })}
+            placeholder={t('catalog.search')}
+            className="pl-9"
+            type="search"
+            enterKeyHint="search"
+          />
+        </form>
+
+        <Button
+          type="button"
+          size="sm"
+          variant={activeCount ? 'default' : 'outline'}
+          className="shrink-0 gap-1 sm:hidden"
+          aria-expanded={expanded}
+          onClick={() => setExpanded((v) => !v)}
+        >
+          <SlidersHorizontalIcon className="size-3.5" />
+          {t('filters.title')}
+          {activeCount > 0 && ` (${activeCount})`}
+        </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={cn('flex-wrap items-center gap-2', expanded ? 'flex' : 'hidden sm:flex')}>
         <Facet label={t('filters.author')} value={filters.author} options={authorOpts} onChange={(v) => onFilters({ author: v })} />
         <Facet
           label={t('filters.zone')}

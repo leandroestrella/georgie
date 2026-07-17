@@ -32,23 +32,31 @@ export function AuthBar() {
   const { t } = useTranslation()
 
   if (!configured) {
-    return <span className="text-muted-foreground text-xs">{t('auth.notConfigured')}</span>
+    // Dev-only hint; it is long, so keep it off the narrow header.
+    return <span className="text-muted-foreground hidden text-xs sm:inline">{t('auth.notConfigured')}</span>
   }
 
   if (status === 'signed-in' && user) {
     return (
-      <div key="signed-in" className="flex items-center gap-3">
-        <div className="text-right leading-tight">
-          <div className="text-sm">{user.email || user.name}</div>
+      <div key="signed-in" className="flex min-w-0 items-center gap-2 sm:gap-3">
+        {/* The email is the widest thing in the header — desktop only. */}
+        <div className="hidden min-w-0 text-right leading-tight sm:block">
+          <div className="truncate text-sm">{user.email || user.name}</div>
           <div className="text-muted-foreground text-xs">
             {isAdmin ? t('auth.admin', { owner }) : t('auth.notAdmin')}
           </div>
           {!isAdmin && error && <div className="text-destructive text-xs">{error}</div>}
         </div>
         {user.picture && (
-          <img src={user.picture} alt="" className="size-8 rounded-full" referrerPolicy="no-referrer" />
+          <img
+            src={user.picture}
+            alt={user.email}
+            title={user.email}
+            className="size-7 shrink-0 rounded-full sm:size-8"
+            referrerPolicy="no-referrer"
+          />
         )}
-        <Button variant="outline" size="sm" onClick={signOut}>
+        <Button variant="outline" size="sm" className="shrink-0" onClick={signOut}>
           {t('auth.signOut')}
         </Button>
       </div>
@@ -56,7 +64,7 @@ export function AuthBar() {
   }
 
   return (
-    <div key="anonymous" className="flex flex-col items-end gap-1">
+    <div key="anonymous" className="flex min-w-0 flex-col items-end gap-1">
       {googleReady && <GoogleButton />}
       {error && <span className="text-destructive text-xs">{error}</span>}
     </div>

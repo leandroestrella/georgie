@@ -34,19 +34,23 @@ export const EMPTY_FILTERS: CatalogFilters = {
   attention: false,
 }
 
+/** How many filters are currently narrowing the catalog (search excluded — it has its own box). */
+export function activeFilterCount(f: CatalogFilters): number {
+  return (
+    (f.author !== null ? 1 : 0) +
+    (f.zone !== null ? 1 : 0) +
+    (f.theme !== null ? 1 : 0) +
+    (f.owner !== null ? 1 : 0) +
+    (f.language !== null ? 1 : 0) +
+    (f.readBy !== null ? 1 : 0) +
+    (f.status !== 'all' ? 1 : 0) +
+    (f.attention ? 1 : 0)
+  )
+}
+
 /** True when any filter is narrowing the catalog. */
 export function hasActiveFilters(f: CatalogFilters): boolean {
-  return (
-    f.search.trim() !== '' ||
-    f.author !== null ||
-    f.zone !== null ||
-    f.theme !== null ||
-    f.owner !== null ||
-    f.language !== null ||
-    f.readBy !== null ||
-    f.status !== 'all' ||
-    f.attention
-  )
+  return f.search.trim() !== '' || activeFilterCount(f) > 0
 }
 
 /** Lowercases and strips accents so "garcia" matches "García". */

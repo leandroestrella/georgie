@@ -11,6 +11,7 @@
     "clearFilters": "azzera filtri"
   },
   "filters": {
+    "title": "Filtri",
     "author": "Autore",
     "zone": "Zona",
     "theme": "Tema",
