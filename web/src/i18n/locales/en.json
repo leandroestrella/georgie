@@ -129,5 +129,16 @@
     "borrowerPlaceholder": "first name or nickname",
     "borrowerHint": "First name or nickname only — the catalog is public.",
     "loanDate": "Loan date"
+  },
+  "lookup": {
+    "hint": "Fill the form from the web — only empty fields are filled, nothing is overwritten.",
+    "fetchByIsbn": "Fetch by ISBN",
+    "fetching": "Fetching…",
+    "searchWeb": "Search by title & author",
+    "searching": "Searching…",
+    "notFound": "No match for that ISBN in Google Books or Open Library.",
+    "noCandidates": "No candidates found. Try a shorter title, or just the author.",
+    "pickTitle": "Pick the right edition",
+    "firstPubWarning": "first-publication year"
   }
 }

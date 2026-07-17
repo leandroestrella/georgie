@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { MultiSelect } from '@/components/MultiSelect'
+import { MetadataLookup } from '@/metadata/MetadataLookup'
+import type { BookMetadata } from '@/metadata/lookup'
 import { useVocab } from '@/i18n/vocab'
 import { NO_ISBN } from './constants'
 import { validateBook, type BookErrors } from './validation'
@@ -101,6 +103,31 @@ export function BookForm({
   const set = <K extends keyof NewBook>(key: K, value: NewBook[K]) =>
     setDraft((d) => ({ ...d, [key]: value }))
 
+  /**
+   * Applies looked-up metadata, filling ONLY fields the admin left empty — the
+   * same "never overwrite" rule the sheet's data-prep scripts follow, so this is
+   * safe to run on an existing book to fill a missing year or cover.
+   *
+   * The ISBN is deliberately never auto-filled: `N/A` is a deliberate assertion
+   * that a printing has none, and we must not silently contradict it.
+   */
+  const applyMetadata = (m: BookMetadata) =>
+    setDraft((d) => {
+      const takesYear = d.year === null && m.year !== null
+      return {
+        ...d,
+        title: d.title.trim() || m.title,
+        author: d.author.trim() || m.author,
+        year: d.year ?? m.year,
+        // A first-publication year is exactly what `circa` means in this catalog.
+        yearPrecision: takesYear && m.yearIsFirstPublication ? 'circa' : d.yearPrecision,
+        publisher: d.publisher.trim() || m.publisher,
+        language: d.language.length ? d.language : m.language,
+        coverUrl: d.coverUrl.trim() || m.coverUrl,
+        isbn: d.isbn.trim() === '' ? m.isbn : d.isbn,
+      }
+    })
+
   const noIsbn = draft.isbn.trim().toUpperCase() === NO_ISBN
   const zoneOfTheme = draft.theme ? (taxonomies.themeToZone[draft.theme] ?? '') : ''
 
@@ -124,6 +151,13 @@ export function BookForm({
 
   return (
     <form onSubmit={submit} className="flex max-w-2xl flex-col gap-5">
+      <MetadataLookup
+        isbn={draft.isbn}
+        title={draft.title}
+        author={draft.author}
+        onApply={applyMetadata}
+      />
+
       <Field id="title" label={`${t('form.title')} *`} error={errors.title}>
         <Input id="title" value={draft.title} onChange={(e) => set('title', e.target.value)} autoFocus />
       </Field>

@@ -129,5 +129,16 @@
     "borrowerPlaceholder": "nombre o apodo",
     "borrowerHint": "Solo nombre o apodo — el catálogo es público.",
     "loanDate": "Fecha del préstamo"
+  },
+  "lookup": {
+    "hint": "Rellena desde la web — solo se completan los campos vacíos, no se sobrescribe nada.",
+    "fetchByIsbn": "Buscar por ISBN",
+    "fetching": "Buscando…",
+    "searchWeb": "Buscar por título y autor",
+    "searching": "Buscando…",
+    "notFound": "Sin resultados para ese ISBN en Google Books ni Open Library.",
+    "noCandidates": "Sin candidatos. Prueba un título más corto, o solo el autor.",
+    "pickTitle": "Elige la edición correcta",
+    "firstPubWarning": "año de primera publicación"
   }
 }
