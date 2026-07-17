@@ -14,7 +14,11 @@ dist/
 
 # clasp — personal deployment config & credentials
 # (.clasp.json holds your own scriptId; cloners create theirs from .clasp.example.json)
+# .clasp.dev.json / .clasp.prod.json are the two targets; `npm run use:dev|use:prod`
+# copies one over .clasp.json. Dev is the default so testing can never hit the real sheet.
 apps-script/.clasp.json
+apps-script/.clasp.dev.json
+apps-script/.clasp.prod.json
 .clasprc.json
 
 # logs
