@@ -1,7 +1,9 @@
 /**
- * Per-owner logos shown on catalog cards to identify whose shelf a book is on.
- * External image URLs (no assets stored). Add an entry when a new owner appears
- * in the `Lists` tab; owners without a logo fall back to their initial.
+ * Per-owner logos shown on catalog cards and in the table, to identify whose
+ * shelf a book is on. External image URLs (no assets stored).
+ *
+ * Add an entry when a new owner appears in the `Lists` tab; owners without one
+ * fall back to their initial.
  */
 export const OWNER_LOGOS: Record<string, string> = {
   leandro: 'https://www.leandroestrella.com/img/favicon.ico',

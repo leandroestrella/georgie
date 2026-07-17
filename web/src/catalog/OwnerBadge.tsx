@@ -12,23 +12,26 @@ export function OwnerBadge({ owner, className }: { owner: string; className?: st
   const src = ownerLogo(owner)
   if (!owner) return null
 
+  const showLogo = src && !broken
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <span
           className={cn(
-            'ring-background bg-background grid size-5 place-items-center overflow-hidden rounded-full shadow-sm ring-1',
+            'bg-background grid size-5 shrink-0 place-items-center overflow-hidden rounded-[3px]',
             className,
           )}
         >
-          {src && !broken ? (
+          {showLogo ? (
             <img
               src={src}
               alt=""
               loading="lazy"
               referrerPolicy="no-referrer"
               onError={() => setBroken(true)}
-              className="size-full object-cover"
+              // contain, not cover: these are logos, and cropping them mangles the mark.
+              className="size-full object-contain"
             />
           ) : (
             <span className="text-muted-foreground text-[10px] font-semibold uppercase">

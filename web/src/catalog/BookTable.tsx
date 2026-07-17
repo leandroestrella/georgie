@@ -4,6 +4,7 @@ import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useVocab } from '@/i18n/vocab'
+import { OwnerBadge } from './OwnerBadge'
 import type { ZoneColors } from './zoneColors'
 
 /** An icon with a hover/focus tooltip. */
@@ -67,7 +68,10 @@ export function BookTable({
                     </span>
                   )}
                 </td>
-                <td className="text-muted-foreground p-3">{book.owner}</td>
+                {/* Logo rather than the name — the tooltip names the owner. */}
+                <td className="p-3">
+                  <OwnerBadge owner={book.owner} />
+                </td>
                 <td className="p-3">
                   <div className="text-muted-foreground flex gap-1.5">
                     {book.borrowed && (
