@@ -24,7 +24,7 @@ The **`Catalog`** tab is the source of truth. Confirmed header row (map columns 
 | ISBN / EAN | Key for web metadata lookup. Both ISBN-10 and ISBN-13 occur; the app must accept, validate, and look up both. Books with no ISBN/EAN carry the literal sentinel **`N/A`** (meaning "this printing genuinely has none"), which all ISBN-consuming code treats as absent |
 | Language | Language(s) of this edition; multi-value, comma-separated; **English names** ("English, Polish"). Existing endonyms (Italiano→Italian, Español→Spanish, Français→French, Polski→Polish, Svenska→Swedish) to be normalized |
 | Original language | Name of the language the work was first written in (English convention: English, Spanish, German, Russian…). Derived from the old TRUE/FALSE flag: TRUE rows inherit their own `Language`; FALSE rows (translations) get the author's working language |
-| Cover URL | External image URL only, no image files stored anywhere; populated by metadata lookup (Google Books thumbnail), with render-time fallback to Open Library Covers (`https://covers.openlibrary.org/b/isbn/{isbn}-M.jpg`), then a generated placeholder |
+| Cover URL | External image URL only, no image files stored anywhere *(under review — §3.6 cover photos would retire this rule for photographed covers)*; populated by metadata lookup (Google Books thumbnail), with a render-time fallback chain: Open Library Covers → Amazon by ISBN-10 → generated placeholder |
 | Theme | The book's specific category — one of the Themes defined in the `Zones` tab |
 | Zone | The Theme's parent group — derived automatically from the `Zones` tab, never chosen independently |
 | Owner | `leandro`, `maria` |
@@ -254,7 +254,8 @@ Apps Script inside the sheet has no Sheets-API rate limits to worry about, and w
   1. **Google Books API** — `https://www.googleapis.com/books/v1/volumes?q=isbn:...` (no key needed for low volume)
   2. **Open Library** — `https://openlibrary.org/isbn/{isbn}.json` (good coverage for older/European editions)
 - Also support search by title+author when there's no ISBN, showing a pick-list of candidate matches.
-- **Stretch:** barcode scanning with the phone camera (`html5-qrcode` or ZXing) — scan the EAN on the back cover to trigger the lookup. Very handy for cataloguing a physical shelf.
+- **Barcode scanning (done):** the back-cover barcode is a Bookland EAN-13, which *is* the ISBN-13. Native `BarcodeDetector` on Chrome/Android; zxing-wasm lazy-loaded only on Safari/iOS, with its WASM self-hosted rather than pulled from a CDN at scan time. Non-Bookland barcodes are rejected so a stray scan can't write a bogus ISBN. Requires a **secure origin** — it cannot be tested from a phone against a plain-http dev server.
+- **Cover reality (measured):** Google Books and Open Library both miss many Italian/European editions outright. The render-time cover chain therefore ends at Amazon-by-ISBN-10, which resolves ~75% of the catalog's otherwise-coverless books — see §3.6.
 
 ### 3.4 Loans (admin-only actions)
 - Toggle "Borrowed" on a book + set Borrower name (first name/nickname) + `Loan date` (auto-filled with today, editable). Pre-existing loans with unknown dates stay blank and display as "unknown".
@@ -267,6 +268,23 @@ Apps Script inside the sheet has no Sheets-API rate limits to worry about, and w
 - Users pick a Theme (grouped by Zone in the picker); the app writes the Theme and derives its parent Zone automatically, validating both against the `Zones` tab.
 - Zone colors and descriptions surface in the UI (badges, filter chips, zone headers).
 - The vocabulary is managed by editing the `Zones` tab directly — the app re-reads it, no hardcoding.
+
+### 3.6 Cover photos (planned)
+
+Photograph a book's cover with the phone and attach it to its catalog entry — the last gap for books no online source has a cover for: the no-ISBN art/exhibition catalogs, the self-published items, and the Italian editions even Amazon misses.
+
+**This deliberately breaks a standing invariant.** §1 says Cover URL is *"external image URL only, no image files stored anywhere"*. A photo is a binary that must live somewhere, so adopting this means consciously retiring that rule for photographed covers. Everything else (metadata covers, the Open Library/Amazon fallbacks) stays URL-only.
+
+**Capture is the easy part.** `<input type="file" accept="image/*" capture="environment">` opens the native camera on iOS and Android — no JS decoder, no `getUserMedia`, and none of the scanner's secure-origin friction. The work is storage.
+
+**Open decision — where do the images live?** Options, roughly in order of fit:
+1. **Google Drive via Apps Script.** The backend already runs as the sheet owner, so it can write the file to a "georgie covers" folder, share it link-visible, and return a URL for `Cover URL`. No new infrastructure, no new service, no secret. Costs: a new Drive OAuth scope (so admins must re-authorize — and the `script.external_request` episode showed that can need a permissions revoke to take), images count against the owner's Drive quota, and **Google has repeatedly degraded Drive image hotlinking** (`uc?export=view`), so the URLs may not stay stable. Worth a spike before committing.
+2. **The cPanel host.** Covers would sit beside the SPA on the subdomain — fast and stable to serve. But deployment is FTP-from-CI, so there's no runtime upload path; cPanel has no Node, which makes adding one awkward.
+3. **A dedicated image host** (Cloudinary / imgbb / S3). The most reliable serving, at the cost of an account and an API key — i.e. a **secret**, which this architecture has so far entirely avoided. Would need proxying through Apps Script to keep the key server-side.
+
+**Regardless of host, downscale on the client before upload** (canvas → ~800px JPEG). Phone photos are 3–12 MB, base64 inflates them ~33%, and Apps Script POST size and execution time both have limits — un-resized uploads are the obvious failure mode.
+
+**Also to decide:** whether a photo simply *becomes* the `Cover URL` (simplest, no schema change, and it naturally takes precedence since the stored URL is first in the fallback chain) or is tracked in its own column.
 
 ---
 
@@ -295,16 +313,25 @@ Apps Script inside the sheet has no Sheets-API rate limits to worry about, and w
 - Add/edit forms with taxonomy dropdowns and validation; archive with confirmation; admin "Archived" view with restore.
 - Admin "needs attention" filter (missing year, `Year precision = circa`, missing cover, unresolved original language) — the tool for finishing the catalog from the app; see §6.
 
-**Phase 5 — Metadata lookup**
+**Phase 5 — Metadata lookup** *(done)*
 - ISBN lookup in the SPA (Google Books → Open Library fallback); prefill flow; title/author search with candidate picker.
+- Barcode scanner (was a stretch item, built): camera → EAN-13 → ISBN → lookup.
+- Amazon-by-ISBN-10 added to the render-time cover chain, after Google Books and Open Library proved to miss much of the catalog.
 
 **Phase 6 — Loans**
-- Borrow/return actions; "Loaned out" view.
+- Borrow/return actions *(done in Phase 4)*; "Loaned out" view grouped by borrower.
+
+**Phase 6.5 — Cover photos** (see §3.6)
+- Photograph a cover with the phone and attach it to the book — for the covers no online source has.
+- **Blocked on a decision:** where images are stored (Drive via Apps Script / cPanel / image host). Each has a real cost; Drive is the natural fit but its hotlinking has proven unreliable, so spike it before committing.
+- Capture via `<input capture="environment">`; downscale client-side (~800px JPEG) before upload; admin-gated write; the returned URL goes in `Cover URL`, which already wins the cover fallback chain.
+- Retires the "no image files stored anywhere" rule in §1 for photographed covers — record it in the decisions log when chosen.
 
 **Phase 7 — Polish & deploy**
 - Deploy: create the `georgie` subdomain in cPanel, add the FTP secrets to the repo, merge `develop` → `master` to trigger the first deploy; deploy the Apps Script web app and set its `/exec` URL in the SPA config; error states, loading skeletons, empty states.
+- Verify the **barcode scanner on a real phone** — it needs a secure origin, so the deployed site is the first place it can be properly tested.
 - Make the repo public (final check: no secrets, README complete).
-- Stretch items: barcode scanner, "complete exchange" flow (one action that archives the outgoing book, marking it exchanged, and opens the add form for the incoming one), loan history tab, CSV export, stats dashboard (books per category/language).
+- Stretch items: "complete exchange" flow (one action that archives the outgoing book, marking it exchanged, and opens the add form for the incoming one), loan history tab, CSV export, stats dashboard (books per category/language).
 
 Each phase should end with a working state, committed to `develop`; merges to `master` happen when a feature/fix is ready to go live (and auto-deploy).
 
