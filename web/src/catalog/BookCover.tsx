@@ -2,30 +2,16 @@ import { useEffect, useState } from 'react'
 import { BookIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
 import { cn } from '@/lib/utils'
+import { coverSources, isBlankPixel } from './covers'
 import { NEUTRAL_ZONE, type ZoneColors } from './zoneColors'
 
-/** True when an ISBN can be used for a cover lookup (present and not the N/A sentinel). */
-function usableIsbn(isbn: string): string | null {
-  const clean = isbn.replace(/[^0-9Xx]/g, '')
-  if (!clean || isbn.trim().toUpperCase() === 'N/A') return null
-  return clean.length === 10 || clean.length === 13 ? clean : null
-}
-
 /**
- * The ordered cover sources for a book: its stored Cover URL, then Open Library
- * by ISBN (`default=false` so a miss 404s and triggers the next fallback).
- */
-function coverSources(book: Book): string[] {
-  const sources: string[] = []
-  if (book.coverUrl) sources.push(book.coverUrl)
-  const isbn = usableIsbn(book.isbn)
-  if (isbn) sources.push(`https://covers.openlibrary.org/b/isbn/${isbn}-M.jpg?default=false`)
-  return sources
-}
-
-/**
- * Book cover with a graceful fallback chain: Cover URL → Open Library → a
- * generated placeholder tinted with the book's zone colour.
+ * Book cover with a graceful fallback chain (see `coverSources`): the stored
+ * Cover URL → Open Library → Amazon → a zone-tinted placeholder.
+ *
+ * Two different kinds of "miss" have to be handled: Open Library 404s (→ onError),
+ * while Amazon serves a 1×1 blank GIF that loads *successfully* (→ onLoad, caught
+ * by the naturalWidth check).
  */
 export function BookCover({
   book,
@@ -43,6 +29,7 @@ export function BookCover({
   useEffect(() => setIndex(0), [book.id])
 
   const src = sources[index]
+  const next = () => setIndex((i) => i + 1)
 
   if (!src) {
     return (
@@ -58,10 +45,16 @@ export function BookCover({
 
   return (
     <img
+      key={src}
       src={src}
       alt={`cover of ${book.title}`}
       loading="lazy"
-      onError={() => setIndex((i) => i + 1)}
+      referrerPolicy="no-referrer"
+      onError={next}
+      onLoad={(e) => {
+        const img = e.currentTarget
+        if (isBlankPixel(img.naturalWidth, img.naturalHeight)) next()
+      }}
       className={cn('object-cover', className)}
     />
   )
