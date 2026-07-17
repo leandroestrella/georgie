@@ -347,6 +347,9 @@ Each phase should end with a working state, committed to `develop`; merges to `m
 6. **UI languages (decided):** English, Italiano, Español with a flag/language switcher.
 7. **Source of truth (decided):** the `Catalog` tab; `library_master_catalog` has been deleted.
 8. **Open source (decided):** public repo, Apache 2.0, permissive dependencies only, README modeled on `assisted_self-portrait`, template-friendly setup docs so anyone can run their own instance.
+9. **Physical labelling (decided): no.** The call-number IDs stay internal — identifiers and URLs, never written on spine labels. This is what makes the `-0000` IDs a cosmetic issue rather than a permanent one: nothing physical or external references them, so they can be re-minted at any time if it ever matters.
+10. **`-0000` IDs (decided): accept, don't block launch.** `backfillIds` already ran before the years were complete, so **47 of the real sheet's 357 books** carry `-0000` IDs. Measured on the real sheet: **44 books still lack a Year, and only 6 of those have an ISBN at all** — Open Library resolves none of the 6 — so **~38 require physically opening the book**. Automation cannot close this gap. Rather than delay go-live on an afternoon of colophon work, we ship with `-0000` and fill the years afterwards from the shelf using the admin "needs attention" filter (§6) — exactly what that filter was built for. Per this plan's own rule, "a slightly *wrong* but stable ID is better than a broken reference". Re-minting stays available because of decision 9.
+11. **Cover sources (decided):** the render-time chain is stored `Cover URL` → Open Library → **Amazon by ISBN-10** → placeholder. Added after measuring that Google Books and Open Library miss much of this catalog: Amazon resolves ~75% of the otherwise-coverless books. Accepted knowingly: the Amazon URL pattern is undocumented and outside their terms, so it may break — it degrades to placeholders if it does. `isbnsearch.org` (which prompted this) has no API and is reCAPTCHA-gated; its covers are Amazon's, via its Associates membership.
 
 ---
 
@@ -356,9 +359,21 @@ Catalog completion is **deferred until just before go-live** — the build start
 
 **Develop against a copy, not the live sheet.** Make a duplicate of the spreadsheet (File → Make a copy) and point the dev `config.ts` / Script Properties at it. The app can then be tested destructively (adds, edits, archives, loans) while the real catalog stays untouched and leandro keeps editing it by hand. Switch config to the real sheet at launch.
 
-**⚠️ ID timing dependency — the one thing that can't be re-run.** IDs embed the year (`ORW-198-1950`) and are **immutable once assigned**. If `backfillIds` runs before the years are complete, every book with a missing year gets `-0000` baked in permanently. So: **`backfillIds` runs LAST, on the real sheet, after the years are final** — not now. (The dev copy can have throwaway IDs; they're discarded with it.)
+**⚠️ ID timing dependency — what actually happened.** IDs embed the year (`ORW-198-1950`). The warning here was that running `backfillIds` before the years were complete would bake `-0000` into every year-less book. **It ran early, and that is now the state of the sheet: 47 books carry `-0000` IDs.** It is not recoverable by script — measured, only 6 of the 49 missing years have an ISBN (and Open Library resolves none), so 43 need the physical book. Resolution: accepted, and it does not block launch — see decisions 9–10. Because the IDs are never physically labelled, re-minting remains possible later if it ever matters; the years themselves get filled from the shelf via the "needs attention" filter.
 
-**Go-live sequence, in order:**
+**Go-live sequence — most of it is already done.** Verified against the **real sheet (357 books)**:
+1. ~~`normalizeLanguages`~~ — ✅ no endonyms remain.
+2. ~~`stampMissingIsbn`~~ — ✅ 0 blank ISBN cells.
+3. ~~`fillOriginalLanguage`~~ — ✅ 0 blanks.
+4. ~~`backfillIds`~~ — ✅ ran (early; see above). 0 books lack an ID, **0 duplicate IDs**, 0 books without a Theme — i.e. the two keys the app depends on (ID as row key, Theme→Zone derivation) are sound.
+5. `Year` completion — ⬜ 44 outstanding, **deferred until after launch** (only 6 have an ISBN; the rest need the physical book).
+6. Remaining, and the real work of Phase 7: point the app at the real sheet, deploy, verify the scanner on a phone, make the repo public.
+
+**Cover reality on the real sheet: 269 of 357 books (75%) have no stored `Cover URL`** and depend entirely on the render-time fallback chain (§3.6, decision 11). This is why the Amazon source matters more than it first appeared — and why §3.6 (photograph a cover) is the natural follow-up for the remainder.
+
+**⚠️ Reading the sheet with a script:** the gviz CSV export honours the tab's **active filter**. A filtered view exports as a near-empty sheet — which once looked exactly like catastrophic data loss. Clear filters before trusting an export, and never conclude "data lost" from a CSV read alone.
+
+**Historical note — the original sequence** (kept for anyone cloning this into a fresh sheet, where the ordering still matters):
 1. Finish the missing data — mostly `Year` (colophon pass for the no-ISBN classics), plus anything the research left blank.
 2. `normalizeLanguages` — endonyms → English names.
 3. `fillMissingYears` — exact years + covers for ISBN rows.
