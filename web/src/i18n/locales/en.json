@@ -140,5 +140,14 @@
     "noCandidates": "No candidates found. Try a shorter title, or just the author.",
     "pickTitle": "Pick the right edition",
     "firstPubWarning": "first-publication year"
+  },
+  "scan": {
+    "button": "Scan barcode",
+    "title": "Scan the back-cover barcode",
+    "hint": "Point the camera at the barcode on the back cover.",
+    "starting": "Starting the camera…",
+    "denied": "Camera access was denied. Allow it in your browser settings and try again.",
+    "cameraError": "Couldn't start the camera.",
+    "insecure": "The camera needs a secure (https) connection. This works on the live site, but not over plain http."
   }
 }

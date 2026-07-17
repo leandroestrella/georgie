@@ -140,5 +140,14 @@
     "noCandidates": "Sin candidatos. Prueba un título más corto, o solo el autor.",
     "pickTitle": "Elige la edición correcta",
     "firstPubWarning": "año de primera publicación"
+  },
+  "scan": {
+    "button": "Escanear",
+    "title": "Escanea el código de barras",
+    "hint": "Apunta la cámara al código de barras de la contraportada.",
+    "starting": "Iniciando la cámara…",
+    "denied": "Acceso a la cámara denegado. Permítelo en los ajustes del navegador e inténtalo de nuevo.",
+    "cameraError": "No se pudo iniciar la cámara.",
+    "insecure": "La cámara necesita una conexión segura (https). Funciona en el sitio publicado, pero no por http."
   }
 }

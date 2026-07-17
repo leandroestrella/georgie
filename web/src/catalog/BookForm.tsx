@@ -156,6 +156,7 @@ export function BookForm({
         title={draft.title}
         author={draft.author}
         onApply={applyMetadata}
+        onIsbnDetected={(scanned) => set('isbn', scanned)}
       />
 
       <Field id="title" label={`${t('form.title')} *`} error={errors.title}>

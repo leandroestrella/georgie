@@ -140,5 +140,14 @@
     "noCandidates": "Nessun candidato. Prova un titolo più breve, o solo l'autore.",
     "pickTitle": "Scegli l'edizione giusta",
     "firstPubWarning": "anno di prima pubblicazione"
+  },
+  "scan": {
+    "button": "Scansiona",
+    "title": "Inquadra il codice a barre",
+    "hint": "Punta la fotocamera sul codice a barre in quarta di copertina.",
+    "starting": "Avvio della fotocamera…",
+    "denied": "Accesso alla fotocamera negato. Consentilo nelle impostazioni del browser e riprova.",
+    "cameraError": "Impossibile avviare la fotocamera.",
+    "insecure": "La fotocamera richiede una connessione sicura (https). Funziona sul sito live, ma non su http."
   }
 }
