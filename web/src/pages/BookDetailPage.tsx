@@ -78,13 +78,24 @@ export function BookDetailPage() {
 
         <div className="flex flex-col gap-3">
           {book.zone && (
-            <Link
-              to={`/?theme=${encodeURIComponent(book.theme)}`}
-              className="w-fit rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
-              style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
-            >
-              {tv('zone', book.zone)} · {tv('theme', book.theme)}
-            </Link>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {/* Zone and theme are independently clickable. */}
+              <Link
+                to={`/?zone=${encodeURIComponent(book.zone)}`}
+                className="rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
+                style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
+              >
+                {tv('zone', book.zone)}
+              </Link>
+              <span className="text-muted-foreground text-xs">·</span>
+              <Link
+                to={`/?theme=${encodeURIComponent(book.theme)}`}
+                className="rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
+                style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
+              >
+                {tv('theme', book.theme)}
+              </Link>
+            </div>
           )}
           <div>
             <h1 className="text-2xl leading-tight font-semibold">{book.title}</h1>
