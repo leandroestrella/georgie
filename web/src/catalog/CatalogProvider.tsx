@@ -20,6 +20,8 @@ interface CatalogContextValue {
   /** Inserts or replaces a book in the cache after a write (optimistic update). */
   applyBook: (book: Book) => void
   zoneColor: (zoneName: string) => ZoneColors
+  /** The curatorial description of a zone (from the `Zones` tab), or '' if none. */
+  zoneDescription: (zoneName: string) => string
 }
 
 const CatalogContext = createContext<CatalogContextValue | null>(null)
@@ -66,6 +68,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     () => buildZoneColorMap((taxonomies?.zones ?? []).map((z) => z.name)),
     [taxonomies],
   )
+  const zoneDescriptions = useMemo(
+    () => new Map((taxonomies?.zones ?? []).map((z) => [z.name, z.description])),
+    [taxonomies],
+  )
   const activeBooks = useMemo(() => books.filter((b) => !b.archived), [books])
   const archivedBooks = useMemo(() => books.filter((b) => b.archived), [books])
 
@@ -81,8 +87,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       applyBook,
       getBook: (id) => books.find((b) => b.id === id),
       zoneColor: (name) => zoneColorMap.get(name) ?? NEUTRAL_ZONE,
+      zoneDescription: (name) => zoneDescriptions.get(name) ?? '',
     }),
-    [books, activeBooks, archivedBooks, taxonomies, loading, error, reload, applyBook, zoneColorMap],
+    [books, activeBooks, archivedBooks, taxonomies, loading, error, reload, applyBook, zoneColorMap, zoneDescriptions],
   )
 
   return <CatalogContext value={value}>{children}</CatalogContext>

@@ -37,6 +37,8 @@ const ALL = '__all__'
 interface Option {
   value: string
   label: string
+  /** Optional hover tooltip for the option (e.g. a zone's description). */
+  title?: string
 }
 
 /** A single labelled facet dropdown; empty selection is represented by `null`. */
@@ -59,7 +61,7 @@ function Facet({
       <SelectContent>
         <SelectItem value={ALL}>{label}</SelectItem>
         {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
+          <SelectItem key={o.value} value={o.value} title={o.title}>
             {o.label}
           </SelectItem>
         ))}
@@ -105,7 +107,11 @@ export function FilterBar(props: FilterBarProps) {
     ? (taxonomies.zones.find((z) => z.name === filters.zone)?.themes ?? [])
     : taxonomies.zones.flatMap((z) => z.themes)
 
-  const zoneOptions = taxonomies.zones.map((z) => ({ value: z.name, label: tv('zone', z.name) }))
+  const zoneOptions = taxonomies.zones.map((z) => ({
+    value: z.name,
+    label: tv('zone', z.name),
+    title: z.description, // shown on hover in the menu
+  }))
   const themeOptions = themeNames.map((name) => ({ value: name, label: tv('theme', name) }))
   const ownerOptions = taxonomies.owners.map((o) => ({ value: o, label: o }))
   const languageOptions = taxonomies.languages.map((l) => ({ value: l, label: tv('language', l) }))

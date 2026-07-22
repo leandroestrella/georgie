@@ -4,6 +4,8 @@ import { ArrowLeftIcon, ExternalLinkIcon, HandCoinsIcon, RepeatIcon } from 'luci
 import type { ReactNode } from 'react'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCover } from '@/catalog/BookCover'
+import { ZoneTooltip } from '@/catalog/ZoneEmoji'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -94,13 +96,20 @@ export function BookDetailPage() {
           {/* Zone and theme, below the author/year — independently clickable. */}
           {book.zone && (
             <div className="flex flex-wrap items-center gap-1.5">
-              <Link
-                to={`/?zone=${encodeURIComponent(book.zone)}`}
-                className="rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
-                style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
-              >
-                {tv('zone', book.zone)}
-              </Link>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={`/?zone=${encodeURIComponent(book.zone)}`}
+                    className="rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
+                    style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
+                  >
+                    {tv('zone', book.zone)}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <ZoneTooltip zone={book.zone} />
+                </TooltipContent>
+              </Tooltip>
               <span className="text-muted-foreground text-xs">·</span>
               <Link
                 to={`/?theme=${encodeURIComponent(book.theme)}`}
