@@ -1,9 +1,8 @@
 /**
- * An emoji per zone, shown on each book (opposite the owner logo) as a quick
- * visual cue of which shelf-zone it belongs to. Keyed by the zone name exactly
- * as it appears in the `Zones` tab — same pattern as the owner logos.
- *
- * Add an entry when a new zone appears; zones without one simply show nothing.
+ * Built-in **fallback** emoji per zone, used only when the sheet's `Marker`
+ * column doesn't supply one for that zone (see docs/markers.md). Keyed by the
+ * zone name exactly as it appears in the `Zones` tab. Prefer the sheet column;
+ * zones with neither a marker nor an entry here simply show nothing.
  */
 export const ZONE_EMOJI: Record<string, string> = {
   'Contemporary Art, Curation & Design': '🖍️',

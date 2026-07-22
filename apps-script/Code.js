@@ -121,6 +121,7 @@ function getTaxonomies_() {
     themeToZone: z.themeToZone,
     owners: lists.owners,
     languages: lists.languages,
+    ownerMarkers: lists.ownerMarkers,
   }
 }
 

@@ -7,23 +7,23 @@ const test = require('node:test')
 const assert = require('node:assert/strict')
 const c = require('./catalog.js')
 
-// A Zones tab shaped exactly like the real one (row-grouped).
+// A Zones tab shaped exactly like the real one (row-grouped), incl. a Marker column.
 const ZONES_VALUES = [
-  ['Title', 'Description', 'Themes'],
-  ['Contemporary Art, Curation & Design', 'Physical and visual practices.', 'Art History & Theory'],
-  ['', '', 'Exhibitions & Catalogs'],
-  ['', '', 'Architecture & Spatial Design'],
-  ['The Narrative Universes (Fiction & Poetry)', 'The imagined.', 'Dystopia & Alternate Realities'],
-  ['', '', 'Contemporary & Short Stories'],
-  ['', '', 'Poetry'],
+  ['Title', 'Description', 'Themes', 'Marker'],
+  ['Contemporary Art, Curation & Design', 'Physical and visual practices.', 'Art History & Theory', '🖍️'],
+  ['', '', 'Exhibitions & Catalogs', ''],
+  ['', '', 'Architecture & Spatial Design', ''],
+  ['The Narrative Universes (Fiction & Poetry)', 'The imagined.', 'Dystopia & Alternate Realities', 'https://example.com/zone.png'],
+  ['', '', 'Contemporary & Short Stories', ''],
+  ['', '', 'Poetry', ''],
 ]
 
 const LISTS_VALUES = [
-  ['Type options', 'Owner options', 'Languages'],
-  ['', 'leandro', 'English'],
-  ['', 'maria', 'Spanish'],
-  ['', 'hugo', 'Italian'],
-  ['', '', 'Polish'],
+  ['Type options', 'Owner options', 'Languages', 'Owner marker'],
+  ['', 'leandro', 'English', 'https://example.com/leandro.ico'],
+  ['', 'maria', 'Spanish', '🐈'],
+  ['', 'hugo', 'Italian', ''],
+  ['', '', 'Polish', ''],
 ]
 
 const CATALOG_HEADER = [
@@ -47,6 +47,32 @@ test('parseLists reads owners and languages by header name', () => {
   const { owners, languages } = c.parseLists(LISTS_VALUES)
   assert.deepEqual(owners, ['leandro', 'maria', 'hugo'])
   assert.deepEqual(languages, ['English', 'Spanish', 'Italian', 'Polish'])
+})
+
+test('parseZones reads the Marker column onto each zone (empty when absent)', () => {
+  const { zones } = c.parseZones(ZONES_VALUES)
+  assert.equal(zones[0].marker, '🖍️')
+  assert.equal(zones[1].marker, 'https://example.com/zone.png')
+  // A Zones tab without a Marker column yields '' rather than undefined.
+  const noMarker = c.parseZones([
+    ['Title', 'Description', 'Themes'],
+    ['Z', 'd', 'T'],
+  ])
+  assert.equal(noMarker.zones[0].marker, '')
+})
+
+test('parseLists builds owner→marker map, skipping owners with no marker', () => {
+  const { ownerMarkers } = c.parseLists(LISTS_VALUES)
+  assert.deepEqual(ownerMarkers, {
+    leandro: 'https://example.com/leandro.ico',
+    maria: '🐈',
+  })
+  // No Owner marker column → empty map, not undefined.
+  const noMarker = c.parseLists([
+    ['Owner options', 'Languages'],
+    ['leandro', 'English'],
+  ])
+  assert.deepEqual(noMarker.ownerMarkers, {})
 })
 
 test('deriveZone resolves theme parent, empty for unknown', () => {

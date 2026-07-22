@@ -1,18 +1,22 @@
 import { useState } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { ownerLogo } from './ownerLogos'
+import { useCatalog } from './CatalogProvider'
+import { isImageUrl } from './markers'
 
 /**
- * A small round owner marker (their logo, or their initial as a fallback) with a
- * tooltip naming the owner. Used on catalog cards to show whose shelf a book is on.
+ * A small round owner marker with a tooltip naming the owner, used to show whose
+ * shelf a book is on. The marker comes from the sheet (`Owner marker` column, via
+ * the catalog taxonomy) and is an image URL, an emoji, or — failing both — the
+ * owner's initial.
  */
 export function OwnerBadge({ owner, className }: { owner: string; className?: string }) {
+  const { ownerMarker } = useCatalog()
   const [broken, setBroken] = useState(false)
-  const src = ownerLogo(owner)
   if (!owner) return null
 
-  const showLogo = src && !broken
+  const marker = ownerMarker(owner)
+  const showImage = marker && isImageUrl(marker) && !broken
 
   return (
     <Tooltip>
@@ -23,9 +27,9 @@ export function OwnerBadge({ owner, className }: { owner: string; className?: st
             className,
           )}
         >
-          {showLogo ? (
+          {showImage ? (
             <img
-              src={src}
+              src={marker}
               alt=""
               loading="lazy"
               referrerPolicy="no-referrer"
@@ -33,6 +37,8 @@ export function OwnerBadge({ owner, className }: { owner: string; className?: st
               // contain, not cover: these are logos, and cropping them mangles the mark.
               className="size-full object-contain"
             />
+          ) : marker && !isImageUrl(marker) ? (
+            <span className="text-[0.85em] leading-none">{marker}</span>
           ) : (
             <span className="text-muted-foreground text-[10px] font-semibold uppercase">
               {owner.charAt(0)}

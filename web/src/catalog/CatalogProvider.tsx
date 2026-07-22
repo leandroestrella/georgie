@@ -4,6 +4,8 @@ import { getAllBooks, getBooks, getTaxonomies } from '@/api/client'
 import type { Book, Taxonomies } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { buildZoneColorMap, NEUTRAL_ZONE, type ZoneColors } from './zoneColors'
+import { ownerLogo } from './ownerLogos'
+import { zoneEmoji } from './zoneEmojis'
 
 interface CatalogContextValue {
   /** Every loaded book. Includes archived ones only when an admin is signed in. */
@@ -22,6 +24,12 @@ interface CatalogContextValue {
   zoneColor: (zoneName: string) => ZoneColors
   /** The curatorial description of a zone (from the `Zones` tab), or '' if none. */
   zoneDescription: (zoneName: string) => string
+  /** The zone's visual marker (emoji or image URL) from the sheet, falling back
+   *  to the built-in emoji map; '' when nothing is set. */
+  zoneMarker: (zoneName: string) => string
+  /** An owner's (or reader's) visual marker (emoji or image URL) from the sheet,
+   *  falling back to the built-in logo map; '' when nothing is set. */
+  ownerMarker: (name: string) => string
 }
 
 const CatalogContext = createContext<CatalogContextValue | null>(null)
@@ -72,6 +80,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     () => new Map((taxonomies?.zones ?? []).map((z) => [z.name, z.description])),
     [taxonomies],
   )
+  // Zone/owner markers from the sheet, keyed by name. Resolvers below fall back
+  // to the built-in emoji/logo maps when the sheet doesn't supply a marker.
+  const zoneMarkers = useMemo(
+    () => new Map((taxonomies?.zones ?? []).map((z) => [z.name, z.marker ?? ''])),
+    [taxonomies],
+  )
+  const ownerMarkers = useMemo(() => taxonomies?.ownerMarkers ?? {}, [taxonomies])
   const activeBooks = useMemo(() => books.filter((b) => !b.archived), [books])
   const archivedBooks = useMemo(() => books.filter((b) => b.archived), [books])
 
@@ -88,8 +103,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       getBook: (id) => books.find((b) => b.id === id),
       zoneColor: (name) => zoneColorMap.get(name) ?? NEUTRAL_ZONE,
       zoneDescription: (name) => zoneDescriptions.get(name) ?? '',
+      zoneMarker: (name) => zoneMarkers.get(name) || zoneEmoji(name) || '',
+      ownerMarker: (name) => ownerMarkers[name] || ownerLogo(name) || '',
     }),
-    [books, activeBooks, archivedBooks, taxonomies, loading, error, reload, applyBook, zoneColorMap, zoneDescriptions],
+    [books, activeBooks, archivedBooks, taxonomies, loading, error, reload, applyBook, zoneColorMap, zoneDescriptions, zoneMarkers, ownerMarkers],
   )
 
   return <CatalogContext value={value}>{children}</CatalogContext>

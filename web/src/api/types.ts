@@ -63,6 +63,8 @@ export interface Zone {
   description: string
   /** Optional accent color mirrored from the physical shelves (may be absent). */
   color?: string
+  /** Optional visual marker for the zone — an emoji or an image URL (may be absent). */
+  marker?: string
   themes: string[]
 }
 
@@ -73,4 +75,7 @@ export interface Taxonomies {
   themeToZone: Record<string, string>
   owners: string[]
   languages: string[]
+  /** owner (and reader) name → visual marker (emoji or image URL). Optional: a
+   *  backend without the `Owner marker` column omits it. */
+  ownerMarkers?: Record<string, string>
 }

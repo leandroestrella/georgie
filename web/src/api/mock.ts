@@ -17,6 +17,7 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Contemporary Art, Curation & Design",
       "description": "This section anchors the physical and visual practices, shifting from broad art history into specific exhibition catalogs and spatial design.",
+      "marker": "🖍️",
       "themes": [
         "Art History & Theory",
         "Exhibitions & Catalogs",
@@ -26,6 +27,7 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Net-Art, Cybernetics & Sonic Fictions",
       "description": "Moving from physical art into the digital and intangible, this cluster focuses on new media, algorithmic spatiality, and auditory theory.",
+      "marker": "🤖",
       "themes": [
         "Digital Theory",
         "Activism & Cyberculture",
@@ -35,6 +37,7 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Radical Politics, Philosophy & Society",
       "description": "The focus shifts here from digital infrastructures to the theoretical frameworks of society, governance, and anarchic thought.",
+      "marker": "✊",
       "themes": [
         "Political Theory & Utopia",
         "Philosophy & Existence",
@@ -44,6 +47,7 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "The Narrative Universes (Fiction & Poetry)",
       "description": "The theoretical gives way to the imagined. This large section can be grouped by the nature of the worlds they build.",
+      "marker": "🌐",
       "themes": [
         "Dystopia & Alternate Realities",
         "Magical Realism & Core Literature",
@@ -54,6 +58,7 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Mechanics, Travel & The Physical World",
       "description": "A distinct grounding point at the end of the line for manuals, practical guides, and applied sciences.",
+      "marker": "🔭",
       "themes": [
         "Science & Physics",
         "Travel & Geography",
@@ -104,7 +109,12 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     "Classical Latin",
     "Classical Chinese",
     "Kannada"
-  ]
+  ],
+  "ownerMarkers": {
+    "leandro": "https://www.leandroestrella.com/img/favicon.ico",
+    "maria": "https://cinquecento79lab.com/wp-content/uploads/2023/09/cropped-favicon-150x150.png",
+    "hugo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Anarchist_black_cat.svg/250px-Anarchist_black_cat.svg.png"
+  }
 }
 
 export const MOCK_BOOKS: Book[] = [

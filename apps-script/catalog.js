@@ -253,7 +253,7 @@ function deriveZone(theme, themeToZone) {
 function parseZones(values) {
   if (!values || !values.length) return { zones: [], themeToZone: {} }
   var h = indexHeaders(values[0])
-  var iTitle = h['Title'], iDesc = h['Description'], iTheme = h['Themes']
+  var iTitle = h['Title'], iDesc = h['Description'], iTheme = h['Themes'], iMarker = h['Marker']
   var zones = []
   var themeToZone = {}
   var current = null
@@ -265,6 +265,8 @@ function parseZones(values) {
       current = {
         name: title,
         description: iDesc === undefined ? '' : cellToString(row[iDesc]),
+        // Optional visual marker (emoji or image URL); '' when the column is absent.
+        marker: iMarker === undefined ? '' : cellToString(row[iMarker]),
         themes: [],
       }
       zones.push(current)
@@ -280,17 +282,30 @@ function parseZones(values) {
 
 /**
  * Parses the `Lists` tab. Reads the "Owner options" and "Languages" columns by
- * header name into de-duplicated, order-preserving arrays.
+ * header name into de-duplicated, order-preserving arrays. When an "Owner marker"
+ * column is present, its cell on each owner's row (an emoji or image URL) is
+ * collected into an owner→marker map, keyed by the exact owner name.
  *
  * @param {Array<Array<*>>} values full sheet values incl. header row
- * @return {{ owners: string[], languages: string[] }}
+ * @return {{ owners: string[], languages: string[], ownerMarkers: Object<string,string> }}
  */
 function parseLists(values) {
-  if (!values || !values.length) return { owners: [], languages: [] }
+  if (!values || !values.length) return { owners: [], languages: [], ownerMarkers: {} }
   var h = indexHeaders(values[0])
+  var iOwner = h['Owner options'], iMarker = h['Owner marker']
+  var ownerMarkers = {}
+  if (iOwner !== undefined && iMarker !== undefined) {
+    for (var r = 1; r < values.length; r++) {
+      var name = cellToString(values[r][iOwner])
+      if (!name) continue
+      var marker = cellToString(values[r][iMarker])
+      if (marker) ownerMarkers[name] = marker
+    }
+  }
   return {
     owners: readColumn(values, h['Owner options']),
     languages: readColumn(values, h['Languages']),
+    ownerMarkers: ownerMarkers,
   }
 }
 

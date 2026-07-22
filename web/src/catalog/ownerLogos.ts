@@ -1,9 +1,9 @@
 /**
- * Per-owner logos shown on catalog cards and in the table, to identify whose
- * shelf a book is on. External image URLs (no assets stored).
- *
- * Add an entry when a new owner appears in the `Lists` tab; owners without one
- * fall back to their initial.
+ * Built-in **fallback** owner logos, used only when the sheet doesn't supply an
+ * `Owner marker` for that owner (see docs/markers.md). Prefer the sheet column;
+ * this map exists so the app still shows a logo before the column is filled and
+ * for anyone cloning the repo without one. External image URLs (no assets stored).
+ * Owners with neither a marker nor an entry here fall back to their initial.
  */
 export const OWNER_LOGOS: Record<string, string> = {
   leandro: 'https://www.leandroestrella.com/img/favicon.ico',
