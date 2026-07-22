@@ -108,14 +108,16 @@ export function BookTable({
       <div className="hidden overflow-x-auto sm:block">
         <table className="w-full text-sm">
           <thead className="text-muted-foreground border-b text-left text-xs uppercase">
+            {/* Title takes the slack (w-full) so the icon columns hug their content
+                and sit evenly at the end instead of drifting apart. */}
             <tr>
-              <th className="p-3 font-medium">{t('sort.title')}</th>
-              <th className="p-3 font-medium">{t('book.author')}</th>
+              <th className="w-full p-3 font-medium">{t('sort.title')}</th>
+              <th className="p-3 font-medium whitespace-nowrap">{t('book.author')}</th>
               <th className="p-3 font-medium">{t('sort.year')}</th>
               <th className="p-3 font-medium">{t('book.theme')}</th>
               <th className="p-3 font-medium">{t('filters.zone')}</th>
               <th className="p-3 font-medium">{t('book.owner')}</th>
-              <th className="p-3 font-medium"></th>
+              <th className="p-3 font-medium">{t('filters.status')}</th>
             </tr>
           </thead>
           <tbody>
@@ -129,7 +131,7 @@ export function BookTable({
                 )}
               >
                 <td className="p-3 font-medium">{book.title}</td>
-                <td className="text-muted-foreground p-3">
+                <td className="text-muted-foreground p-3 whitespace-nowrap">
                   {book.author && (
                     <Link
                       to={`/?author=${enc(book.author)}`}
