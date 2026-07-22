@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import type { MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Book } from '@/api/types'
 import { cn } from '@/lib/utils'
@@ -7,6 +8,10 @@ import { OwnerBadge } from './OwnerBadge'
 import { StatusIcons } from './StatusIcons'
 import { ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
+
+const enc = encodeURIComponent
+/** Keep a facet link from also triggering the row's open-the-book handler. */
+const stop = (e: MouseEvent) => e.stopPropagation()
 
 /** The coloured theme chip, shared by both layouts. */
 function ThemeChip({ theme, colors }: { theme: string; colors: ZoneColors }) {
@@ -28,6 +33,10 @@ function ThemeChip({ theme, colors }: { theme: string; colors: ZoneColors }) {
  *  - a stacked list on phones, where a 6-column table is unreadable (it needs
  *    ~620px and titles/authors otherwise wrap to many lines). Each book becomes
  *    title / author·year / theme·owner·status — full width, no sideways scroll.
+ *
+ * The author/theme/zone/owner are links that filter the catalog (like the detail
+ * page). On phones the row uses the stretched-link pattern; on desktop the row
+ * navigates on click and the facet links stop propagation.
  */
 export function BookTable({
   books,
@@ -37,37 +46,60 @@ export function BookTable({
   zoneColor: (zone: string) => ZoneColors
 }) {
   const { t } = useTranslation()
+  const tv = useVocab()
   const navigate = useNavigate()
-  const open = (book: Book) => navigate(`/book/${encodeURIComponent(book.id)}`)
+  const open = (book: Book) => navigate(`/book/${enc(book.id)}`)
 
   return (
     <div className="overflow-hidden rounded-lg border">
-      {/* Phone layout: stacked rows. */}
+      {/* Phone layout: stacked rows. The title link's ::after covers the row so
+          any empty area opens the book; the facet links sit above it (z-[1]). */}
       <ul className="divide-y sm:hidden">
         {books.map((book) => (
-          <li key={book.id}>
-            <button
-              type="button"
-              onClick={() => open(book)}
-              className={cn(
-                'hover:bg-muted/50 flex w-full flex-col gap-1 p-3 text-left',
-                book.borrowed && 'bg-muted-foreground/15 opacity-70', // on loan → unavailable
-              )}
+          <li
+            key={book.id}
+            className={cn(
+              'hover:bg-muted/50 relative flex flex-col gap-1 p-3',
+              book.borrowed && 'bg-muted-foreground/15 opacity-70', // on loan → unavailable
+            )}
+          >
+            <Link
+              to={`/book/${enc(book.id)}`}
+              aria-label={book.title}
+              className="font-medium after:absolute after:inset-0"
             >
-              <span className="leading-snug font-medium">{book.title}</span>
-              <span className="text-muted-foreground text-sm">
-                {book.author}
-                {book.year ? ` · ${book.year}` : ''}
-              </span>
-              <div className="mt-0.5 flex items-center gap-2">
-                <ThemeChip theme={book.theme} colors={zoneColor(book.zone)} />
-                <ZoneEmoji zone={book.zone} />
-                <div className="ml-auto flex items-center gap-2">
+              {book.title}
+            </Link>
+            <span className="text-muted-foreground text-sm">
+              {book.author && (
+                <Link to={`/?author=${enc(book.author)}`} className="relative z-[1] hover:underline">
+                  {book.author}
+                </Link>
+              )}
+              {book.year ? `${book.author ? ' · ' : ''}${book.year}` : ''}
+            </span>
+            <div className="mt-0.5 flex items-center gap-2">
+              {book.theme && (
+                <Link to={`/?theme=${enc(book.theme)}`} className="relative z-[1]">
+                  <ThemeChip theme={book.theme} colors={zoneColor(book.zone)} />
+                </Link>
+              )}
+              {book.zone && (
+                <Link to={`/?zone=${enc(book.zone)}`} className="relative z-[1]" aria-label={tv('zone', book.zone)}>
+                  <ZoneEmoji zone={book.zone} />
+                </Link>
+              )}
+              <div className="ml-auto flex items-center gap-2">
+                <span className="relative z-[1]">
                   <StatusIcons book={book} />
-                  <OwnerBadge owner={book.owner} />
-                </div>
+                </span>
+                {book.owner && (
+                  <Link to={`/?owner=${enc(book.owner)}`} className="relative z-[1]">
+                    <OwnerBadge owner={book.owner} />
+                  </Link>
+                )}
               </div>
-            </button>
+            </div>
           </li>
         ))}
       </ul>
@@ -97,18 +129,40 @@ export function BookTable({
                 )}
               >
                 <td className="p-3 font-medium">{book.title}</td>
-                <td className="text-muted-foreground p-3">{book.author}</td>
+                <td className="text-muted-foreground p-3">
+                  {book.author && (
+                    <Link
+                      to={`/?author=${enc(book.author)}`}
+                      onClick={stop}
+                      className="hover:text-foreground hover:underline"
+                    >
+                      {book.author}
+                    </Link>
+                  )}
+                </td>
                 <td className="text-muted-foreground p-3 tabular-nums">{book.year ?? '—'}</td>
                 <td className="p-3">
-                  <ThemeChip theme={book.theme} colors={zoneColor(book.zone)} />
+                  {book.theme && (
+                    <Link to={`/?theme=${enc(book.theme)}`} onClick={stop} className="hover:brightness-95">
+                      <ThemeChip theme={book.theme} colors={zoneColor(book.zone)} />
+                    </Link>
+                  )}
                 </td>
                 {/* Zone as an emoji (name on hover), between Theme and Owner. */}
                 <td className="p-3">
-                  <ZoneEmoji zone={book.zone} />
+                  {book.zone && (
+                    <Link to={`/?zone=${enc(book.zone)}`} onClick={stop} aria-label={tv('zone', book.zone)}>
+                      <ZoneEmoji zone={book.zone} />
+                    </Link>
+                  )}
                 </td>
                 {/* Logo rather than the name — the tooltip names the owner. */}
                 <td className="p-3">
-                  <OwnerBadge owner={book.owner} />
+                  {book.owner && (
+                    <Link to={`/?owner=${enc(book.owner)}`} onClick={stop}>
+                      <OwnerBadge owner={book.owner} />
+                    </Link>
+                  )}
                 </td>
                 <td className="p-3">
                   <div className="flex items-center gap-1.5">
