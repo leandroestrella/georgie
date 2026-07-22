@@ -1,7 +1,9 @@
 {
   "name": "georgie-apps-script",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "private": true,
+  "license": "Apache-2.0",
+  "author": "Leandro Estrella",
   "description": "Georgie backend — Google Apps Script web app bound to the library spreadsheet, synced with clasp.",
   "scripts": {
     "login": "clasp login",

@@ -1,8 +1,17 @@
 {
-  "name": "web",
+  "name": "georgie-web",
+  "description": "Georgie — home-library manager SPA (Vite + React), reads/writes a Google Sheet via an Apps Script backend.",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "license": "Apache-2.0",
+  "author": "Leandro Estrella",
+  "homepage": "https://georgie.leandroestrella.com/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leandroestrella/georgie.git",
+    "directory": "web"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
