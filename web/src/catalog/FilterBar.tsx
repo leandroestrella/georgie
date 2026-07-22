@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   LayoutGridIcon,
@@ -22,6 +23,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { useCatalog } from './CatalogProvider'
+import { OwnerBadge } from './OwnerBadge'
+import { zoneEmoji } from './zoneEmojis'
 import { useVocab } from '@/i18n/vocab'
 import {
   activeFilterCount,
@@ -39,6 +43,8 @@ interface Option {
   label: string
   /** Optional hover tooltip for the option (e.g. a zone's description). */
   title?: string
+  /** Optional leading marker (owner logo, zone emoji, theme colour dot). */
+  icon?: ReactNode
 }
 
 /** A single labelled facet dropdown; empty selection is represented by `null`. */
@@ -60,12 +66,14 @@ function Facet({
       </SelectTrigger>
       {/* Cap the width to the longest zone/theme so those show in full, while
           long options (authors) truncate with an ellipsis instead of stretching
-          the menu across the screen. The [&_...] rules truncate the item text. */}
-      <SelectContent className="max-w-[min(23rem,90vw)] [&_[data-slot=select-item]>span:last-child]:block [&_[data-slot=select-item]>span:last-child]:min-w-0 [&_[data-slot=select-item]>span:last-child]:truncate">
+          the menu across the screen. min-w-0 lets the label span shrink so its
+          `truncate` can kick in; the leading icon stays fixed. */}
+      <SelectContent className="max-w-[min(23rem,90vw)] [&_[data-slot=select-item]>span:last-child]:min-w-0">
         <SelectItem value={ALL}>{label}</SelectItem>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value} title={o.title}>
-            {o.label}
+            {o.icon}
+            <span className="min-w-0 truncate">{o.label}</span>
           </SelectItem>
         ))}
       </SelectContent>
@@ -92,6 +100,7 @@ export function FilterBar(props: FilterBarProps) {
   const { t } = useTranslation()
   const tv = useVocab()
   const { isAdmin } = useAuth()
+  const { zoneColor } = useCatalog()
 
   // On phones the facets stack full-width — seven of them fill the screen — so
   // they collapse behind a toggle. Desktop keeps them inline (`sm:` styles win).
@@ -110,13 +119,34 @@ export function FilterBar(props: FilterBarProps) {
     ? (taxonomies.zones.find((z) => z.name === filters.zone)?.themes ?? [])
     : taxonomies.zones.flatMap((z) => z.themes)
 
-  const zoneOptions = taxonomies.zones.map((z) => ({
-    value: z.name,
-    label: tv('zone', z.name),
-    title: z.description, // shown on hover in the menu
+  // Each theme belongs to a zone; the theme's colour dot follows that zone's colour.
+  const themeZone = new Map<string, string>()
+  taxonomies.zones.forEach((z) => z.themes.forEach((th) => themeZone.set(th, z.name)))
+
+  const zoneOptions = taxonomies.zones.map((z) => {
+    const emoji = zoneEmoji(z.name)
+    return {
+      value: z.name,
+      label: tv('zone', z.name),
+      title: z.description, // shown on hover in the menu
+      icon: emoji ? <span className="shrink-0 text-base leading-none">{emoji}</span> : undefined,
+    }
+  })
+  const themeOptions = themeNames.map((name) => ({
+    value: name,
+    label: tv('theme', name),
+    icon: (
+      <span
+        className="size-2.5 shrink-0 rounded-full"
+        style={{ background: zoneColor(themeZone.get(name) ?? '').fg }}
+      />
+    ),
   }))
-  const themeOptions = themeNames.map((name) => ({ value: name, label: tv('theme', name) }))
-  const ownerOptions = taxonomies.owners.map((o) => ({ value: o, label: o }))
+  const ownerOptions = taxonomies.owners.map((o) => ({
+    value: o,
+    label: o,
+    icon: <OwnerBadge owner={o} className="size-4" />,
+  }))
   const languageOptions = taxonomies.languages.map((l) => ({ value: l, label: tv('language', l) }))
   const authorOpts = authors.map((a) => ({ value: a, label: a }))
   const readerOptions = readers.map((r) => ({ value: r, label: r }))
