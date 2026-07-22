@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Book } from '@/api/types'
 import {
   attentionReasons,
+  isSafeHttpUrl,
   isValidIsbn,
   isValidIsbn10,
   isValidIsbn13,
@@ -10,6 +11,25 @@ import {
   normalizeIsbn,
   validateBook,
 } from './validation'
+
+describe('isSafeHttpUrl', () => {
+  it('accepts http and https links', () => {
+    expect(isSafeHttpUrl('https://rebelbooks.com/')).toBe(true)
+    expect(isSafeHttpUrl('http://example.com')).toBe(true)
+    expect(isSafeHttpUrl('  https://www.amazon.it/dp/X  ')).toBe(true)
+  })
+  it('rejects javascript:, data: and other schemes (stored-XSS guard)', () => {
+    expect(isSafeHttpUrl('javascript:alert(1)')).toBe(false)
+    expect(isSafeHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+    expect(isSafeHttpUrl('vbscript:msgbox(1)')).toBe(false)
+    expect(isSafeHttpUrl('file:///etc/passwd')).toBe(false)
+  })
+  it('rejects blanks and non-URLs', () => {
+    expect(isSafeHttpUrl('')).toBe(false)
+    expect(isSafeHttpUrl('rebelbooks.com')).toBe(false) // no scheme → not a valid URL
+    expect(isSafeHttpUrl('not a url')).toBe(false)
+  })
+})
 
 const draft = (over: Partial<Parameters<typeof validateBook>[0]> = {}) => ({
   title: 'A Book',

@@ -1,3 +1,16 @@
+# Don't expose a browsable file listing (e.g. of /assets/). Real directories are
+# excluded from the SPA rewrite below, so without this Apache autoindexes them.
+Options -Indexes
+
+# Defence-in-depth response headers for the static SPA.
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # HTTPS only; the whole app requires it (camera, sign-in).
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+
 # SPA fallback for Apache/cPanel: serve real files, otherwise hand everything to
 # index.html so client-side routes (e.g. /book/ORW-198-1950) resolve on reload.
 <IfModule mod_rewrite.c>

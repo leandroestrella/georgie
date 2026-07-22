@@ -8,6 +8,20 @@
 import type { Book, NewBook } from '@/api/types'
 import { NO_ISBN } from './constants'
 
+/**
+ * True only for a safe external web link (http/https). Reference URLs come from
+ * the sheet and are shown to the public, so a `javascript:`/`data:` value must
+ * never become a clickable href. Used before rendering any sheet-supplied link.
+ */
+export function isSafeHttpUrl(url: string): boolean {
+  try {
+    const scheme = new URL(url.trim()).protocol
+    return scheme === 'http:' || scheme === 'https:'
+  } catch {
+    return false
+  }
+}
+
 /** True when an ISBN cell means "absent": blank or the `N/A` sentinel. */
 export function isbnIsAbsent(isbn: string): boolean {
   const s = (isbn ?? '').trim().toUpperCase()

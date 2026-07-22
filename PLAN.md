@@ -3,7 +3,7 @@
 A web app to manage a physical home library shared by multiple logged-in users, using an existing Google Sheet as the database.
 
 - **Repo:** https://github.com/leandroestrella/georgie *(private, currently empty — Claude Code will need push access, e.g. via `gh auth` on your machine)*
-- **Data source:** Google Sheet "library home" (`11zuOaJ_OVGw1PXoZPAahxPh4LgMiJXRpk4kfH0elwIM`)
+- **Data source:** a private Google Sheet, "library home" (ID kept out of this public repo — the sheet is the private data store; see the local config)
 
 ---
 

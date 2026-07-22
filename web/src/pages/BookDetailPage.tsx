@@ -7,6 +7,7 @@ import { BookCover } from '@/catalog/BookCover'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { isSafeHttpUrl } from '@/catalog/validation'
 import { useVocab } from '@/i18n/vocab'
 
 /** One label/value row in the detail sheet; renders nothing when empty. */
@@ -136,7 +137,7 @@ export function BookDetailPage() {
             </Row>
             <Row label={t('book.readBy')}>{book.readBy.join(', ')}</Row>
             <Row label={t('book.reference')}>
-              {book.referenceUrl && (
+              {isSafeHttpUrl(book.referenceUrl) && (
                 <a
                   href={book.referenceUrl}
                   target="_blank"
