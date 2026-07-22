@@ -437,3 +437,24 @@ function json(payload) {
 function errorMessage_(err) {
   return err && err.message ? err.message : String(err)
 }
+
+/**
+ * Google Sheets custom function — the base call-number ID for a book, using the
+ * exact same `makeId` logic as the app (accents included). Returns
+ * `AAA-TTT-YYYY` **without** the `-2/-3` collision suffix.
+ *
+ * Use it in a HELPER column, then Paste special → Values only into the real `ID`
+ * column and delete the helper — never leave IDs as a live formula, or sorting
+ * the sheet would re-mint them. See docs/book-ids.md.
+ *
+ *   =MAKEID(B2, C2, D2)   // title, author, year
+ *
+ * @param {string} title The book title.
+ * @param {string} author The author(s); only the first author's surname is used.
+ * @param {number|string} year The edition year; blank/invalid → 0000.
+ * @return {string} The base call-number ID.
+ * @customfunction
+ */
+function MAKEID(title, author, year) {
+  return makeId(title, author, year)
+}

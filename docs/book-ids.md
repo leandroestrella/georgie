@@ -77,6 +77,61 @@ year in — that's expected, not a bug.
 
 ---
 
+## Generating IDs from within the sheet
+
+You normally don't need to — the Add form assigns IDs for you. But if you're
+minting them directly in the sheet, note one rule first:
+
+> **The `ID` column must hold static values, never a live formula.** A formula
+> recomputes whenever you sort or insert rows, which would silently re-mint IDs —
+> exactly what must never happen. So compute in a **helper column**, then
+> **Copy → Paste special → Values only** into `ID`, and delete the helper.
+
+### Option A — the `=MAKEID` custom function (exact)
+
+The bound Apps Script exposes a custom function that runs the *same* `makeId`
+code as the app, so it matches byte-for-byte (accents and all):
+
+```
+=MAKEID(B2, C2, D2)      // title, author, year
+```
+
+It returns the **base** `AAA-TTT-YYYY` only — no `-2/-3` collision suffix. After
+pasting as values, resolve any duplicates by hand (append `-2`, `-3`, …) or just
+run `backfillIds`, which does the whole column with correct collisions.
+
+> Availability: `=MAKEID` lives in each sheet's bound script, so it works after a
+> `clasp push` to that script (no `clasp deploy` needed — custom functions use
+> HEAD). Push to the dev script for the dev copy, the prod script for the real one.
+
+### Option B — a native spreadsheet formula (no Apps Script)
+
+If you'd rather not touch the script, this reproduces the base ID with built-in
+functions (adjust the cell refs — Title `B2`, Author `C2`, Year `D2`):
+
+```
+=UPPER(LEFT(REGEXREPLACE(LOWER(REGEXEXTRACT(TRIM(REGEXEXTRACT($C2,"^[^,&;]+")),"(\S+)\s*$")),"[^a-z0-9]","")&"XXX",3))
+&"-"&
+UPPER(LEFT(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(LOWER($B2),"[^a-z0-9\s]"," "),"\b(the|a|an|il|lo|la|i|gli|le|l|un|una|uno|el|los|las|les|une|des)\b","")," ","")&"XXX",3))
+&"-"&
+IF(REGEXMATCH(TEXT($D2,"0"),"^\d{4}$"),TEXT($D2,"0"),"0000")
+```
+
+Two gaps vs. the app, so prefer Option A when either applies:
+
+1. **Accents** — Sheets has no Unicode-normalize, so `Über`→`BER` here but `UBE`
+   in the app; titles/authors with accents won't match.
+2. **Collisions** — base only; it can't add the `-2/-3` suffix (that needs to scan
+   all rows in order).
+
+### For bulk — `backfillIds`
+
+To (re)fill the whole column at once with correct collision handling, run the
+one-off `backfillIds` Apps Script (PLAN.md §1/§6). Treat it as a deliberate,
+run-once maintenance step.
+
+---
+
 ## Re-generating an ID by hand (rare)
 
 Because these IDs are **internal only** — they're never printed on the physical
@@ -87,16 +142,9 @@ the old `/book/<old-id>` URL, and any in-flight edit keyed to the old ID.
 
 There is no button for this. Do it directly in the sheet:
 
-1. Work out the new ID from the rules above. Two easy ways:
-   - **let the app compute it for you:** start adding a *new* book with the same
-     title/author/year and read the ID from the Add-form preview (then cancel), or
-   - run the pure function in a Node REPL from `web/`:
-     ```js
-     // node --input-type=module
-     import { makeId } from './src/api/ids.ts' // via tsx/vite, or copy the function
-     console.log(makeId('¿Qué es la propiedad?', 'Pierre-Joseph Proudhon', 2007))
-     // → PRO-QUE-2007
-     ```
+1. Work out the new ID. Easiest: `=MAKEID(...)` in a spare cell (Option A above),
+   or the Add-form preview — start adding a *new* book with the same
+   title/author/year, read the previewed ID, then cancel.
 2. **Check it's unique.** Scan the `ID` column for the value you computed. If it
    already exists, append `-2` (or the next free number), matching what
    `uniqueId` would have done.
@@ -106,12 +154,8 @@ There is no button for this. Do it directly in the sheet:
 4. Reload the app. The book now lives at `/book/<new-id>`; the old URL will show
    "book not found".
 
-### Bulk re-minting
-
-If many rows need it at once (e.g. after a big cleanup), don't hand-edit — use the
-one-off `backfillIds` script described in PLAN.md §1/§6, which walks every row and
-assigns `uniqueId(...)` with collision suffixes. Treat it as a deliberate,
-run-once maintenance step, not part of normal use.
+For many rows at once, use `backfillIds` instead (see above) rather than
+hand-editing.
 
 ---
 
