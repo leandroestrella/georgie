@@ -73,8 +73,12 @@ export function BookDetailPage() {
         <AdminBookActions book={book} />
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-[220px_1fr]">
-        <div className="bg-muted aspect-[3/4] w-full max-w-[220px] overflow-hidden rounded-lg border">
+      {/* Capped width trims the empty space on the right. On sm+ the cover column
+          drops its fixed aspect ratio and stretches to the text height (object-cover),
+          so short covers no longer end above "Read by"/"Reference". Mobile keeps the
+          3/4 ratio so the cover doesn't collapse in the single-column stack. */}
+      <div className="grid max-w-4xl gap-6 sm:grid-cols-[minmax(0,17rem)_1fr]">
+        <div className="bg-muted aspect-[3/4] w-full max-w-[220px] overflow-hidden rounded-lg border sm:aspect-auto sm:max-w-none">
           <BookCover book={book} colors={colors} className="size-full" />
         </div>
 
