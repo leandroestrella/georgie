@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { BookCover } from './BookCover'
 import { OwnerBadge } from './OwnerBadge'
+import { ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
 
 /** A single catalog card linking to the book's detail page. */
@@ -47,9 +48,10 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
             {book.author}
             {book.year ? ` · ${book.year}` : ''}
           </p>
-          {/* Bottom row: status flags on the left, owner logo on the right. */}
-          <div className="mt-auto flex items-end justify-between gap-1 pt-1">
-            <div className="flex flex-wrap gap-1">
+          {/* Bottom row: zone emoji + status flags on the left, owner logo on the right. */}
+          <div className="mt-auto flex items-center justify-between gap-1 pt-1">
+            <div className="flex items-center gap-1.5">
+              <ZoneEmoji zone={book.zone} />
               {book.borrowed && (
                 <Badge variant="secondary" className="gap-1 text-[10px]">
                   <HandCoinsIcon className="size-3" /> {t('filters.borrowed')}
