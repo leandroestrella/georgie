@@ -112,7 +112,7 @@ export function BookTable({
                 and sit evenly at the end instead of drifting apart. */}
             <tr>
               <th className="w-full p-3 font-medium">{t('sort.title')}</th>
-              <th className="p-3 font-medium whitespace-nowrap">{t('book.author')}</th>
+              <th className="p-3 font-medium">{t('book.author')}</th>
               <th className="p-3 font-medium">{t('sort.year')}</th>
               <th className="p-3 font-medium">{t('book.theme')}</th>
               <th className="p-3 font-medium">{t('filters.zone')}</th>
@@ -131,7 +131,7 @@ export function BookTable({
                 )}
               >
                 <td className="p-3 font-medium">{book.title}</td>
-                <td className="text-muted-foreground p-3 whitespace-nowrap">
+                <td className="text-muted-foreground p-3">
                   {book.author && (
                     <Link
                       to={`/?author=${enc(book.author)}`}
