@@ -207,10 +207,12 @@ export function FilterBar(props: FilterBarProps) {
             <SelectTrigger size="sm" aria-label={t('sort.label')}>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            {/* align end so a wide option list opens leftward, not over the view toggle. */}
+            <SelectContent align="end">
               <SelectItem value="title:asc">{t('sort.title')} A–Z</SelectItem>
               <SelectItem value="title:desc">{t('sort.title')} Z–A</SelectItem>
               <SelectItem value="author:asc">{t('sort.author')} A–Z</SelectItem>
+              <SelectItem value="author:desc">{t('sort.author')} Z–A</SelectItem>
               <SelectItem value="year:asc">{t('sort.year')} ↑</SelectItem>
               <SelectItem value="year:desc">{t('sort.year')} ↓</SelectItem>
             </SelectContent>
