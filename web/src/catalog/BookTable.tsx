@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { OwnerBadge } from './OwnerBadge'
 import type { ZoneColors } from './zoneColors'
@@ -86,7 +87,10 @@ export function BookTable({
             <button
               type="button"
               onClick={() => open(book)}
-              className="hover:bg-muted/50 flex w-full flex-col gap-1 p-3 text-left"
+              className={cn(
+                'hover:bg-muted/50 flex w-full flex-col gap-1 p-3 text-left',
+                book.borrowed && 'bg-muted-foreground/15 opacity-70', // on loan → unavailable
+              )}
             >
               <span className="leading-snug font-medium">{book.title}</span>
               <span className="text-muted-foreground text-sm">
@@ -123,7 +127,10 @@ export function BookTable({
               <tr
                 key={book.id}
                 onClick={() => open(book)}
-                className="hover:bg-muted/50 cursor-pointer border-b last:border-0"
+                className={cn(
+                  'hover:bg-muted/50 cursor-pointer border-b last:border-0',
+                  book.borrowed && 'bg-muted-foreground/15 opacity-70', // on loan → unavailable
+                )}
               >
                 <td className="p-3 font-medium">{book.title}</td>
                 <td className="text-muted-foreground p-3">{book.author}</td>

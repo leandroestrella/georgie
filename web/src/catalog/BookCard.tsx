@@ -4,6 +4,7 @@ import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { BookCover } from './BookCover'
 import { OwnerBadge } from './OwnerBadge'
@@ -15,9 +16,22 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
   const tv = useVocab()
   return (
     <Link to={`/book/${encodeURIComponent(book.id)}`} className="group">
-      <Card className="h-full overflow-hidden p-0 transition-shadow hover:shadow-md">
+      <Card
+        className={cn(
+          'h-full overflow-hidden p-0 transition-shadow hover:shadow-md',
+          // On loan → not on the shelf: muted + dimmed so it reads as unavailable.
+          book.borrowed && 'bg-muted-foreground/15',
+        )}
+      >
         <div className="bg-muted aspect-[3/4] w-full overflow-hidden">
-          <BookCover book={book} colors={colors} className="size-full transition-transform group-hover:scale-[1.03]" />
+          <BookCover
+            book={book}
+            colors={colors}
+            className={cn(
+              'size-full transition-transform group-hover:scale-[1.03]',
+              book.borrowed && 'opacity-70 grayscale-[60%]',
+            )}
+          />
         </div>
         <div className="flex flex-1 flex-col gap-1.5 p-3">
           {book.zone && (
