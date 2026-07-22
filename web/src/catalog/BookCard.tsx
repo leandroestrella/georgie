@@ -32,6 +32,12 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
           />
         </div>
         <div className="flex flex-1 flex-col gap-1.5 p-3">
+          <h3 className="line-clamp-2 text-sm leading-snug font-medium">{book.title}</h3>
+          <p className="text-muted-foreground line-clamp-1 text-xs">
+            {book.author}
+            {book.year ? ` · ${book.year}` : ''}
+          </p>
+          {/* Theme chip, below the author/year. */}
           {book.zone && (
             <span
               className="w-fit rounded-full border px-2 py-0.5 text-[10px] font-medium"
@@ -40,16 +46,11 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
               {tv('theme', book.theme)}
             </span>
           )}
-          <h3 className="line-clamp-2 text-sm leading-snug font-medium">{book.title}</h3>
-          <p className="text-muted-foreground line-clamp-1 text-xs">
-            {book.author}
-            {book.year ? ` · ${book.year}` : ''}
-          </p>
-          {/* Foot markers spread evenly across the width: zone · status · owner (all 20px). */}
-          <div className="mt-auto flex items-center justify-between gap-1 pt-1">
-            <ZoneEmoji zone={book.zone} />
+          {/* Foot markers spread evenly across the width; sized to the theme chip. */}
+          <div className="mt-auto flex items-center justify-between gap-1 pt-1 [&_svg]:size-4">
+            <ZoneEmoji zone={book.zone} className="text-[15px]" />
             <StatusIcons book={book} />
-            <OwnerBadge owner={book.owner} className="shrink-0" />
+            <OwnerBadge owner={book.owner} className="size-4 shrink-0" />
           </div>
         </div>
       </Card>

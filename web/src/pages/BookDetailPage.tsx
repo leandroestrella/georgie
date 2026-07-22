@@ -77,9 +77,23 @@ export function BookDetailPage() {
         </div>
 
         <div className="flex flex-col gap-3">
+          <div>
+            <h1 className="text-2xl leading-tight font-semibold">{book.title}</h1>
+            <p className="text-muted-foreground mt-1">
+              <Link
+                to={`/?author=${encodeURIComponent(book.author)}`}
+                className="hover:text-foreground hover:underline"
+              >
+                {book.author}
+              </Link>
+              {' · '}
+              {yearText}
+            </p>
+          </div>
+
+          {/* Zone and theme, below the author/year — independently clickable. */}
           {book.zone && (
             <div className="flex flex-wrap items-center gap-1.5">
-              {/* Zone and theme are independently clickable. */}
               <Link
                 to={`/?zone=${encodeURIComponent(book.zone)}`}
                 className="rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
@@ -97,19 +111,6 @@ export function BookDetailPage() {
               </Link>
             </div>
           )}
-          <div>
-            <h1 className="text-2xl leading-tight font-semibold">{book.title}</h1>
-            <p className="text-muted-foreground mt-1">
-              <Link
-                to={`/?author=${encodeURIComponent(book.author)}`}
-                className="hover:text-foreground hover:underline"
-              >
-                {book.author}
-              </Link>
-              {' · '}
-              {yearText}
-            </p>
-          </div>
 
           {(book.borrowed || book.exchange || book.archived) && (
             <div className="flex flex-wrap gap-2">
