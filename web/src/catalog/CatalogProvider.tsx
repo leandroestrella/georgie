@@ -22,8 +22,9 @@ interface CatalogContextValue {
   /** Inserts or replaces a book in the cache after a write (optimistic update). */
   applyBook: (book: Book) => void
   zoneColor: (zoneName: string) => ZoneColors
-  /** The curatorial description of a zone (from the `Zones` tab), or '' if none. */
-  zoneDescription: (zoneName: string) => string
+  /** The curatorial description of a zone (from the `Zones` tab), localized to
+   *  `lang` when a translation exists, else the English original; '' if none. */
+  zoneDescription: (zoneName: string, lang?: string) => string
   /** The zone's visual marker (emoji or image URL) from the sheet, falling back
    *  to the built-in emoji map; '' when nothing is set. */
   zoneMarker: (zoneName: string) => string
@@ -76,8 +77,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     () => buildZoneColorMap((taxonomies?.zones ?? []).map((z) => z.name)),
     [taxonomies],
   )
+  // name → { en: <Description>, it/es/…: <translations> }. English lives under
+  // `en`; the resolver falls back to it when a language has no translation.
   const zoneDescriptions = useMemo(
-    () => new Map((taxonomies?.zones ?? []).map((z) => [z.name, z.description])),
+    () =>
+      new Map<string, Record<string, string>>(
+        (taxonomies?.zones ?? []).map((z) => [z.name, { en: z.description, ...(z.descriptions ?? {}) }]),
+      ),
     [taxonomies],
   )
   // Zone/owner markers from the sheet, keyed by name. Resolvers below fall back
@@ -102,7 +108,11 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       applyBook,
       getBook: (id) => books.find((b) => b.id === id),
       zoneColor: (name) => zoneColorMap.get(name) ?? NEUTRAL_ZONE,
-      zoneDescription: (name) => zoneDescriptions.get(name) ?? '',
+      zoneDescription: (name, lang) => {
+        const byLang = zoneDescriptions.get(name)
+        if (!byLang) return ''
+        return (lang && byLang[lang]) || byLang.en || ''
+      },
       zoneMarker: (name) => zoneMarkers.get(name) || zoneEmoji(name) || '',
       ownerMarker: (name) => ownerMarkers[name] || ownerLogo(name) || '',
     }),

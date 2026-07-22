@@ -7,15 +7,16 @@ const test = require('node:test')
 const assert = require('node:assert/strict')
 const c = require('./catalog.js')
 
-// A Zones tab shaped exactly like the real one (row-grouped), incl. a Marker column.
+// A Zones tab shaped exactly like the real one (row-grouped), incl. a Marker column
+// and per-language Description columns.
 const ZONES_VALUES = [
-  ['Title', 'Description', 'Themes', 'Marker'],
-  ['Contemporary Art, Curation & Design', 'Physical and visual practices.', 'Art History & Theory', '🖍️'],
-  ['', '', 'Exhibitions & Catalogs', ''],
-  ['', '', 'Architecture & Spatial Design', ''],
-  ['The Narrative Universes (Fiction & Poetry)', 'The imagined.', 'Dystopia & Alternate Realities', 'https://example.com/zone.png'],
-  ['', '', 'Contemporary & Short Stories', ''],
-  ['', '', 'Poetry', ''],
+  ['Title', 'Description', 'Description (it)', 'Description (es)', 'Themes', 'Marker'],
+  ['Contemporary Art, Curation & Design', 'Physical and visual practices.', 'Pratiche fisiche e visive.', 'Prácticas físicas y visuales.', 'Art History & Theory', '🖍️'],
+  ['', '', '', '', 'Exhibitions & Catalogs', ''],
+  ['', '', '', '', 'Architecture & Spatial Design', ''],
+  ['The Narrative Universes (Fiction & Poetry)', 'The imagined.', "L'immaginato.", '', 'Dystopia & Alternate Realities', 'https://example.com/zone.png'],
+  ['', '', '', '', 'Contemporary & Short Stories', ''],
+  ['', '', '', '', 'Poetry', ''],
 ]
 
 const LISTS_VALUES = [
@@ -47,6 +48,20 @@ test('parseLists reads owners and languages by header name', () => {
   const { owners, languages } = c.parseLists(LISTS_VALUES)
   assert.deepEqual(owners, ['leandro', 'maria', 'hugo'])
   assert.deepEqual(languages, ['English', 'Spanish', 'Italian', 'Polish'])
+})
+
+test('parseZones reads per-language Description columns into descriptions', () => {
+  const { zones } = c.parseZones(ZONES_VALUES)
+  assert.equal(zones[0].description, 'Physical and visual practices.')
+  assert.deepEqual(zones[0].descriptions, {
+    it: 'Pratiche fisiche e visive.',
+    es: 'Prácticas físicas y visuales.',
+  })
+  // Blank translation cells are omitted (es left blank for this zone).
+  assert.deepEqual(zones[1].descriptions, { it: "L'immaginato." })
+  // No localized columns at all → empty descriptions object.
+  const noLoc = c.parseZones([['Title', 'Description', 'Themes'], ['Z', 'd', 'T']])
+  assert.deepEqual(noLoc.zones[0].descriptions, {})
 })
 
 test('parseZones reads the Marker column onto each zone (empty when absent)', () => {

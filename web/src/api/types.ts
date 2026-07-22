@@ -60,7 +60,12 @@ export interface LoanInput {
 /** A top-level zone grouping several themes. */
 export interface Zone {
   name: string
+  /** The English description (the `Description` column on the `Zones` tab). */
   description: string
+  /** Per-language description overrides keyed by language code (e.g. `it`, `es`),
+   *  from the `Description (it)`/`Description (es)` columns. English lives in
+   *  `description`; missing translations fall back to it. */
+  descriptions?: Record<string, string>
   /** Optional accent color mirrored from the physical shelves (may be absent). */
   color?: string
   /** Optional visual marker for the zone — an emoji or an image URL (may be absent). */

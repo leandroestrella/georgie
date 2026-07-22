@@ -243,6 +243,41 @@ function deriveZone(theme, themeToZone) {
 }
 
 /**
+ * Finds the localized description columns on the Zones tab — any header shaped
+ * like `Description (xx)` where `xx` is a language code. Returns a map of
+ * languageCode → column index.
+ *
+ * @param {Object<string,number>} headerIndex header name → column index
+ * @return {Object<string,number>}
+ */
+function localizedDescriptionColumns_(headerIndex) {
+  var cols = {}
+  for (var name in headerIndex) {
+    if (!Object.prototype.hasOwnProperty.call(headerIndex, name)) continue
+    var m = /^Description \(([a-z]{2})\)$/i.exec(String(name).trim())
+    if (m) cols[m[1].toLowerCase()] = headerIndex[name]
+  }
+  return cols
+}
+
+/**
+ * Reads one row's non-empty localized descriptions into { languageCode: text }.
+ *
+ * @param {Array<*>} row
+ * @param {Object<string,number>} langCols languageCode → column index
+ * @return {Object<string,string>}
+ */
+function readLocalizedDescriptions_(row, langCols) {
+  var out = {}
+  for (var lang in langCols) {
+    if (!Object.prototype.hasOwnProperty.call(langCols, lang)) continue
+    var text = cellToString(row[langCols[lang]])
+    if (text) out[lang] = text
+  }
+  return out
+}
+
+/**
  * Parses the row-grouped `Zones` tab into a two-level taxonomy. A row carrying a
  * Title starts a new zone; following rows with an empty Title but a Theme belong
  * to it. Columns are resolved by header name.
@@ -254,6 +289,8 @@ function parseZones(values) {
   if (!values || !values.length) return { zones: [], themeToZone: {} }
   var h = indexHeaders(values[0])
   var iTitle = h['Title'], iDesc = h['Description'], iTheme = h['Themes'], iMarker = h['Marker']
+  // Optional per-language description columns, e.g. `Description (it)`.
+  var descLangCols = localizedDescriptionColumns_(h)
   var zones = []
   var themeToZone = {}
   var current = null
@@ -265,6 +302,8 @@ function parseZones(values) {
       current = {
         name: title,
         description: iDesc === undefined ? '' : cellToString(row[iDesc]),
+        // Non-empty translated descriptions keyed by language code (e.g. { it, es }).
+        descriptions: readLocalizedDescriptions_(row, descLangCols),
         // Optional visual marker (emoji or image URL); '' when the column is absent.
         marker: iMarker === undefined ? '' : cellToString(row[iMarker]),
         themes: [],

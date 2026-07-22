@@ -36,6 +36,9 @@ PLAN.md       the design source of truth
 - **Owner/reader/zone markers are sheet-driven.** They come from the `Owner marker`
   (Lists tab) and `Marker` (Zones tab) columns — an emoji or an image URL, auto-detected.
   `ownerLogos.ts`/`zoneEmojis.ts` are fallbacks only. See [docs/markers.md](docs/markers.md).
+- **Content translations live in two places:** zone/theme/language *names* in
+  `web/src/i18n/vocab.ts` (code); zone *descriptions* in per-language `Description (it)`/
+  `Description (es)` columns on the Zones tab. See [docs/translations.md](docs/translations.md).
 - **No secrets in the repo.** The Apps Script `/exec` URL and the Google OAuth client ID
   are public by design and live in `VITE_*` env vars / `web/src/config.ts`. Admin
   allowlist and sheet ID live in Apps Script Script Properties. `.clasp.json` and

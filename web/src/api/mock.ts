@@ -17,6 +17,10 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Contemporary Art, Curation & Design",
       "description": "This section anchors the physical and visual practices, shifting from broad art history into specific exhibition catalogs and spatial design.",
+      "descriptions": {
+        "it": "Questa sezione àncora le pratiche fisiche e visive, passando dalla storia dell'arte in senso ampio ai cataloghi di mostre e al design dello spazio.",
+        "es": "Esta sección ancla las prácticas físicas y visuales, pasando de la historia del arte en general a los catálogos de exposiciones y el diseño espacial."
+      },
       "marker": "🖍️",
       "themes": [
         "Art History & Theory",
@@ -27,6 +31,10 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Net-Art, Cybernetics & Sonic Fictions",
       "description": "Moving from physical art into the digital and intangible, this cluster focuses on new media, algorithmic spatiality, and auditory theory.",
+      "descriptions": {
+        "it": "Dall'arte fisica al digitale e all'intangibile, questo gruppo si concentra sui nuovi media, sulla spazialità algoritmica e sulla teoria sonora.",
+        "es": "Del arte físico a lo digital e intangible, este grupo se centra en los nuevos medios, la espacialidad algorítmica y la teoría sónica."
+      },
       "marker": "🤖",
       "themes": [
         "Digital Theory",
@@ -37,6 +45,10 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Radical Politics, Philosophy & Society",
       "description": "The focus shifts here from digital infrastructures to the theoretical frameworks of society, governance, and anarchic thought.",
+      "descriptions": {
+        "it": "Il focus si sposta dalle infrastrutture digitali ai quadri teorici della società, della governance e del pensiero anarchico.",
+        "es": "El enfoque pasa de las infraestructuras digitales a los marcos teóricos de la sociedad, la gobernanza y el pensamiento anárquico."
+      },
       "marker": "✊",
       "themes": [
         "Political Theory & Utopia",
@@ -47,6 +59,10 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "The Narrative Universes (Fiction & Poetry)",
       "description": "The theoretical gives way to the imagined. This large section can be grouped by the nature of the worlds they build.",
+      "descriptions": {
+        "it": "Il teorico lascia spazio all'immaginato. Questa ampia sezione può essere raggruppata in base alla natura dei mondi che costruisce.",
+        "es": "Lo teórico cede paso a lo imaginado. Esta amplia sección puede agruparse según la naturaleza de los mundos que construye."
+      },
       "marker": "🌐",
       "themes": [
         "Dystopia & Alternate Realities",
@@ -58,6 +74,10 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     {
       "name": "Mechanics, Travel & The Physical World",
       "description": "A distinct grounding point at the end of the line for manuals, practical guides, and applied sciences.",
+      "descriptions": {
+        "it": "Un punto d'ancoraggio distinto in fondo alla fila, per manuali, guide pratiche e scienze applicate.",
+        "es": "Un punto de anclaje distinto al final de la línea, para manuales, guías prácticas y ciencias aplicadas."
+      },
       "marker": "🔭",
       "themes": [
         "Science & Physics",

@@ -103,10 +103,10 @@ export interface FilterBarProps {
 
 export function FilterBar(props: FilterBarProps) {
   const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, authors, languages, readers, onClear } = props
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const tv = useVocab()
   const { isAdmin } = useAuth()
-  const { zoneColor } = useCatalog()
+  const { zoneColor, zoneDescription } = useCatalog()
 
   // On phones the facets stack full-width — seven of them fill the screen — so
   // they collapse behind a toggle. Desktop keeps them inline (`sm:` styles win).
@@ -134,7 +134,7 @@ export function FilterBar(props: FilterBarProps) {
     return {
       value: z.name,
       label: tv('zone', z.name),
-      title: z.description, // shown on hover in the menu
+      title: zoneDescription(z.name, i18n.resolvedLanguage), // localized, shown on hover in the menu
       icon: emoji ? <span className="shrink-0 text-base leading-none">{emoji}</span> : undefined,
     }
   })

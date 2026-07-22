@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
@@ -7,8 +8,9 @@ import { isImageUrl } from './markers'
 /** Tooltip body for a zone: its (translated) name and curatorial description. */
 export function ZoneTooltip({ zone }: { zone: string }) {
   const tv = useVocab()
+  const { i18n } = useTranslation()
   const { zoneDescription } = useCatalog()
-  const description = zoneDescription(zone)
+  const description = zoneDescription(zone, i18n.resolvedLanguage)
   return (
     <div className="max-w-56">
       <div className="font-medium">{tv('zone', zone)}</div>
