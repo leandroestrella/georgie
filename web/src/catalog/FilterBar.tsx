@@ -162,7 +162,11 @@ export function FilterBar(props: FilterBarProps) {
     }
   })
   const authorOpts = authors.map((a) => ({ value: a, label: a }))
-  const readerOptions = readers.map((r) => ({ value: r, label: r }))
+  const readerOptions = readers.map((r) => ({
+    value: r,
+    label: r,
+    icon: <OwnerBadge owner={r} className="size-4" />, // readers are the same people as owners
+  }))
 
   return (
     <div className="flex flex-col gap-2 sm:gap-3">
