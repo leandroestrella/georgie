@@ -29,6 +29,8 @@ PLAN.md       the design source of truth
 - **IDs are immutable.** The call-number ID (`AAA-TTT-YYYY`, e.g. `ORW-198-1950`) is
   generated once at creation and never regenerated — even to fix a later typo in
   title/author/year. Same `makeId` logic is shared by the backfill script and the app.
+  Format, examples, and the hand-editing procedure are documented in
+  [docs/book-ids.md](docs/book-ids.md).
 - **`N/A` is the no-ISBN sentinel.** Every ISBN-consuming path (metadata lookup, cover
   fallback, validation) treats the literal string `N/A` as "absent", not malformed.
 - **No secrets in the repo.** The Apps Script `/exec` URL and the Google OAuth client ID
