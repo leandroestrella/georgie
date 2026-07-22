@@ -58,7 +58,10 @@ function Facet({
       <SelectTrigger size="sm" className="w-full sm:w-auto">
         <SelectValue placeholder={label} />
       </SelectTrigger>
-      <SelectContent>
+      {/* Cap the width to the longest zone/theme so those show in full, while
+          long options (authors) truncate with an ellipsis instead of stretching
+          the menu across the screen. The [&_...] rules truncate the item text. */}
+      <SelectContent className="max-w-[min(23rem,90vw)] [&_[data-slot=select-item]>span:last-child]:block [&_[data-slot=select-item]>span:last-child]:min-w-0 [&_[data-slot=select-item]>span:last-child]:truncate">
         <SelectItem value={ALL}>{label}</SelectItem>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value} title={o.title}>
