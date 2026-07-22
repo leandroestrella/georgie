@@ -16,7 +16,8 @@ export function ZoneEmoji({ zone, className }: { zone: string; className?: strin
     <Tooltip>
       <TooltipTrigger asChild>
         <span
-          className={cn('text-lg leading-none select-none', className)}
+          // ~20px to match the size-5 status icons and owner logo.
+          className={cn('inline-flex text-[1.15rem] leading-none select-none', className)}
           role="img"
           aria-label={tv('zone', zone)}
         >

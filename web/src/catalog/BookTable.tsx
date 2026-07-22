@@ -1,50 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { OwnerBadge } from './OwnerBadge'
+import { StatusIcons } from './StatusIcons'
+import { ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
-
-/** An icon with a hover/focus tooltip. */
-function IconWithTip({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span tabIndex={0} aria-label={label}>
-          {children}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  )
-}
-
-/** The on-loan / for-exchange icons, shared by both layouts. */
-function StatusIcons({ book }: { book: Book }) {
-  const { t } = useTranslation()
-  if (!book.borrowed && !book.exchange) return null
-  return (
-    <div className="text-muted-foreground flex gap-1.5">
-      {book.borrowed && (
-        <IconWithTip
-          label={
-            book.borrowerName ? t('book.borrowedBy', { name: book.borrowerName }) : t('filters.borrowed')
-          }
-        >
-          <HandCoinsIcon className="size-4" />
-        </IconWithTip>
-      )}
-      {book.exchange && (
-        <IconWithTip label={t('book.forExchange')}>
-          <RepeatIcon className="size-4" />
-        </IconWithTip>
-      )}
-    </div>
-  )
-}
 
 /** The coloured theme chip, shared by both layouts. */
 function ThemeChip({ theme, colors }: { theme: string; colors: ZoneColors }) {
@@ -99,6 +61,7 @@ export function BookTable({
               </span>
               <div className="mt-0.5 flex items-center gap-2">
                 <ThemeChip theme={book.theme} colors={zoneColor(book.zone)} />
+                <ZoneEmoji zone={book.zone} />
                 <div className="ml-auto flex items-center gap-2">
                   <StatusIcons book={book} />
                   <OwnerBadge owner={book.owner} />
@@ -118,6 +81,7 @@ export function BookTable({
               <th className="p-3 font-medium">{t('book.author')}</th>
               <th className="p-3 font-medium">{t('sort.year')}</th>
               <th className="p-3 font-medium">{t('book.theme')}</th>
+              <th className="p-3 font-medium">{t('filters.zone')}</th>
               <th className="p-3 font-medium">{t('book.owner')}</th>
               <th className="p-3 font-medium"></th>
             </tr>
@@ -138,12 +102,18 @@ export function BookTable({
                 <td className="p-3">
                   <ThemeChip theme={book.theme} colors={zoneColor(book.zone)} />
                 </td>
+                {/* Zone as an emoji (name on hover), between Theme and Owner. */}
+                <td className="p-3">
+                  <ZoneEmoji zone={book.zone} />
+                </td>
                 {/* Logo rather than the name — the tooltip names the owner. */}
                 <td className="p-3">
                   <OwnerBadge owner={book.owner} />
                 </td>
                 <td className="p-3">
-                  <StatusIcons book={book} />
+                  <div className="flex items-center gap-1.5">
+                    <StatusIcons book={book} />
+                  </div>
                 </td>
               </tr>
             ))}

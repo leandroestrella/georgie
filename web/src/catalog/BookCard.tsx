@@ -1,19 +1,16 @@
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
-import { HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
-import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { BookCover } from './BookCover'
 import { OwnerBadge } from './OwnerBadge'
+import { StatusIcons } from './StatusIcons'
 import { ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
 
 /** A single catalog card linking to the book's detail page. */
 export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
-  const { t } = useTranslation()
   const tv = useVocab()
   return (
     <Link to={`/book/${encodeURIComponent(book.id)}`} className="group">
@@ -48,21 +45,10 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
             {book.author}
             {book.year ? ` · ${book.year}` : ''}
           </p>
-          {/* Bottom row: zone emoji + status flags on the left, owner logo on the right. */}
+          {/* Foot markers spread evenly across the width: zone · status · owner (all 20px). */}
           <div className="mt-auto flex items-center justify-between gap-1 pt-1">
-            <div className="flex items-center gap-1.5">
-              <ZoneEmoji zone={book.zone} />
-              {book.borrowed && (
-                <Badge variant="secondary" className="gap-1 text-[10px]">
-                  <HandCoinsIcon className="size-3" /> {t('filters.borrowed')}
-                </Badge>
-              )}
-              {book.exchange && (
-                <Badge variant="outline" className="gap-1 text-[10px]">
-                  <RepeatIcon className="size-3" /> {t('filters.exchange')}
-                </Badge>
-              )}
-            </div>
+            <ZoneEmoji zone={book.zone} />
+            <StatusIcons book={book} />
             <OwnerBadge owner={book.owner} className="shrink-0" />
           </div>
         </div>
