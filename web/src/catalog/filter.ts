@@ -128,3 +128,14 @@ export function authorOptions(books: Book[]): string[] {
   for (const b of books) if (b.author) set.add(b.author)
   return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
 }
+
+/**
+ * The distinct, sorted *edition* languages a book is actually available in.
+ * Derived from books rather than the `Lists` vocabulary so the filter never
+ * offers an original-only language (e.g. Ancient Greek) that no edition is in.
+ */
+export function languageOptions(books: Book[]): string[] {
+  const set = new Set<string>()
+  for (const b of books) for (const l of b.language) if (l) set.add(l)
+  return [...set].sort((a, b) => a.localeCompare(b))
+}

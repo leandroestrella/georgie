@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   authorOptions,
   filterBooks,
+  languageOptions,
   readerOptions,
   sortBooks,
   type CatalogFilters,
@@ -105,6 +106,7 @@ export function CatalogPage() {
   )
   const readers = useMemo(() => readerOptions(books), [books])
   const authors = useMemo(() => authorOptions(books), [books])
+  const languages = useMemo(() => languageOptions(books), [books])
   const subHeader = useSubHeaderContainer()
 
   if (error) {
@@ -128,6 +130,7 @@ export function CatalogPage() {
               onView={(v) => setParam({ view: v === 'cards' ? null : v })}
               taxonomies={taxonomies}
               authors={authors}
+              languages={languages}
               readers={readers}
               onClear={onClear}
             />

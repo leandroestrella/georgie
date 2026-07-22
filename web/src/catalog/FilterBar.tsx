@@ -2,8 +2,11 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
+  CircleCheckIcon,
+  HandCoinsIcon,
   LayoutGridIcon,
   ListIcon,
+  RepeatIcon,
   SearchIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
@@ -25,6 +28,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCatalog } from './CatalogProvider'
 import { OwnerBadge } from './OwnerBadge'
+import { languageFlag } from './languageFlags'
 import { zoneEmoji } from './zoneEmojis'
 import { useVocab } from '@/i18n/vocab'
 import {
@@ -91,12 +95,14 @@ export interface FilterBarProps {
   onView: (v: 'cards' | 'table') => void
   taxonomies: Taxonomies
   authors: string[]
+  /** Edition languages actually present in the catalog (not the full vocabulary). */
+  languages: string[]
   readers: string[]
   onClear: () => void
 }
 
 export function FilterBar(props: FilterBarProps) {
-  const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, authors, readers, onClear } = props
+  const { filters, onFilters, sortKey, sortDir, onSort, view, onView, taxonomies, authors, languages, readers, onClear } = props
   const { t } = useTranslation()
   const tv = useVocab()
   const { isAdmin } = useAuth()
@@ -147,7 +153,14 @@ export function FilterBar(props: FilterBarProps) {
     label: o,
     icon: <OwnerBadge owner={o} className="size-4" />,
   }))
-  const languageOptions = taxonomies.languages.map((l) => ({ value: l, label: tv('language', l) }))
+  const languageOptions = languages.map((l) => {
+    const flag = languageFlag(l)
+    return {
+      value: l,
+      label: tv('language', l),
+      icon: flag ? <span className="shrink-0 text-base leading-none">{flag}</span> : undefined,
+    }
+  })
   const authorOpts = authors.map((a) => ({ value: a, label: a }))
   const readerOptions = readers.map((r) => ({ value: r, label: r }))
 
@@ -213,9 +226,18 @@ export function FilterBar(props: FilterBarProps) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">{t('filters.status')}</SelectItem>
-            <SelectItem value="available">{t('filters.available')}</SelectItem>
-            <SelectItem value="borrowed">{t('filters.borrowed')}</SelectItem>
-            <SelectItem value="exchange">{t('filters.exchange')}</SelectItem>
+            <SelectItem value="available">
+              <CircleCheckIcon className="text-muted-foreground size-4 shrink-0" />
+              {t('filters.available')}
+            </SelectItem>
+            <SelectItem value="borrowed">
+              <HandCoinsIcon className="text-muted-foreground size-4 shrink-0" />
+              {t('filters.borrowed')}
+            </SelectItem>
+            <SelectItem value="exchange">
+              <RepeatIcon className="text-muted-foreground size-4 shrink-0" />
+              {t('filters.exchange')}
+            </SelectItem>
           </SelectContent>
         </Select>
 
