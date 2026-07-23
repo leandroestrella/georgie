@@ -9,6 +9,7 @@ import { languageFlag } from '@/catalog/languageFlags'
 import { ZoneTooltip } from '@/catalog/ZoneEmoji'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
+import { AuthorLinks } from '@/catalog/AuthorLinks'
 import { CoverAdminActions } from '@/catalog/CoverAdminActions'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -94,12 +95,7 @@ export function BookDetailPage() {
           <div>
             <h1 className="text-2xl leading-tight font-semibold">{book.title}</h1>
             <p className="text-muted-foreground mt-1">
-              <Link
-                to={`/?author=${encodeURIComponent(book.author)}`}
-                className="hover:text-foreground hover:underline"
-              >
-                {book.author}
-              </Link>
+              <AuthorLinks author={book.author} className="hover:text-foreground hover:underline" />
               {' · '}
               {yearText}
             </p>

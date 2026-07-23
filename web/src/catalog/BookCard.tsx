@@ -3,6 +3,7 @@ import type { Book } from '@/api/types'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
+import { AuthorLinks } from './AuthorLinks'
 import { BookCover } from './BookCover'
 import { OwnerBadge } from './OwnerBadge'
 import { StatusIcons } from './StatusIcons'
@@ -42,11 +43,7 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         <h3 className="line-clamp-2 text-sm leading-snug font-medium">{book.title}</h3>
         <p className="text-muted-foreground line-clamp-1 text-xs">
-          {book.author && (
-            <Link to={`/?author=${enc(book.author)}`} className="hover:text-foreground relative z-[1] hover:underline">
-              {book.author}
-            </Link>
-          )}
+          <AuthorLinks author={book.author} className="hover:text-foreground relative z-[1] hover:underline" />
           {book.year ? `${book.author ? ' · ' : ''}${book.year}` : ''}
         </p>
         {/* Theme chip, below the author/year. */}

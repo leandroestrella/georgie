@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Book } from '@/api/types'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
+import { AuthorLinks } from './AuthorLinks'
 import { LanguageFlag } from './LanguageFlag'
 import { OwnerBadge } from './OwnerBadge'
 import { StatusIcons } from './StatusIcons'
@@ -72,11 +73,7 @@ export function BookTable({
               {book.title}
             </Link>
             <span className="text-muted-foreground text-sm">
-              {book.author && (
-                <Link to={`/?author=${enc(book.author)}`} className="relative z-[1] hover:underline">
-                  {book.author}
-                </Link>
-              )}
+              <AuthorLinks author={book.author} className="relative z-[1] hover:underline" />
               {book.year ? `${book.author ? ' · ' : ''}${book.year}` : ''}
             </span>
             <div className="mt-0.5 flex items-center gap-2">
@@ -141,15 +138,7 @@ export function BookTable({
               >
                 <td className="p-3 font-medium">{book.title}</td>
                 <td className="text-muted-foreground p-3">
-                  {book.author && (
-                    <Link
-                      to={`/?author=${enc(book.author)}`}
-                      onClick={stop}
-                      className="hover:text-foreground hover:underline"
-                    >
-                      {book.author}
-                    </Link>
-                  )}
+                  <AuthorLinks author={book.author} onClick={stop} className="hover:text-foreground hover:underline" />
                 </td>
                 <td className="text-muted-foreground p-3 tabular-nums">{book.year ?? '—'}</td>
                 <td className="p-3">

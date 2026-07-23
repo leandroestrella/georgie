@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { Book } from '@/api/types'
 import {
+  authorOptions,
   EMPTY_FILTERS,
   filterBooks,
   hasActiveFilters,
   readerOptions,
   sortBooks,
+  splitAuthors,
 } from './filter'
 
 const make = (over: Partial<Book>): Book => ({
@@ -88,5 +90,17 @@ describe('helpers', () => {
   })
   it('readerOptions returns distinct sorted names', () => {
     expect(readerOptions(books)).toEqual(['leandro', 'maria'])
+  })
+  it('splitAuthors splits on , & ; and trims', () => {
+    expect(splitAuthors('Éliane Radigue, Julia Eckhardt')).toEqual(['Éliane Radigue', 'Julia Eckhardt'])
+    expect(splitAuthors('A & B; C')).toEqual(['A', 'B', 'C'])
+    expect(splitAuthors('Solo Author')).toEqual(['Solo Author'])
+    expect(splitAuthors('')).toEqual([])
+  })
+  it('author facet lists and filters individual authors from multi-author books', () => {
+    const multi = [make({ id: 'm', author: 'Giuseppe Penone, Alain Elkann' })]
+    expect(authorOptions(multi)).toEqual(['Alain Elkann', 'Giuseppe Penone'])
+    expect(filterBooks(multi, { ...EMPTY_FILTERS, author: 'Alain Elkann' }).map((b) => b.id)).toEqual(['m'])
+    expect(filterBooks(multi, { ...EMPTY_FILTERS, author: 'Giuseppe Penone, Alain Elkann' })).toEqual([])
   })
 })

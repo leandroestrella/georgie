@@ -87,7 +87,7 @@ export function filterBooks(books: Book[], f: CatalogFilters): Book[] {
   return books.filter(
     (b) =>
       matchesSearch(b, f.search) &&
-      (f.author === null || b.author === f.author) &&
+      (f.author === null || splitAuthors(b.author).includes(f.author)) &&
       (f.zone === null || b.zone === f.zone) &&
       (f.theme === null || b.theme === f.theme) &&
       (f.owner === null || b.owner === f.owner) &&
@@ -122,10 +122,22 @@ export function readerOptions(books: Book[]): string[] {
   return [...set].sort((a, b) => a.localeCompare(b))
 }
 
+/**
+ * Splits a possibly multi-author string into individual author names, using the
+ * same separators as the ID scheme (`,` `&` `;`). So "Éliane Radigue, Julia
+ * Eckhardt" becomes two authors, each independently filterable.
+ */
+export function splitAuthors(author: string): string[] {
+  return String(author ?? '')
+    .split(/[,&;]/)
+    .map((a) => a.trim())
+    .filter(Boolean)
+}
+
 /** The distinct, sorted authors present across the catalog (for the filter). */
 export function authorOptions(books: Book[]): string[] {
   const set = new Set<string>()
-  for (const b of books) if (b.author) set.add(b.author)
+  for (const b of books) for (const a of splitAuthors(b.author)) set.add(a)
   return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
 }
 
