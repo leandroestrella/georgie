@@ -76,12 +76,74 @@ function doPost(e) {
         return json({ ok: true, book: updateBook_(body.id, { archived: false }) })
       case 'setLoan':
         return json({ ok: true, book: setLoan_(body.id, body.loan) })
+      case 'saveCover':
+        return json({ ok: true, book: saveCover_(body) })
       default:
         return json({ ok: false, error: 'unknown action: ' + body.action })
     }
   } catch (err) {
     return json({ ok: false, error: errorMessage_(err) })
   }
+}
+
+/**
+ * Snapshots a cover image to the cover host (cPanel `upload-cover.php`) and points
+ * the book's `Cover URL` at the stored copy, so the cover no longer depends on a
+ * live external source. The image is either fetched from a URL (`url` — the cover
+ * currently shown in the app) or supplied as base64 bytes (`image` — e.g. a photo
+ * of the physical cover taken by the admin).
+ *
+ * Config via Script Properties: `COVERS_UPLOAD_URL` (the PHP endpoint) and
+ * `COVERS_UPLOAD_SECRET` (shared with it). Requires the UrlFetchApp scope, which
+ * the token verifier already uses.
+ *
+ * @param {{id: string, url?: string, image?: string, contentType?: string}} body
+ * @return {Book} the updated book
+ */
+function saveCover_(body) {
+  var props = PropertiesService.getScriptProperties()
+  var endpoint = props.getProperty('COVERS_UPLOAD_URL')
+  var secret = props.getProperty('COVERS_UPLOAD_SECRET')
+  if (!endpoint || !secret) {
+    throw new Error('Cover host not configured (set COVERS_UPLOAD_URL / COVERS_UPLOAD_SECRET)')
+  }
+  var id = cellToString(body.id)
+  if (!id) throw new Error('Book id is required')
+
+  var blob
+  if (body.image) {
+    blob = Utilities.newBlob(Utilities.base64Decode(body.image), body.contentType || 'image/jpeg', id)
+  } else if (body.url) {
+    var resp = UrlFetchApp.fetch(body.url, { muteHttpExceptions: true, followRedirects: true })
+    if (resp.getResponseCode() !== 200) {
+      throw new Error('Could not fetch the cover (HTTP ' + resp.getResponseCode() + ')')
+    }
+    blob = resp.getBlob()
+    if ((blob.getContentType() || '').indexOf('image/') !== 0) {
+      throw new Error('That URL is not an image (' + blob.getContentType() + ')')
+    }
+    if (blob.getBytes().length < 1024) throw new Error('The cover image looks empty')
+  } else {
+    throw new Error('Provide a cover url or an uploaded image')
+  }
+
+  var up = UrlFetchApp.fetch(endpoint, {
+    method: 'post',
+    headers: { 'X-Upload-Secret': secret },
+    payload: { id: id, file: blob },
+    muteHttpExceptions: true,
+  })
+  if (up.getResponseCode() !== 200) {
+    throw new Error('Cover host rejected the upload (HTTP ' + up.getResponseCode() + '): ' + up.getContentText().slice(0, 200))
+  }
+  var out = JSON.parse(up.getContentText())
+  if (!out || !out.ok || !out.url) {
+    throw new Error('Cover host error: ' + (out && out.error ? out.error : 'unknown'))
+  }
+
+  // Cache-buster so re-uploading the same id shows the new image immediately.
+  var coverUrl = out.url + (out.url.indexOf('?') === -1 ? '?' : '&') + 'v=' + Date.now()
+  return updateBook_(id, { coverUrl: coverUrl })
 }
 
 // ---------------------------------------------------------------------------
