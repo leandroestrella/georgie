@@ -59,7 +59,10 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
             {tv('theme', book.theme)}
           </Link>
         )}
-        {/* Foot markers spread evenly across the width; sized to the theme chip. */}
+        {/* Foot markers spread evenly across the width; sized to the theme chip.
+            StatusIcons render as individual flex children (each raised above the
+            stretched-link overlay via z-[1]) so 1–2 status icons stay evenly
+            spaced between the zone and owner rather than clustering in the middle. */}
         <div className="mt-auto flex items-center justify-between gap-1 pt-1 [&_svg]:size-4">
           {book.zone ? (
             <Link to={`/?zone=${enc(book.zone)}`} className="relative z-[1]" aria-label={tv('zone', book.zone)}>
@@ -68,10 +71,7 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
           ) : (
             <span />
           )}
-          {/* Raised above the overlay so the on-loan tooltip stays hoverable. */}
-          <span className="relative z-[1]">
-            <StatusIcons book={book} />
-          </span>
+          <StatusIcons book={book} className="relative z-[1]" />
           {book.owner ? (
             <Link to={`/?owner=${enc(book.owner)}`} className="relative z-[1]">
               <OwnerBadge owner={book.owner} className="size-4 shrink-0" />
