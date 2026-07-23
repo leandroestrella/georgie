@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Book } from '@/api/types'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
+import { LanguageFlag } from './LanguageFlag'
 import { OwnerBadge } from './OwnerBadge'
 import { StatusIcons } from './StatusIcons'
 import { ZoneEmoji } from './ZoneEmoji'
@@ -89,6 +90,11 @@ export function BookTable({
                   <ZoneEmoji zone={book.zone} />
                 </Link>
               )}
+              {book.language.map((l) => (
+                <Link key={l} to={`/?language=${enc(l)}`} className="relative z-[1]" aria-label={tv('language', l)}>
+                  <LanguageFlag language={l} />
+                </Link>
+              ))}
               <div className="ml-auto flex items-center gap-2">
                 <span className="relative z-[1]">
                   <StatusIcons book={book} />
@@ -104,10 +110,12 @@ export function BookTable({
         ))}
       </ul>
 
-      {/* Desktop / tablet layout: real table. */}
-      <div className="hidden overflow-x-auto sm:block">
+      {/* Desktop / tablet layout: real table. The wrapper is the scroll container
+          (vertical + horizontal) with a capped height so the header can stick to
+          its top while the rows scroll under it. */}
+      <div className="hidden max-h-[calc(100svh-11rem)] overflow-auto sm:block">
         <table className="w-full text-sm">
-          <thead className="text-muted-foreground border-b text-left text-xs uppercase">
+          <thead className="text-muted-foreground bg-background sticky top-0 z-10 border-b text-left text-xs uppercase">
             {/* Title takes the slack (w-full) so the icon columns hug their content
                 and sit evenly at the end instead of drifting apart. */}
             <tr>
@@ -115,9 +123,10 @@ export function BookTable({
               <th className="p-3 font-medium">{t('book.author')}</th>
               <th className="p-3 font-medium">{t('sort.year')}</th>
               <th className="p-3 font-medium">{t('book.theme')}</th>
-              <th className="p-3 font-medium">{t('filters.zone')}</th>
-              <th className="p-3 font-medium">{t('book.owner')}</th>
-              <th className="p-3 font-medium">{t('filters.status')}</th>
+              <th className="p-3 text-center font-medium">{t('filters.zone')}</th>
+              <th className="p-3 text-center font-medium">{t('filters.language')}</th>
+              <th className="p-3 text-center font-medium">{t('book.owner')}</th>
+              <th className="p-3 text-center font-medium">{t('filters.status')}</th>
             </tr>
           </thead>
           <tbody>
@@ -151,15 +160,25 @@ export function BookTable({
                   )}
                 </td>
                 {/* Zone as an emoji (name on hover), between Theme and Owner. */}
-                <td className="p-3">
+                <td className="p-3 text-center">
                   {book.zone && (
                     <Link to={`/?zone=${enc(book.zone)}`} onClick={stop} aria-label={tv('zone', book.zone)}>
                       <ZoneEmoji zone={book.zone} />
                     </Link>
                   )}
                 </td>
-                {/* Logo rather than the name — the tooltip names the owner. */}
+                {/* Edition language(s) as clickable flag(s); the tooltip names each. */}
                 <td className="p-3">
+                  <div className="flex items-center justify-center gap-1.5">
+                    {book.language.map((l) => (
+                      <Link key={l} to={`/?language=${enc(l)}`} onClick={stop} aria-label={tv('language', l)}>
+                        <LanguageFlag language={l} />
+                      </Link>
+                    ))}
+                  </div>
+                </td>
+                {/* Logo rather than the name — the tooltip names the owner. */}
+                <td className="p-3 text-center">
                   {book.owner && (
                     <Link to={`/?owner=${enc(book.owner)}`} onClick={stop}>
                       <OwnerBadge owner={book.owner} />
@@ -167,8 +186,8 @@ export function BookTable({
                   )}
                 </td>
                 <td className="p-3">
-                  <div className="flex items-center gap-1.5">
-                    <StatusIcons book={book} />
+                  <div className="flex items-center justify-center gap-1.5">
+                    <StatusIcons book={book} showAvailable />
                   </div>
                 </td>
               </tr>
