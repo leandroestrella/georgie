@@ -91,7 +91,7 @@ export function BookTable({
                 </Link>
               )}
               {book.language.map((l) => (
-                <Link key={l} to={`/?language=${enc(l)}`} className="relative z-[1]" aria-label={tv('language', l)}>
+                <Link key={l} to={`/?lang=${enc(l)}`} className="relative z-[1]" aria-label={tv('language', l)}>
                   <LanguageFlag language={l} />
                 </Link>
               ))}
@@ -160,30 +160,34 @@ export function BookTable({
                   )}
                 </td>
                 {/* Zone as an emoji (name on hover), between Theme and Owner. */}
-                <td className="p-3 text-center">
-                  {book.zone && (
-                    <Link to={`/?zone=${enc(book.zone)}`} onClick={stop} aria-label={tv('zone', book.zone)}>
-                      <ZoneEmoji zone={book.zone} />
-                    </Link>
-                  )}
+                <td className="p-3">
+                  <div className="flex justify-center">
+                    {book.zone && (
+                      <Link to={`/?zone=${enc(book.zone)}`} onClick={stop} aria-label={tv('zone', book.zone)}>
+                        <ZoneEmoji zone={book.zone} />
+                      </Link>
+                    )}
+                  </div>
                 </td>
                 {/* Edition language(s) as clickable flag(s); the tooltip names each. */}
                 <td className="p-3">
                   <div className="flex items-center justify-center gap-1.5">
                     {book.language.map((l) => (
-                      <Link key={l} to={`/?language=${enc(l)}`} onClick={stop} aria-label={tv('language', l)}>
+                      <Link key={l} to={`/?lang=${enc(l)}`} onClick={stop} aria-label={tv('language', l)}>
                         <LanguageFlag language={l} />
                       </Link>
                     ))}
                   </div>
                 </td>
                 {/* Logo rather than the name — the tooltip names the owner. */}
-                <td className="p-3 text-center">
-                  {book.owner && (
-                    <Link to={`/?owner=${enc(book.owner)}`} onClick={stop}>
-                      <OwnerBadge owner={book.owner} />
-                    </Link>
-                  )}
+                <td className="p-3">
+                  <div className="flex justify-center">
+                    {book.owner && (
+                      <Link to={`/?owner=${enc(book.owner)}`} onClick={stop}>
+                        <OwnerBadge owner={book.owner} />
+                      </Link>
+                    )}
+                  </div>
                 </td>
                 <td className="p-3">
                   <div className="flex items-center justify-center gap-1.5">
