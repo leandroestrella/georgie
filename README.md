@@ -1,4 +1,4 @@
-<img src="assets/georgie.gif" alt="georgie animated avatar" width=25%>
+<img src="assets/georgie.gif" alt="georgie animated avatar" width=15%>
 
 # georgie
 
@@ -24,7 +24,7 @@ flowchart LR
     SPA -->|writes, token-verified| GAS
     GAS --> SHEET[(private google sheet)]
     SPA -->|metadata| EXT[google books / open library]
-    SPA -->|covers| COV[open library / amazon]
+    SPA -->|covers| COV[your host / open library / amazon]
 ```
 
 ## features
@@ -32,12 +32,12 @@ flowchart LR
 - 📚 public, read-only catalog — instant search, filter and sort by zone, theme, author, owner, language, read-by and status; card and table views, both responsive down to a phone
 - 🔎 book details fetched from the web by isbn (google books → open library), only filling empty fields; title/author search with a candidate picker for books with no isbn
 - 📷 **barcode scanning** — point a phone camera at the back-cover barcode (the ean-13 *is* the isbn) to look a book up; native on android, a lazy-loaded decoder on ios
-- 🖼 covers with a fallback chain: stored url → open library → amazon by isbn-10 → a zone-tinted placeholder
+- 🖼 covers with a fallback chain: stored url → open library → amazon by isbn-10 → a zone-tinted placeholder; admins can pin the shown cover — or snap a photo of the book — to your own host so it never rots
 - ✏️ admin sign-in to add, edit, archive (soft-delete, with an archived view + restore) and lend books
 - 🧹 a "needs attention" filter (missing year, `circa`, no cover, no original language) — the tool for finishing the catalog from the shelf
 - 🤝 loan tracking — lend a book (borrower + date), return it; exchange flag for books offered on book-exchange platforms
-- 🗂 categories driven by the sheet itself: zones (with their own colors) grouping themes, mirroring the physical shelves
-- 🌍 interface in english, italiano and español (the sheet's zone/theme/language vocabularies translate too)
+- 🗂 categories driven by the sheet itself: zones (with their own colors, and emoji or image markers) grouping themes, mirroring the physical shelves; owner and reader badges come from the sheet too
+- 🌍 interface in english, italiano and español (zone/theme/language names and per-zone descriptions translate too)
 - 🪪 human-readable call-number ids (`ORW-198-1950`), generated once and immutable
 
 ## tech stack
@@ -57,6 +57,7 @@ flowchart LR
 ```
 web/          the spa (vite + react)
 apps-script/  the backend api (synced with clasp)
+cpanel/       optional php endpoint for hosting covers on your own server
 ```
 
 ## run your own instance
@@ -71,6 +72,7 @@ georgie is a template for anyone who wants to catalog their own shelves:
    - add a script property `OAUTH_CLIENT_ID` (Project Settings → Script Properties) with the client id from step 3, so the backend can verify sign-in tokens
 5. copy `web/.env.example` to `web/.env.local` and fill in `VITE_API_URL` (your `/exec` url) and `VITE_GOOGLE_CLIENT_ID` — both are public, so they can also live in github repo secrets for the deploy action
 6. `npm install && npm run build` in `web/`, and host the `dist/` folder anywhere static files live (an `.htaccess` for spa routing + basic headers is included for apache/cpanel)
+7. *(optional)* to let admins save covers to your own host, drop [`cpanel/upload-cover.php`](cpanel/upload-cover.php) on the server and add the `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` script properties — see [cpanel/README.md](cpanel/README.md)
 
 both config values are safe to publish (the oauth client id is public by design, and every write is gated server-side by google id-token verification against the `Users` allowlist) — nothing secret ever lands in the repo.
 
