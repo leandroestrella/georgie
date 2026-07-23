@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeftIcon, ExternalLinkIcon, HandCoinsIcon, RepeatIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCover } from '@/catalog/BookCover'
 import { OwnerBadge } from '@/catalog/OwnerBadge'
@@ -9,6 +9,7 @@ import { languageFlag } from '@/catalog/languageFlags'
 import { ZoneTooltip } from '@/catalog/ZoneEmoji'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
+import { CoverAdminActions } from '@/catalog/CoverAdminActions'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { isSafeHttpUrl } from '@/catalog/validation'
@@ -31,6 +32,8 @@ export function BookDetailPage() {
   const tv = useVocab()
   const { getBook, loading, zoneColor } = useCatalog()
   const book = getBook(decodeURIComponent(id))
+  // The cover URL actually rendered (from BookCover), so admins can save it.
+  const [displayedCoverUrl, setDisplayedCoverUrl] = useState<string | null>(null)
 
   const back = (
     <Link to="/" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm">
@@ -70,9 +73,12 @@ export function BookDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         {back}
-        <AdminBookActions book={book} />
+        <div className="flex flex-col items-end gap-2">
+          <AdminBookActions book={book} />
+          <CoverAdminActions book={book} displayedCoverUrl={displayedCoverUrl} />
+        </div>
       </div>
 
       {/* Capped width trims the empty space on the right. On sm+ the cover column
@@ -81,7 +87,7 @@ export function BookDetailPage() {
           3/4 ratio so the cover doesn't collapse in the single-column stack. */}
       <div className="grid max-w-4xl gap-6 sm:grid-cols-[minmax(0,17rem)_1fr]">
         <div className="bg-muted aspect-[3/4] w-full max-w-[220px] overflow-hidden rounded-lg border sm:aspect-auto sm:max-w-none">
-          <BookCover book={book} colors={colors} className="size-full" />
+          <BookCover book={book} colors={colors} className="size-full" onResolved={setDisplayedCoverUrl} />
         </div>
 
         <div className="flex flex-col gap-3">

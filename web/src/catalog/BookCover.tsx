@@ -17,10 +17,14 @@ export function BookCover({
   book,
   colors = NEUTRAL_ZONE,
   className,
+  onResolved,
 }: {
   book: Book
   colors?: ZoneColors
   className?: string
+  /** Reports the cover URL that actually rendered (or null for the placeholder),
+   *  so callers can offer "save this cover". */
+  onResolved?: (url: string | null) => void
 }) {
   const sources = coverSources(book)
   const [index, setIndex] = useState(0)
@@ -30,6 +34,11 @@ export function BookCover({
 
   const src = sources[index]
   const next = () => setIndex((i) => i + 1)
+
+  // No source left → the placeholder is showing; report "no saveable cover".
+  useEffect(() => {
+    if (!src) onResolved?.(null)
+  }, [src, onResolved])
 
   if (!src) {
     return (
@@ -54,6 +63,7 @@ export function BookCover({
       onLoad={(e) => {
         const img = e.currentTarget
         if (isBlankPixel(img.naturalWidth, img.naturalHeight)) next()
+        else onResolved?.(src)
       }}
       className={cn('object-cover', className)}
     />

@@ -113,7 +113,10 @@
     "archivedBadge": "Archivado",
     "archivedEmpty": "No hay nada archivado.",
     "confirmArchiveTitle": "¿Archivar este libro?",
-    "confirmArchiveBody": "«{{title}}» desaparecerá del catálogo público. No se elimina nada — puedes restaurarlo desde Archivados."
+    "confirmArchiveBody": "«{{title}}» desaparecerá del catálogo público. No se elimina nada — puedes restaurarlo desde Archivados.",
+    "saveCover": "Guardar portada",
+    "uploadCover": "Subir foto",
+    "savingCover": "Guardando portada…"
   },
   "attention": {
     "missingYear": "falta el año",

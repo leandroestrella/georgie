@@ -113,7 +113,10 @@
     "archivedBadge": "Archived",
     "archivedEmpty": "Nothing is archived.",
     "confirmArchiveTitle": "Archive this book?",
-    "confirmArchiveBody": "“{{title}}” will disappear from the public catalog. Nothing is deleted — you can restore it from the Archived view."
+    "confirmArchiveBody": "“{{title}}” will disappear from the public catalog. Nothing is deleted — you can restore it from the Archived view.",
+    "saveCover": "Save cover",
+    "uploadCover": "Upload photo",
+    "savingCover": "Saving cover…"
   },
   "attention": {
     "missingYear": "missing year",

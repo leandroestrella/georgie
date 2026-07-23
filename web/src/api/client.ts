@@ -126,6 +126,20 @@ export async function setLoan(id: string, loan: LoanInput | null): Promise<Book>
   return data.book
 }
 
+/**
+ * Snapshots a cover to the library's own host and updates the book's `Cover URL`.
+ * The image is either fetched from a URL (`url` — the cover currently shown) or
+ * supplied as base64 bytes (`image` — a photo of the physical cover).
+ */
+export async function saveCover(
+  id: string,
+  source: { url: string } | { image: string; contentType: string },
+): Promise<Book> {
+  if (!hasBackend) throw new ApiError('Saving covers requires the backend.')
+  const data = await post<{ book: Book }>({ action: 'saveCover', id, ...source })
+  return data.book
+}
+
 // ---------------------------------------------------------------------------
 // HTTP transport (backend mode)
 // ---------------------------------------------------------------------------
