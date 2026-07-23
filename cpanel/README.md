@@ -18,7 +18,10 @@ Apps Script does, after it has verified the admin.
 ### 1. Put the endpoint on the host
 Copy [`upload-cover.php`](upload-cover.php) into the **georgie docroot** (same
 folder as the app's `index.html`), via SSH or FTP. It creates `covers/` next to
-itself on first use (with an `.htaccess` that disables script execution there).
+itself on first use. (Uploads are validated as real images and stored with a
+forced image extension, so no script can execute from there — and we deliberately
+avoid an `.htaccess` in `covers/`, since directives like `php_flag` 500 under
+cPanel's PHP-FPM.)
 
 Covers are then served as static files at `https://<your-host>/covers/<id>.jpg`.
 The app's existing `.htaccess` serves real files before the SPA fallback, so these

@@ -63,11 +63,11 @@ $ext = $ALLOWED[$mime];
 $dir = __DIR__ . '/covers';
 if (!is_dir($dir) && !mkdir($dir, 0755, true)) fail(500, 'mkdir failed');
 
-// Defence-in-depth: never let anything in covers/ be executed as a script.
-$ht = $dir . '/.htaccess';
-if (!is_file($ht)) {
-  @file_put_contents($ht, "php_flag engine off\nRemoveHandler .php .phtml .php3 .php4 .php5 .php7 .cgi\nSetHandler none\n");
-}
+// Note: we deliberately do NOT drop an .htaccess here. On cPanel (PHP-FPM/CGI)
+// directives like `php_flag` are invalid in .htaccess and return HTTP 500 for the
+// whole folder. Script execution is already prevented upstream: every upload is
+// verified as a real image (getimagesize) and stored with a forced image
+// extension, so a disguised script can never land here as executable.
 
 // Drop any prior variant for this id so a re-upload never leaves a stale file.
 foreach ($ALLOWED as $e) {
