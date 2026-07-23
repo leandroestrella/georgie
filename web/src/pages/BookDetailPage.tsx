@@ -4,6 +4,8 @@ import { ArrowLeftIcon, ExternalLinkIcon, HandCoinsIcon, RepeatIcon } from 'luci
 import type { ReactNode } from 'react'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCover } from '@/catalog/BookCover'
+import { OwnerBadge } from '@/catalog/OwnerBadge'
+import { languageFlag } from '@/catalog/languageFlags'
 import { ZoneTooltip } from '@/catalog/ZoneEmoji'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
@@ -147,20 +149,72 @@ export function BookDetailPage() {
           <dl className="divide-y">
             <Row label={t('book.publisher')}>{book.publisher}</Row>
             <Row label={t('book.language')}>
-              {book.language.map((l) => tv('language', l)).join(', ')}
+              {book.language.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  {book.language.map((l) => {
+                    const flag = languageFlag(l)
+                    return (
+                      <Link
+                        key={l}
+                        to={`/?lang=${encodeURIComponent(l)}`}
+                        className="inline-flex items-center gap-1.5 hover:underline"
+                      >
+                        {flag && <span className="text-[1.05rem] leading-none">{flag}</span>}
+                        {tv('language', l)}
+                      </Link>
+                    )
+                  })}
+                </div>
+              ) : (
+                ''
+              )}
             </Row>
             <Row label={t('book.originalLanguage')}>
-              {book.originalLanguage ? tv('language', book.originalLanguage) : ''}
+              {book.originalLanguage ? (
+                <span className="inline-flex items-center gap-1.5">
+                  {languageFlag(book.originalLanguage) && (
+                    <span className="text-[1.05rem] leading-none">{languageFlag(book.originalLanguage)}</span>
+                  )}
+                  {tv('language', book.originalLanguage)}
+                </span>
+              ) : (
+                ''
+              )}
             </Row>
             <Row label={t('book.isbn')}>
               {book.isbn && book.isbn.toUpperCase() !== 'N/A' ? book.isbn : t('book.noIsbn')}
             </Row>
             <Row label={t('book.owner')}>
-              <Link to={`/?owner=${encodeURIComponent(book.owner)}`} className="hover:underline">
-                {book.owner}
-              </Link>
+              {book.owner ? (
+                <Link
+                  to={`/?owner=${encodeURIComponent(book.owner)}`}
+                  className="inline-flex items-center gap-1.5 hover:underline"
+                >
+                  <OwnerBadge owner={book.owner} className="size-4" />
+                  {book.owner}
+                </Link>
+              ) : (
+                ''
+              )}
             </Row>
-            <Row label={t('book.readBy')}>{book.readBy.join(', ')}</Row>
+            <Row label={t('book.readBy')}>
+              {book.readBy.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  {book.readBy.map((r) => (
+                    <Link
+                      key={r}
+                      to={`/?reader=${encodeURIComponent(r)}`}
+                      className="inline-flex items-center gap-1.5 hover:underline"
+                    >
+                      <OwnerBadge owner={r} className="size-4" />
+                      {r}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                ''
+              )}
+            </Row>
             <Row label={t('book.reference')}>
               {isSafeHttpUrl(book.referenceUrl) && (
                 <a
