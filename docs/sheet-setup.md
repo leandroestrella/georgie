@@ -36,7 +36,7 @@ The header row must contain these columns (order doesn't matter):
 | `Cover URL`        | image URL for the cover                    | blank → the app falls back to Open Library, then Amazon, then a zone-tinted placeholder. Admins can pin a stored cover here — see [cover hosting](../cpanel/README.md). |
 | `Theme`            | the book's theme                           | **Must match a theme defined on the `Zones` tab** — the Zone is derived from it. |
 | `Zone`             | parent zone                                | **Derived, not authored.** The app writes it, but never trusts it on read (it's recomputed from `Theme`). You can leave it blank. |
-| `Owner`            | who owns the copy                          | a name from the `Owner options` list. |
+| `Owner`            | who owns the copy                          | one or more names from the `Owner options` list; separate co-owners with `,` `&` or `;` (each owner's marker is shown). |
 | `Reference URL`    | external link about the book               | must be `http(s)` to render as a link. |
 | `Read by`          | who has read it                            | comma-separated names (same people as owners). |
 | `Borrowed`         | on loan right now?                          | checkbox / `TRUE`·`FALSE`·`1`·`0`·`yes`. |
