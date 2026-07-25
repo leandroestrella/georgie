@@ -1,7 +1,7 @@
 /**
  * Unit tests for the pure catalog logic (run with `npm test` → node --test).
  * These exercise the framework-free functions in catalog.js with data shaped
- * like the real sheet (see PLAN.md §1). No SpreadsheetApp, no network.
+ * like the real sheet. No SpreadsheetApp, no network.
  */
 const test = require('node:test')
 const assert = require('node:assert/strict')

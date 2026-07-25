@@ -1,5 +1,5 @@
 /**
- * Web metadata lookup — "grab book details from the web" (PLAN.md §3.3).
+ * Web metadata lookup — "grab book details from the web".
  *
  * Two public, CORS-friendly sources, tried in order:
  *   1. Google Books — per-edition data, includes the language. Unauthenticated

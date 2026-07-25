@@ -10,8 +10,6 @@
  *
  * CORE RULE: columns are always resolved by HEADER NAME, never by position, so
  * reordering or inserting sheet columns can never corrupt the mapping.
- *
- * See PLAN.md §1 for the confirmed schema and ID scheme.
  */
 
 /** Canonical Catalog header names (map by name, never by index). */
@@ -369,7 +367,7 @@ function readColumn(values, colIndex) {
 }
 
 // ---------------------------------------------------------------------------
-// Call-number ID generation (PLAN.md §1)
+// Call-number ID generation
 // ---------------------------------------------------------------------------
 
 /**

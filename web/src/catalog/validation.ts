@@ -2,8 +2,7 @@
  * Pure validation for the book form — no React, fully unit-tested.
  *
  * The `N/A` sentinel is first-class here: it means "this printing genuinely has
- * no ISBN" and must validate as *valid-and-absent*, never as a malformed ISBN
- * (see PLAN.md §7).
+ * no ISBN" and must validate as *valid-and-absent*, never as a malformed ISBN.
  */
 import type { Book, NewBook } from '@/api/types'
 import { NO_ISBN } from './constants'

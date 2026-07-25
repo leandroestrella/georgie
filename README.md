@@ -8,8 +8,6 @@ a web app for managing our physical home library — browsing, cataloguing, lend
 
 > live at [georgie.leandroestrella.com](https://georgie.leandroestrella.com/)
 
-> see [PLAN.md](PLAN.md) for the full design and decisions.
-
 ## how it works?
 
 the catalog lives in a google sheet. a static web app reads and displays it publicly; admins sign in with google to make changes, which flow through a google apps script api back into the sheet.
@@ -64,7 +62,7 @@ cpanel/       optional php endpoint for hosting covers on your own server
 
 georgie is a template for anyone who wants to catalog their own shelves:
 
-1. copy the google sheet template — a `Catalog` tab with the book columns (see [PLAN.md §1](PLAN.md)), a `Zones` tab defining your categories, and a `Lists` tab for owners/languages. keep it **private** (the app reads it through the backend, so it never needs to be link-shared)
+1. copy the google sheet template — a `Catalog` tab with the book columns, a `Zones` tab defining your categories, and a `Lists` tab for owners/languages. keep it **private** (the app reads it through the backend, so it never needs to be link-shared)
 2. create a bound apps script on your sheet: `cd apps-script`, `npm install`, `npx clasp login`, then `clasp clone <scriptId>` (or create the project via the sheet's Extensions → Apps Script and `clasp push`). deploy it as a web app ("execute as: me", "who has access: anyone"). run any function once from the editor to grant the scopes (spreadsheet + external requests), clicking through the consent screen
 3. create a google oauth client id (web application) for the sign-in button; add your site's origin to its authorized javascript origins
 4. configure admins & the client id on the backend:

@@ -4,7 +4,7 @@
  * previews for a new book matches the one the backend ultimately assigns.
  *
  * Format: `AAA-TTT-YYYY` (author surname / title / edition year), with `-2`,
- * `-3`… collision suffixes. IDs are immutable once assigned (see PLAN.md §1).
+ * `-3`… collision suffixes. IDs are immutable once assigned.
  */
 
 /** Leading articles skipped when deriving the title token (EN/IT/ES/FR). */

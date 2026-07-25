@@ -42,8 +42,8 @@ const components: Components = {
         {children}
       </a>
     ) : (
-      // Repo-relative links (PLAN.md, LICENSE, source paths) don't resolve in the
-      // deployed SPA, so render them as plain emphasized text rather than dead links.
+      // Repo-relative links (LICENSE, source paths) don't resolve in the deployed
+      // SPA, so render them as plain emphasized text rather than dead links.
       <span className="font-medium">{children}</span>
     ),
   img: ({ src, alt, ...props }) => {

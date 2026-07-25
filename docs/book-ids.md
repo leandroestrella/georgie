@@ -127,7 +127,7 @@ Two gaps vs. the app, so prefer Option A when either applies:
 ### For bulk — `backfillIds`
 
 To (re)fill the whole column at once with correct collision handling, run the
-one-off `backfillIds` Apps Script (PLAN.md §1/§6). Treat it as a deliberate,
+one-off `backfillIds` Apps Script. Treat it as a deliberate,
 run-once maintenance step.
 
 ---
@@ -135,7 +135,7 @@ run-once maintenance step.
 ## Re-generating an ID by hand (rare)
 
 Because these IDs are **internal only** — they're never printed on the physical
-books or spine labels (PLAN.md §6) — it is safe to re-mint one if it really
+books or spine labels — it is safe to re-mint one if it really
 matters (e.g. a book was added with a badly wrong title/author and now carries a
 meaningless ID). The only thing you break is any **external link/bookmark** to
 the old `/book/<old-id>` URL, and any in-flight edit keyed to the old ID.

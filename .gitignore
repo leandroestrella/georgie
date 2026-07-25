@@ -52,3 +52,6 @@ Thumbs.db
 # Claude Code — local AI-assistant files, not part of the public template
 .claude/
 CLAUDE.md
+
+# Internal design doc — kept locally, not published
+PLAN.md
