@@ -27,7 +27,7 @@ flowchart LR
 
 ## features
 
-- 📚 public, read-only catalog — instant search, filter and sort by zone, theme, author, owner, language, read-by and status; card and table views, both responsive down to a phone
+- 📚 public, read-only catalog — instant search; filter by zone, theme, author, owner, language, read-by and status; sort by title, author or year; card and table views, both responsive down to a phone
 - 🔎 book details fetched from the web by isbn (google books → open library), only filling empty fields; title/author search with a candidate picker for books with no isbn
 - 📷 **barcode scanning** — point a phone camera at the back-cover barcode (the ean-13 *is* the isbn) to look a book up; native on android, a lazy-loaded decoder on ios
 - 🖼 covers with a fallback chain: stored url → open library → amazon by isbn-10 → a zone-tinted placeholder; admins can pin the shown cover — or snap a photo of the book — to your own host so it never rots
@@ -37,6 +37,7 @@ flowchart LR
 - 🗂 categories driven by the sheet itself: zones (with their own colors, and emoji or image markers) grouping themes, mirroring the physical shelves; owner and reader badges come from the sheet too
 - 🌍 interface in english, italiano and español (zone/theme/language names and per-zone descriptions translate too)
 - 🪪 human-readable call-number ids (`ORW-198-1950`), generated once and immutable
+- 📖 an in-app **about** page — the project readme, rendered from the georgie avatar — with a footer linking to the source and the author
 
 ## tech stack
 
@@ -56,6 +57,8 @@ flowchart LR
 web/          the spa (vite + react)
 apps-script/  the backend api (synced with clasp)
 cpanel/       optional php endpoint for hosting covers on your own server
+docs/         maintainer guides (book ids, sheet markers, translations)
+assets/       brand art
 ```
 
 ## run your own instance
@@ -73,6 +76,15 @@ georgie is a template for anyone who wants to catalog their own shelves:
 7. *(optional)* to let admins save covers to your own host, drop [`cpanel/upload-cover.php`](cpanel/upload-cover.php) on the server and add the `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` script properties — see [cpanel/README.md](cpanel/README.md)
 
 both config values are safe to publish (the oauth client id is public by design, and every write is gated server-side by google id-token verification against the `Users` allowlist) — nothing secret ever lands in the repo.
+
+## maintainer guides
+
+day-to-day how-tos for running your catalog live in [`docs/`](docs/):
+
+- [book ids](docs/book-ids.md) — how call-number ids are generated, `=MAKEID`, and the rare manual re-mint
+- [markers](docs/markers.md) — owner/reader/zone badges driven by sheet columns
+- [translations](docs/translations.md) — translating zone/theme/language names and zone descriptions
+- [cover hosting](cpanel/README.md) — the optional self-hosted cover endpoint
 
 ## development
 
