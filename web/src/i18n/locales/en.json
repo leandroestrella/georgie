@@ -3,7 +3,9 @@
     "tagline": "a cozy little home for your home library."
   },
   "nav": {
-    "about": "about georgie"
+    "about": "about georgie",
+    "repo": "source on github",
+    "portfolio": "leandro estrella — portfolio"
   },
   "catalog": {
     "search": "search title or author…",

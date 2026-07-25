@@ -3,7 +3,9 @@
     "tagline": "un hogar acogedor para tu biblioteca de casa."
   },
   "nav": {
-    "about": "acerca de georgie"
+    "about": "acerca de georgie",
+    "repo": "código en github",
+    "portfolio": "leandro estrella — portafolio"
   },
   "catalog": {
     "search": "busca título o autor…",

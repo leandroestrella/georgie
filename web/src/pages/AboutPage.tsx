@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from 'lucide-react'
 import Markdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
+import { Mermaid } from '@/components/Mermaid'
 // The repo-root README is the single source of truth; we render it verbatim.
 // It lives above web/, so vite.config allows the dev server to read it.
 import readme from '../../../README.md?raw'
@@ -50,18 +51,31 @@ const components: Components = {
     const resolved = typeof src === 'string' ? src.replace(/^assets\//, '/') : src
     return <img {...props} src={resolved} alt={alt ?? ''} className="my-4 max-w-full rounded-lg" />
   },
-  code: ({ className, children }) =>
-    className?.includes('language-') ? (
+  code: ({ className, children }) => {
+    // Render mermaid fences as actual diagrams rather than as their source.
+    if (className?.includes('language-mermaid')) return <Mermaid chart={String(children)} />
+    return className?.includes('language-') ? (
       // Fenced block (rendered inside <pre>): keep it plain, <pre> styles it.
       <code className={className}>{children}</code>
     ) : (
       <code className="bg-muted rounded px-1.5 py-0.5 font-mono text-[0.85em]">{children}</code>
-    ),
-  pre: ({ children }) => (
-    <pre className="bg-muted my-4 overflow-x-auto rounded-lg border p-4 text-sm leading-relaxed">
-      {children}
-    </pre>
-  ),
+    )
+  },
+  pre: ({ children, node }) => {
+    // A mermaid fence renders as a diagram (via the `code` override), so drop the
+    // code-block chrome around it; other fences keep the styled <pre>.
+    const child = node?.children?.[0]
+    const cls =
+      child?.type === 'element' && Array.isArray(child.properties?.className)
+        ? (child.properties.className as string[])
+        : []
+    if (cls.includes('language-mermaid')) return <>{children}</>
+    return (
+      <pre className="bg-muted my-4 overflow-x-auto rounded-lg border p-4 text-sm leading-relaxed">
+        {children}
+      </pre>
+    )
+  },
   hr: () => <hr className="my-8" />,
 }
 
