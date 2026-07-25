@@ -65,7 +65,7 @@ assets/       brand art
 
 georgie is a template for anyone who wants to catalog their own shelves:
 
-1. copy the google sheet template — a `Catalog` tab with the book columns, a `Zones` tab defining your categories, and a `Lists` tab for owners/languages. keep it **private** (the app reads it through the backend, so it never needs to be link-shared)
+1. copy the google sheet template — a `Catalog` tab with the book columns, a `Zones` tab defining your categories, and a `Lists` tab for owners/languages (the exact column headers are in [docs/sheet-setup.md](docs/sheet-setup.md)). keep it **private** (the app reads it through the backend, so it never needs to be link-shared)
 2. create a bound apps script on your sheet: `cd apps-script`, `npm install`, `npx clasp login`, then `clasp clone <scriptId>` (or create the project via the sheet's Extensions → Apps Script and `clasp push`). deploy it as a web app ("execute as: me", "who has access: anyone"). run any function once from the editor to grant the scopes (spreadsheet + external requests), clicking through the consent screen
 3. create a google oauth client id (web application) for the sign-in button; add your site's origin to its authorized javascript origins
 4. configure admins & the client id on the backend:
@@ -81,6 +81,7 @@ both config values are safe to publish (the oauth client id is public by design,
 
 day-to-day how-tos for running your catalog live in [`docs/`](docs/):
 
+- [sheet setup](docs/sheet-setup.md) — the exact `Catalog` / `Zones` / `Lists` column schema
 - [book ids](docs/book-ids.md) — how call-number ids are generated, `=MAKEID`, and the rare manual re-mint
 - [markers](docs/markers.md) — owner/reader/zone badges driven by sheet columns
 - [translations](docs/translations.md) — translating zone/theme/language names and zone descriptions
