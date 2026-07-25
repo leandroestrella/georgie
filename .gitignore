@@ -48,3 +48,7 @@ Thumbs.db
 
 # temp files
 .temp/
+
+# Claude Code — local AI-assistant files, not part of the public template
+.claude/
+CLAUDE.md
