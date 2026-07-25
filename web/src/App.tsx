@@ -64,8 +64,15 @@ function Layout({ children }: { children: ReactNode }) {
 
       {/* Footer: the author's portfolio (left) and this project's source (right).
           Sticky to the viewport bottom, mirroring the sticky header — same
-          max-width and horizontal padding, so they line up under the header. */}
-      <footer className="bg-background/90 sticky bottom-0 z-30 border-t backdrop-blur">
+          max-width and horizontal padding, so they line up under the header. On a
+          phone it slides down out of the way while scrolling down (like the
+          header), reclaiming the space; on desktop it stays put. */}
+      <footer
+        className={cn(
+          'bg-background/90 sticky bottom-0 z-30 border-t backdrop-blur transition-transform duration-200',
+          hidden && 'max-sm:translate-y-full',
+        )}
+      >
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <a
             href="https://www.leandroestrella.com/"
