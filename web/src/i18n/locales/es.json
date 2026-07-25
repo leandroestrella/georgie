@@ -2,6 +2,9 @@
   "app": {
     "tagline": "un hogar acogedor para tu biblioteca de casa."
   },
+  "nav": {
+    "about": "acerca de georgie"
+  },
   "catalog": {
     "search": "busca título o autor…",
     "count_one": "{{count}} libro",

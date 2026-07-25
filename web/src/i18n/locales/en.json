@@ -2,6 +2,9 @@
   "app": {
     "tagline": "a cozy little home for your home library."
   },
+  "nav": {
+    "about": "about georgie"
+  },
   "catalog": {
     "search": "search title or author…",
     "count_one": "{{count}} book",
