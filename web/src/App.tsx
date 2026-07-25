@@ -63,8 +63,9 @@ function Layout({ children }: { children: ReactNode }) {
       </SubHeaderContext>
 
       {/* Footer: the author's portfolio (left) and this project's source (right).
-          Same max-width and horizontal padding as the header so they line up. */}
-      <footer className="border-t">
+          Sticky to the viewport bottom, mirroring the sticky header — same
+          max-width and horizontal padding, so they line up under the header. */}
+      <footer className="bg-background/90 sticky bottom-0 z-30 border-t backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
           <a
             href="https://www.leandroestrella.com/"
