@@ -8,6 +8,7 @@ import {
   readerOptions,
   sortBooks,
   splitAuthors,
+  splitOwners,
 } from './filter'
 
 const make = (over: Partial<Book>): Book => ({
@@ -102,5 +103,17 @@ describe('helpers', () => {
     expect(authorOptions(multi)).toEqual(['Alain Elkann', 'Giuseppe Penone'])
     expect(filterBooks(multi, { ...EMPTY_FILTERS, author: 'Alain Elkann' }).map((b) => b.id)).toEqual(['m'])
     expect(filterBooks(multi, { ...EMPTY_FILTERS, author: 'Giuseppe Penone, Alain Elkann' })).toEqual([])
+  })
+  it('splitOwners splits on , & ; and trims', () => {
+    expect(splitOwners('leandro, maria')).toEqual(['leandro', 'maria'])
+    expect(splitOwners('a & b; c')).toEqual(['a', 'b', 'c'])
+    expect(splitOwners('leandro')).toEqual(['leandro'])
+    expect(splitOwners('')).toEqual([])
+  })
+  it('owner filter matches any owner of a co-owned book', () => {
+    const shared = [make({ id: 's', owner: 'leandro, maria' })]
+    expect(filterBooks(shared, { ...EMPTY_FILTERS, owner: 'maria' }).map((b) => b.id)).toEqual(['s'])
+    expect(filterBooks(shared, { ...EMPTY_FILTERS, owner: 'leandro' }).map((b) => b.id)).toEqual(['s'])
+    expect(filterBooks(shared, { ...EMPTY_FILTERS, owner: 'hugo' })).toEqual([])
   })
 })

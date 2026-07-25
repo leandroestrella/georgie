@@ -10,6 +10,7 @@ import { ZoneTooltip } from '@/catalog/ZoneEmoji'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
 import { AuthorLinks } from '@/catalog/AuthorLinks'
+import { splitOwners } from '@/catalog/filter'
 import { CoverAdminActions } from '@/catalog/CoverAdminActions'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -187,14 +188,19 @@ export function BookDetailPage() {
               {book.isbn && book.isbn.toUpperCase() !== 'N/A' ? book.isbn : t('book.noIsbn')}
             </Row>
             <Row label={t('book.owner')}>
-              {book.owner ? (
-                <Link
-                  to={`/?owner=${encodeURIComponent(book.owner)}`}
-                  className="inline-flex items-center gap-1.5 hover:underline"
-                >
-                  <OwnerBadge owner={book.owner} className="size-4" />
-                  {book.owner}
-                </Link>
+              {splitOwners(book.owner).length > 0 ? (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  {splitOwners(book.owner).map((o) => (
+                    <Link
+                      key={o}
+                      to={`/?owner=${encodeURIComponent(o)}`}
+                      className="inline-flex items-center gap-1.5 hover:underline"
+                    >
+                      <OwnerBadge owner={o} className="size-4" />
+                      {o}
+                    </Link>
+                  ))}
+                </div>
               ) : (
                 ''
               )}

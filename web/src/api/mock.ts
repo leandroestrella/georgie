@@ -153,7 +153,7 @@ export const MOCK_BOOKS: Book[] = [
     "coverUrl": "https://covers.openlibrary.org/b/isbn/9780349143590-M.jpg",
     "theme": "Contemporary & Short Stories",
     "zone": "The Narrative Universes (Fiction & Poetry)",
-    "owner": "leandro",
+    "owner": "leandro, maria",
     "referenceUrl": "",
     "readBy": [],
     "borrowed": false,

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { AuthorLinks } from './AuthorLinks'
 import { BookCover } from './BookCover'
-import { OwnerBadge } from './OwnerBadge'
+import { OwnerBadges } from './OwnerBadges'
 import { StatusIcons } from './StatusIcons'
 import { ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
@@ -70,9 +70,7 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
           )}
           <StatusIcons book={book} className="relative z-[1]" />
           {book.owner ? (
-            <Link to={`/?owner=${enc(book.owner)}`} className="relative z-[1]">
-              <OwnerBadge owner={book.owner} className="size-4 shrink-0" />
-            </Link>
+            <OwnerBadges owner={book.owner} badgeClassName="size-4 shrink-0" />
           ) : (
             <span />
           )}

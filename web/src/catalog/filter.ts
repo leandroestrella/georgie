@@ -90,7 +90,7 @@ export function filterBooks(books: Book[], f: CatalogFilters): Book[] {
       (f.author === null || splitAuthors(b.author).includes(f.author)) &&
       (f.zone === null || b.zone === f.zone) &&
       (f.theme === null || b.theme === f.theme) &&
-      (f.owner === null || b.owner === f.owner) &&
+      (f.owner === null || splitOwners(b.owner).includes(f.owner)) &&
       (f.language === null || b.language.includes(f.language)) &&
       (f.readBy === null || b.readBy.includes(f.readBy)) &&
       matchesStatus(b, f.status) &&
@@ -131,6 +131,18 @@ export function splitAuthors(author: string): string[] {
   return String(author ?? '')
     .split(/[,&;]/)
     .map((a) => a.trim())
+    .filter(Boolean)
+}
+
+/**
+ * Splits a possibly multi-owner cell into individual owner names — a book can be
+ * co-owned. Same separators as authors (`,` `&` `;`), so each owner shows its own
+ * marker and is independently filterable.
+ */
+export function splitOwners(owner: string): string[] {
+  return String(owner ?? '')
+    .split(/[,&;]/)
+    .map((o) => o.trim())
     .filter(Boolean)
 }
 

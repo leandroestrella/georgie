@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { AuthorLinks } from './AuthorLinks'
 import { LanguageFlag } from './LanguageFlag'
-import { OwnerBadge } from './OwnerBadge'
+import { OwnerBadges } from './OwnerBadges'
 import { StatusIcons } from './StatusIcons'
 import { ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
@@ -96,11 +96,7 @@ export function BookTable({
                 <span className="relative z-[1]">
                   <StatusIcons book={book} />
                 </span>
-                {book.owner && (
-                  <Link to={`/?owner=${enc(book.owner)}`} className="relative z-[1]">
-                    <OwnerBadge owner={book.owner} />
-                  </Link>
-                )}
+                <OwnerBadges owner={book.owner} />
               </div>
             </div>
           </li>
@@ -168,14 +164,11 @@ export function BookTable({
                     ))}
                   </div>
                 </td>
-                {/* Logo rather than the name — the tooltip names the owner. */}
+                {/* Logo(s) rather than the name — a co-owned book shows all its
+                    owners' markers, each naming its owner on hover. */}
                 <td className="p-3">
                   <div className="flex justify-center">
-                    {book.owner && (
-                      <Link to={`/?owner=${enc(book.owner)}`} onClick={stop}>
-                        <OwnerBadge owner={book.owner} />
-                      </Link>
-                    )}
+                    <OwnerBadges owner={book.owner} onClick={stop} />
                   </div>
                 </td>
                 <td className="p-3">
