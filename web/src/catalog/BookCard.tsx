@@ -29,12 +29,15 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
       )}
     >
       <Link to={`/book/${enc(book.id)}`} aria-label={book.title} className="after:absolute after:inset-0">
+        {/* object-contain (overriding BookCover's default object-cover) fits the
+            whole cover at its own aspect ratio inside the 3:4 slot, so nothing is
+            trimmed; the muted slot shows as thin bars around it. */}
         <div className="bg-muted aspect-[3/4] w-full overflow-hidden">
           <BookCover
             book={book}
             colors={colors}
             className={cn(
-              'size-full transition-transform group-hover:scale-[1.03]',
+              'size-full object-contain transition-transform group-hover:scale-[1.03]',
               book.borrowed && 'opacity-70 grayscale-[60%]',
             )}
           />
