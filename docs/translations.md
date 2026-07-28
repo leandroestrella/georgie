@@ -41,3 +41,39 @@ Reads are live, so editing a translation just needs a reload. Adding a brand-new
 `Description (xx)` **column** is picked up by header name, so it needs the Apps
 Script backend deployed with the current `apps-script/` code (`clasp push` +
 redeploy) once — after that, editing values needs no redeploy.
+
+## The About page's README — one file per language
+
+The in-app About page ([web/src/pages/AboutPage.tsx](../web/src/pages/AboutPage.tsx))
+renders this repo's own README, so it's translated the same way: `README.md`
+(English, the fallback), `README.it.md`, `README.es.md` at the repo root, each
+cross-linked at the top of the others. `README_BY_LANGUAGE` in `AboutPage.tsx`
+picks the file matching the app's current language; clicking one of the
+language links *inside* the rendered README switches the app's language in
+place (`README_LANGUAGE_LINKS`) rather than navigating to a dead repo-relative
+link.
+
+Adding a language later: translate the README into a new `README.<code>.md`,
+add a language link for it at the top of every `README*.md` file, import it
+with `?raw` in `AboutPage.tsx`, and add it to both `README_BY_LANGUAGE` and the
+language-switcher `LANGUAGES` list in [web/src/i18n/index.ts](../web/src/i18n/index.ts).
+
+## Checking the locales agree
+
+There's no automated check, so before shipping a translation change confirm
+every locale has exactly the same key set:
+
+```bash
+cd web && node -e "
+const flat = o => Object.entries(o).flatMap(([k, v]) =>
+  typeof v === 'object' ? Object.keys(v).map(x => k + '.' + x) : [k])
+const en = flat(require('./src/i18n/locales/en.json'))
+for (const code of ['it', 'es']) {
+  const other = flat(require('./src/i18n/locales/' + code + '.json'))
+  console.log(code,
+    '| missing:', en.filter(k => !other.includes(k)),
+    '| extra:', other.filter(k => !en.includes(k)))
+}"
+```
+
+Both lists should be empty for every locale.

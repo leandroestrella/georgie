@@ -1,5 +1,7 @@
 <img src="assets/georgie.gif" alt="georgie animated avatar" width=15%>
 
+🇬🇧 English · 🇮🇹 [Italiano](README.it.md) · 🇪🇸 [Español](README.es.md)
+
 # georgie
 
 a web app for managing our physical home library — browsing, cataloguing, lending, and exchanging the books on our shelves.

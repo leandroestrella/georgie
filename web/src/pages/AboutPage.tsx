@@ -5,9 +5,28 @@ import Markdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import { Mermaid } from '@/components/Mermaid'
-// The repo-root README is the single source of truth; we render it verbatim.
-// It lives above web/, so vite.config allows the dev server to read it.
-import readme from '../../../README.md?raw'
+// The repo-root READMEs are the single source of truth; we render them
+// verbatim. They live above web/, so vite.config allows the dev server to
+// read them. Each translation is cross-linked at the top of the others (see
+// docs/translations.md) — README.md is the fallback for any language without
+// its own file.
+import readmeEn from '../../../README.md?raw'
+import readmeIt from '../../../README.it.md?raw'
+import readmeEs from '../../../README.es.md?raw'
+import i18n, { type LanguageCode } from '@/i18n'
+
+const README_BY_LANGUAGE: Record<LanguageCode, string> = {
+  en: readmeEn,
+  it: readmeIt,
+  es: readmeEs,
+}
+
+/** The README's own language-links line points at these repo-relative paths — clicking one should switch the app's language, not navigate. */
+const README_LANGUAGE_LINKS: Record<string, LanguageCode> = {
+  'README.md': 'en',
+  'README.it.md': 'it',
+  'README.es.md': 'es',
+}
 
 /** True for links that leave the app (http/https or mailto). */
 function isExternal(href: string) {
@@ -36,8 +55,20 @@ const components: Components = {
       {children}
     </blockquote>
   ),
-  a: ({ href, children }) =>
-    href && isExternal(href) ? (
+  a: ({ href, children }) => {
+    const langCode = href ? README_LANGUAGE_LINKS[href] : undefined
+    if (langCode) {
+      return (
+        <button
+          type="button"
+          onClick={() => void i18n.changeLanguage(langCode)}
+          className="text-primary hover:underline"
+        >
+          {children}
+        </button>
+      )
+    }
+    return href && isExternal(href) ? (
       <a href={href} target="_blank" rel="noreferrer" className="text-primary hover:underline">
         {children}
       </a>
@@ -45,7 +76,8 @@ const components: Components = {
       // Repo-relative links (LICENSE, source paths) don't resolve in the deployed
       // SPA, so render them as plain emphasized text rather than dead links.
       <span className="font-medium">{children}</span>
-    ),
+    )
+  },
   img: ({ src, alt, ...props }) => {
     // README image paths are repo-relative (assets/…); the SPA serves them from root.
     const resolved = typeof src === 'string' ? src.replace(/^assets\//, '/') : src
@@ -80,7 +112,8 @@ const components: Components = {
 }
 
 export function AboutPage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const readme = README_BY_LANGUAGE[i18n.resolvedLanguage as LanguageCode] ?? readmeEn
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <Link
