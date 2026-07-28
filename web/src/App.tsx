@@ -1,16 +1,22 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useState, type ReactNode } from 'react'
+import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { AuthBar } from '@/auth/AuthBar'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { SubHeaderContext } from '@/components/subheader'
 import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 import { cn } from '@/lib/utils'
-import { CatalogPage } from '@/pages/CatalogPage'
-import { BookDetailPage } from '@/pages/BookDetailPage'
-import { BookFormPage } from '@/pages/BookFormPage'
-import { ArchivedPage } from '@/pages/ArchivedPage'
-import { AboutPage } from '@/pages/AboutPage'
+import { LoadingDots } from '@/components/LoadingDots'
+
+// Route-level code splitting: each page is its own chunk, fetched on first
+// visit rather than upfront. AboutPage alone pulls in react-markdown +
+// remark-gfm + rehype-raw, and BookFormPage pulls in the barcode scanner —
+// neither is needed by a visitor who only ever browses the catalog.
+const CatalogPage = lazy(() => import('@/pages/CatalogPage').then((m) => ({ default: m.CatalogPage })))
+const BookDetailPage = lazy(() => import('@/pages/BookDetailPage').then((m) => ({ default: m.BookDetailPage })))
+const BookFormPage = lazy(() => import('@/pages/BookFormPage').then((m) => ({ default: m.BookFormPage })))
+const ArchivedPage = lazy(() => import('@/pages/ArchivedPage').then((m) => ({ default: m.ArchivedPage })))
+const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
 
 /**
  * App shell: a sticky, full-width header (brand · language · sign-in) over the
@@ -106,19 +112,31 @@ function Layout({ children }: { children: ReactNode }) {
   )
 }
 
+/** Minimal fallback while a route's chunk loads — brief, and each page renders
+ *  its own richer loading state (e.g. CatalogPage's skeleton grid) once mounted. */
+function RouteFallback() {
+  return (
+    <div className="flex justify-center py-12">
+      <LoadingDots />
+    </div>
+  )
+}
+
 function App() {
   return (
     <Layout>
-      <Routes>
-        <Route path="/" element={<CatalogPage />} />
-        {/* `new` before `:id` so it isn't swallowed by the detail route. */}
-        <Route path="/book/new" element={<BookFormPage mode="add" />} />
-        <Route path="/book/:id/edit" element={<BookFormPage mode="edit" />} />
-        <Route path="/book/:id" element={<BookDetailPage />} />
-        <Route path="/archived" element={<ArchivedPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          <Route path="/" element={<CatalogPage />} />
+          {/* `new` before `:id` so it isn't swallowed by the detail route. */}
+          <Route path="/book/new" element={<BookFormPage mode="add" />} />
+          <Route path="/book/:id/edit" element={<BookFormPage mode="edit" />} />
+          <Route path="/book/:id" element={<BookDetailPage />} />
+          <Route path="/archived" element={<ArchivedPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </Layout>
   )
 }
