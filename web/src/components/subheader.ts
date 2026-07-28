@@ -11,3 +11,16 @@ export const SubHeaderContext = createContext<HTMLElement | null>(null)
 export function useSubHeaderContainer(): HTMLElement | null {
   return useContext(SubHeaderContext)
 }
+
+/**
+ * A slot in the header's brand row, next to the sign-in control, that a page
+ * can fill with its primary write-gated action (e.g. "add book") so that
+ * action always sits beside sign-in, on whichever page renders it, without
+ * each page reinventing header placement.
+ */
+export const AdminSlotContext = createContext<HTMLElement | null>(null)
+
+/** The header's admin-action slot element to portal a write CTA into. */
+export function useAdminSlotContainer(): HTMLElement | null {
+  return useContext(AdminSlotContext)
+}

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { AuthBar } from '@/auth/AuthBar'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
-import { SubHeaderContext } from '@/components/subheader'
+import { AdminSlotContext, SubHeaderContext } from '@/components/subheader'
 import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 import { cn } from '@/lib/utils'
 import { LoadingDots } from '@/components/LoadingDots'
@@ -20,12 +20,15 @@ const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default:
 
 /**
  * App shell: a sticky, full-width header (brand · language · sign-in) over the
- * routed page, plus a slot below the brand row that pages fill (via a portal) so
- * their toolbar — e.g. the catalog filter bar — anchors together with the brand.
+ * routed page, plus two slots pages fill via a portal — one on the brand row,
+ * next to sign-in, for a page's write-gated admin action (e.g. "add book"), so
+ * it always sits beside the login control; one below that for the rest of a
+ * page's toolbar — e.g. the catalog filter bar — anchoring it to the header.
  */
 function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const [slot, setSlot] = useState<HTMLDivElement | null>(null)
+  const [adminSlot, setAdminSlot] = useState<HTMLDivElement | null>(null)
   // On a phone the header is a big share of the viewport; slide it away while
   // scrolling down through the catalog and bring it back on the way up.
   const hidden = useHideOnScroll()
@@ -57,6 +60,9 @@ function Layout({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
+            {/* A page portals its write-gated primary action here (see
+                useAdminSlotContainer), so it always sits beside sign-in. */}
+            <div ref={setAdminSlot} className="flex items-center gap-2" />
             <AuthBar />
           </div>
         </div>
@@ -64,9 +70,11 @@ function Layout({ children }: { children: ReactNode }) {
         <div ref={setSlot} />
       </header>
 
-      <SubHeaderContext value={slot}>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
-      </SubHeaderContext>
+      <AdminSlotContext value={adminSlot}>
+        <SubHeaderContext value={slot}>
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">{children}</main>
+        </SubHeaderContext>
+      </AdminSlotContext>
 
       {/* Footer: the author's portfolio (left) and this project's source (right).
           Sticky to the viewport bottom, mirroring the sticky header — same

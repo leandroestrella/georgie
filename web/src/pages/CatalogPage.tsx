@@ -10,7 +10,7 @@ import { BookCard } from '@/catalog/BookCard'
 import { FilterBar } from '@/catalog/FilterBar'
 import { BookTable } from '@/catalog/BookTable'
 import { LoadingDots } from '@/components/LoadingDots'
-import { useSubHeaderContainer } from '@/components/subheader'
+import { useAdminSlotContainer, useSubHeaderContainer } from '@/components/subheader'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   authorOptions,
@@ -108,6 +108,7 @@ export function CatalogPage() {
   const authors = useMemo(() => authorOptions(books), [books])
   const languages = useMemo(() => languageOptions(books), [books])
   const subHeader = useSubHeaderContainer()
+  const adminSlot = useAdminSlotContainer()
 
   if (error) {
     return <p className="text-destructive py-12 text-center">{t('error.load')}</p>
@@ -115,6 +116,18 @@ export function CatalogPage() {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* The primary write action lives beside sign-in (see useAdminSlotContainer). */}
+      {adminSlot &&
+        isAdmin &&
+        createPortal(
+          <Button asChild size="sm" className="gap-1">
+            <Link to="/book/new">
+              <PlusIcon className="size-3.5" /> {t('admin.add')}
+            </Link>
+          </Button>,
+          adminSlot,
+        )}
+
       {/* The filter bar lives in the sticky header slot so it anchors while scrolling. */}
       {subHeader &&
         taxonomies &&
@@ -151,19 +164,12 @@ export function CatalogPage() {
         </p>
 
         {isAdmin && (
-          <div className="flex items-center gap-2">
-            <Button asChild size="sm" className="gap-1">
-              <Link to="/book/new">
-                <PlusIcon className="size-3.5" /> {t('admin.add')}
-              </Link>
-            </Button>
-            <Button asChild size="sm" variant="outline" className="gap-1">
-              <Link to="/archived">
-                <ArchiveIcon className="size-3.5" /> {t('admin.archived')}
-                {archivedBooks.length > 0 && ` (${archivedBooks.length})`}
-              </Link>
-            </Button>
-          </div>
+          <Button asChild size="sm" variant="outline" className="gap-1">
+            <Link to="/archived">
+              <ArchiveIcon className="size-3.5" /> {t('admin.archived')}
+              {archivedBooks.length > 0 && ` (${archivedBooks.length})`}
+            </Link>
+          </Button>
         )}
       </div>
 
