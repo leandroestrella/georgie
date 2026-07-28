@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArchiveIcon, PencilIcon, Undo2Icon } from 'lucide-react'
-import { deleteBook, restoreBook } from '@/api/client'
+import { ArchiveIcon, PencilIcon, RepeatIcon, Undo2Icon } from 'lucide-react'
+import { deleteBook, restoreBook, updateBook } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { useCatalog } from '@/catalog/CatalogProvider'
@@ -59,6 +59,19 @@ export function AdminBookActions({ book }: { book: Book }) {
         </Button>
 
         {!book.archived && <LoanControl book={book} />}
+
+        {!book.archived && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            disabled={busy}
+            onClick={() => void run(() => updateBook(book.id, { exchange: !book.exchange }))}
+          >
+            <RepeatIcon className="size-3.5" />
+            {book.exchange ? t('book.withdrawExchange') : t('book.offerExchange')}
+          </Button>
+        )}
 
         {book.archived ? (
           <Button

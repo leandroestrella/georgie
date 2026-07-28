@@ -60,6 +60,8 @@
     "loanSince": "desde {{date}}",
     "loanSinceUnknown": "desde fecha desconocida",
     "forExchange": "Ofrecido para intercambio",
+    "offerExchange": "Ofrecer para intercambio",
+    "withdrawExchange": "Retirar del intercambio",
     "back": "volver al catálogo",
     "notFound": "libro no encontrado"
   },
