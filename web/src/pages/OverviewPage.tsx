@@ -272,9 +272,9 @@ export function OverviewPage() {
           {users.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
-            // Chart and user cards side by side (not stacked) so the cards
-            // sit at the same height as the chart instead of below it.
-            <div className="flex flex-wrap items-start gap-6">
+            // Side by side from sm+ (so the cards sit at the same height as
+            // the chart); stacked on mobile, same as the theme/zone card.
+            <div className="flex flex-col items-start gap-6 sm:flex-row">
               <CountPieChart
                 counts={readVsUnread}
                 ariaLabel="books read overall"
@@ -284,8 +284,10 @@ export function OverviewPage() {
               {/* auto-fit (not a fixed sm:2/lg:3 track count) so 2 users fill
                   the row as 2 wide cards instead of leaving a blank third
                   column — extra columns only appear once there's enough
-                  users AND width for another 240px+ card. */}
-              <div className="grid min-w-0 flex-1 items-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+                  users AND width for another 240px+ card. w-full: the
+                  parent's items-start (needed for the sm+ row) would
+                  otherwise shrink this to its content width when stacked. */}
+              <div className="grid w-full min-w-0 flex-1 items-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
                 {users.map((user) => {
                   const stats = userStats(activeBooks, user)
                   const ownedHref = `/?owner=${encodeURIComponent(user)}`

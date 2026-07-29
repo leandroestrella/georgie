@@ -110,11 +110,14 @@ export function CountPieChart({
   }
 
   return (
-    <div className="flex flex-wrap items-start gap-4 pt-1">
+    // No flex-wrap: the legend must stay beside the chart, never drop below
+    // it — a long label wraps to a second line within the legend's own
+    // (shrinkable, min-w-0) column instead of the whole legend moving.
+    <div className="flex items-start gap-4 pt-1">
       {/* Chart + total share a column so the total centers under the circle
           itself, not the whole row (which would skew left of center once the
           legend — often taller than the chart — sits beside it). */}
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex shrink-0 flex-col items-center gap-1">
         <svg viewBox="0 0 88 88" className={`${size} shrink-0`} role="img" aria-label={ariaLabel}>
           {slices.map((s) => (
             <Tooltip key={s.key}>
@@ -146,11 +149,11 @@ export function CountPieChart({
           </Tooltip>
         )}
       </div>
-      <div className="flex flex-col gap-1">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
         {slices.map((s) => (
           <div
             key={s.key}
-            className={`flex items-center gap-1.5 rounded-sm px-1 -mx-1 text-xs transition-colors ${clickable(s) ? 'cursor-pointer' : ''} ${hovered === s.key ? 'bg-muted' : ''}`}
+            className={`flex min-w-0 items-center gap-1.5 rounded-sm px-1 -mx-1 text-xs transition-colors ${clickable(s) ? 'cursor-pointer' : ''} ${hovered === s.key ? 'bg-muted' : ''}`}
             onClick={() => go(s)}
             onMouseEnter={() => setHovered(s.key)}
             onMouseLeave={() => setHovered(null)}
