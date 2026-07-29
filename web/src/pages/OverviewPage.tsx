@@ -247,9 +247,13 @@ export function OverviewPage() {
               <div className="flex flex-col gap-1 rounded-lg border p-3">
                 {/* A book with two languages counts once per language, so
                     these slices sum to more than the book count — hence its
-                    own total label rather than the plain "books" one. */}
+                    own total label rather than the plain "books" one.
+                    maxSlices = every language present: unlike zone/theme,
+                    which fold past 6 into "other", every language gets its
+                    own named slice — no cap. */}
                 <CountPieChart
                   counts={languagePie}
+                  maxSlices={languagePie.length}
                   ariaLabel="books by language"
                   otherLabel={t('overview.other')}
                   totalLabel={t('overview.totalEditions')}
