@@ -145,10 +145,14 @@
   "overview": {
     "title": "Overview",
     "byTheme": "Books by theme",
-    "byOwner": "By owner",
+    "byLanguage": "Books by language",
+    "byUser": "By user",
     "bookCount": "Books owned",
     "ownRead": "Read of their own",
     "catalogRead": "Read of the whole catalog",
+    "readOverall": "read",
+    "unreadOverall": "unread",
+    "other": "other",
     "empty": "No books yet.",
     "signInMessage": "sign in above as an admin to see the household's reading stats."
   },

@@ -145,10 +145,14 @@
   "overview": {
     "title": "Statistiche",
     "byTheme": "Libri per tema",
-    "byOwner": "Per proprietario",
+    "byLanguage": "Libri per lingua",
+    "byUser": "Per utente",
     "bookCount": "Libri posseduti",
     "ownRead": "Letti dei propri",
     "catalogRead": "Letti dell'intero catalogo",
+    "readOverall": "letti",
+    "unreadOverall": "non letti",
+    "other": "altro",
     "empty": "Ancora nessun libro.",
     "signInMessage": "accedi qui sopra come admin per vedere le statistiche di lettura di casa."
   },

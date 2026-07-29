@@ -173,7 +173,7 @@ function getBooks_(includeArchived) {
 
 /**
  * Reads the Zones + Lists tabs into the taxonomy the SPA needs.
- * @return {{ zones: Zone[], themeToZone: Object<string,string>, owners: string[], languages: string[] }}
+ * @return {{ zones: Zone[], themeToZone: Object<string,string>, owners: string[], languages: string[], users: string[] }}
  */
 function getTaxonomies_() {
   var z = parseZones(readValues_(ZONES_SHEET))
@@ -184,7 +184,29 @@ function getTaxonomies_() {
     owners: lists.owners,
     languages: lists.languages,
     ownerMarkers: lists.ownerMarkers,
+    users: getUsers_(),
   }
+}
+
+/**
+ * The distinct Owner labels from the `Users` tab (the admin write-allowlist) —
+ * i.e. real people, as opposed to `Lists`' `owners` which can include
+ * non-human entries (e.g. a pet whose books are tracked but who doesn't
+ * "read"). Only the Owner label is exposed here, never the Email column.
+ * @return {string[]}
+ */
+function getUsers_() {
+  var owners = Object.values(getAdmins_())
+  var seen = {}
+  var out = []
+  for (var i = 0; i < owners.length; i++) {
+    var name = owners[i]
+    if (name && !seen[name]) {
+      seen[name] = true
+      out.push(name)
+    }
+  }
+  return out
 }
 
 // ---------------------------------------------------------------------------

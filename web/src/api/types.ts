@@ -83,4 +83,8 @@ export interface Taxonomies {
   /** owner (and reader) name → visual marker (emoji or image URL). Optional: a
    *  backend without the `Owner marker` column omits it. */
   ownerMarkers?: Record<string, string>
+  /** Real people (the `Users` tab's distinct Owner labels) — unlike `owners`,
+   *  never includes non-human entries (e.g. a pet whose books are tracked but
+   *  who doesn't "read"). Optional: an un-redeployed backend omits it. */
+  users?: string[]
 }

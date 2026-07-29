@@ -134,7 +134,11 @@ export const MOCK_TAXONOMIES: Taxonomies = {
     "leandro": "https://www.leandroestrella.com/img/favicon.ico",
     "maria": "https://cinquecento79lab.com/wp-content/uploads/2023/09/cropped-favicon-150x150.png",
     "hugo": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Anarchist_black_cat.svg/250px-Anarchist_black_cat.svg.png"
-  }
+  },
+  "users": [
+    "leandro",
+    "maria"
+  ]
 }
 
 export const MOCK_BOOKS: Book[] = [

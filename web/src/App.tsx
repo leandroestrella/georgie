@@ -2,7 +2,6 @@ import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { ChartPieIcon } from 'lucide-react'
 import { AuthBar } from '@/auth/AuthBar'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { AdminSlotContext, SubHeaderContext } from '@/components/subheader'
@@ -84,12 +83,16 @@ function Layout({ children }: { children: ReactNode }) {
             <LanguageSwitcher />
             <Tooltip>
               <TooltipTrigger asChild>
+                {/* Matches linkulino's own Overview nav glyph exactly (a
+                    literal emoji, not an icon-library icon) — the shared
+                    visual language across this author's house-management
+                    app ecosystem. */}
                 <Link
                   to="/overview"
                   aria-label={t('nav.overview')}
-                  className="hover:bg-accent rounded-md p-2"
+                  className="hover:bg-accent rounded-md p-2 text-lg leading-none"
                 >
-                  <ChartPieIcon className="size-4" />
+                  📊
                 </Link>
               </TooltipTrigger>
               <TooltipContent>{t('nav.overview')}</TooltipContent>
