@@ -71,14 +71,19 @@ function originalityCounts(books: Book[]): { original: number; translated: numbe
   return { original, translated, unknown }
 }
 
-/** A user's stats: how many books they own, and two read-rate percentages. */
+/** A user's stats. Each figure keeps its own denominator so the UI can show
+ *  the raw fraction next to the percentage (e.g. "9/16 · 56%"). */
 function userStats(books: Book[], user: string) {
   const owned = books.filter((b) => splitOwners(b.owner).includes(user))
   const ownRead = owned.filter((b) => b.readBy.includes(user)).length
   const catalogRead = books.filter((b) => b.readBy.includes(user)).length
   return {
     count: owned.length,
+    catalogTotal: books.length,
+    ownRead,
+    ownTotal: owned.length,
     ownReadPct: owned.length > 0 ? Math.round((ownRead / owned.length) * 100) : 0,
+    catalogRead,
     catalogReadPct: books.length > 0 ? Math.round((catalogRead / books.length) * 100) : 0,
   }
 }
@@ -183,7 +188,12 @@ export function OverviewPage() {
             <div className="grid items-start gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1 rounded-lg border p-3">
                 <p className="text-sm font-medium">{t('overview.byZone')}</p>
-                <CountPieChart counts={zonePie} ariaLabel="books by zone" otherLabel={t('overview.other')} />
+                <CountPieChart
+                  counts={zonePie}
+                  ariaLabel="books by zone"
+                  otherLabel={t('overview.other')}
+                  totalLabel={t('overview.totalBooks')}
+                />
               </div>
               {/* Drill-down: each zone's own book count broken down by theme,
                   in a light→dark ramp of that zone's own hue. */}
@@ -207,6 +217,7 @@ export function OverviewPage() {
                       counts={themePie}
                       ariaLabel={`books by theme in ${zone}`}
                       otherLabel={t('overview.other')}
+                      totalLabel={t('overview.totalBooks')}
                       size="size-16"
                     />
                   </div>
@@ -227,7 +238,15 @@ export function OverviewPage() {
           ) : (
             <div className="grid items-start gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1 rounded-lg border p-3">
-                <CountPieChart counts={languagePie} ariaLabel="books by language" otherLabel={t('overview.other')} />
+                {/* A book with two languages counts once per language, so
+                    these slices sum to more than the book count — hence its
+                    own total label rather than the plain "books" one. */}
+                <CountPieChart
+                  counts={languagePie}
+                  ariaLabel="books by language"
+                  otherLabel={t('overview.other')}
+                  totalLabel={t('overview.totalEditions')}
+                />
               </div>
               <div className="flex flex-col gap-1 rounded-lg border p-3">
                 <p className="text-sm font-medium">{t('overview.originalVsTranslated')}</p>
@@ -235,6 +254,7 @@ export function OverviewPage() {
                   counts={originalityPie}
                   ariaLabel="books in original language vs translated"
                   otherLabel={t('overview.other')}
+                  totalLabel={t('overview.totalBooks')}
                 />
               </div>
             </div>
@@ -251,7 +271,12 @@ export function OverviewPage() {
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
             <>
-              <CountPieChart counts={readVsUnread} ariaLabel="books read overall" otherLabel={t('overview.other')} />
+              <CountPieChart
+                counts={readVsUnread}
+                ariaLabel="books read overall"
+                otherLabel={t('overview.other')}
+                totalLabel={t('overview.totalBooks')}
+              />
               <div className="grid items-start gap-4 sm:grid-cols-2">
                 {users.map((user) => {
                   const stats = userStats(activeBooks, user)
@@ -267,20 +292,22 @@ export function OverviewPage() {
                       <p className="text-sm">
                         <span className="text-muted-foreground">{t('overview.bookCount')} </span>
                         <Link to={ownedHref} className="font-medium hover:underline">
-                          {stats.count}
+                          {stats.count}/{stats.catalogTotal}
                         </Link>
                       </p>
                       <p className="text-sm">
                         <span className="text-muted-foreground">{t('overview.ownRead')} </span>
                         <Link to={ownReadHref} className="font-medium hover:underline">
-                          {stats.ownReadPct}%
+                          {stats.ownRead}/{stats.ownTotal}
                         </Link>
+                        <span className="text-muted-foreground"> · {stats.ownReadPct}%</span>
                       </p>
                       <p className="text-sm">
                         <span className="text-muted-foreground">{t('overview.catalogRead')} </span>
                         <Link to={catalogReadHref} className="font-medium hover:underline">
-                          {stats.catalogReadPct}%
+                          {stats.catalogRead}/{stats.catalogTotal}
                         </Link>
+                        <span className="text-muted-foreground"> · {stats.catalogReadPct}%</span>
                       </p>
                     </div>
                   )

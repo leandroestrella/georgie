@@ -158,6 +158,8 @@
     "translated": "traducidos",
     "unknown": "desconocido",
     "other": "otros",
+    "totalBooks": "libros en total",
+    "totalEditions": "entradas libro-idioma en total",
     "empty": "Todavía no hay libros.",
     "signInMessage": "inicia sesión arriba como admin para ver las estadísticas de lectura de casa."
   },

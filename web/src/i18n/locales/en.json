@@ -158,6 +158,8 @@
     "translated": "translated",
     "unknown": "unknown",
     "other": "other",
+    "totalBooks": "total books",
+    "totalEditions": "total book-language entries",
     "empty": "No books yet.",
     "signInMessage": "sign in above as an admin to see the household's reading stats."
   },

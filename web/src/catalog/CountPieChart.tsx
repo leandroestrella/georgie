@@ -78,6 +78,7 @@ export function CountPieChart({
   counts,
   ariaLabel,
   otherLabel,
+  totalLabel,
   maxSlices = MAX_SLICES,
   otherColor = 'var(--muted-foreground)',
   size = 'size-24',
@@ -86,6 +87,9 @@ export function CountPieChart({
   ariaLabel: string
   /** Label for the folded slice, e.g. t('overview.other') — already translated. */
   otherLabel: string
+  /** When given, the summed slice total is shown under the chart with this
+   *  label — the whole the slices are parts of. */
+  totalLabel?: string
   maxSlices?: number
   otherColor?: string
   size?: string
@@ -95,50 +99,61 @@ export function CountPieChart({
   const slices = toSlices(counts, maxSlices, otherColor, otherLabel)
   if (slices.length === 0) return null
 
+  // Summed from the slices themselves, so it always equals the whole pie —
+  // including the folded "other" — rather than a separately-derived number
+  // that could drift from what's drawn.
+  const total = slices.reduce((sum, s) => sum + s.count, 0)
   const clickable = (s: Slice) => !!s.href
   const go = (s: Slice) => {
     if (s.href) navigate(s.href)
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-4 pt-1">
-      <svg viewBox="0 0 88 88" className={`${size} shrink-0`} role="img" aria-label={ariaLabel}>
-        {slices.map((s) => (
-          <Tooltip key={s.key}>
-            <TooltipTrigger asChild>
-              <path
-                d={s.d}
-                fill={s.color}
-                stroke="var(--card)"
-                strokeWidth="1"
-                opacity={hovered && hovered !== s.key ? 0.4 : 1}
-                className={`transition-opacity ${clickable(s) ? 'cursor-pointer' : ''}`}
-                onClick={() => go(s)}
-                onMouseEnter={() => setHovered(s.key)}
-                onMouseLeave={() => setHovered(null)}
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              {s.label} · {s.count}
-            </TooltipContent>
-          </Tooltip>
-        ))}
-      </svg>
-      <div className="flex flex-col gap-1">
-        {slices.map((s) => (
-          <div
-            key={s.key}
-            className={`flex items-center gap-1.5 rounded-sm px-1 -mx-1 text-xs transition-colors ${clickable(s) ? 'cursor-pointer' : ''} ${hovered === s.key ? 'bg-muted' : ''}`}
-            onClick={() => go(s)}
-            onMouseEnter={() => setHovered(s.key)}
-            onMouseLeave={() => setHovered(null)}
-          >
-            <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} aria-hidden />
-            <span className="text-muted-foreground">{s.label}</span>
-            <span className="font-medium">{s.count}</span>
-          </div>
-        ))}
+    <div className="flex flex-col gap-1 pt-1">
+      <div className="flex flex-wrap items-center gap-4">
+        <svg viewBox="0 0 88 88" className={`${size} shrink-0`} role="img" aria-label={ariaLabel}>
+          {slices.map((s) => (
+            <Tooltip key={s.key}>
+              <TooltipTrigger asChild>
+                <path
+                  d={s.d}
+                  fill={s.color}
+                  stroke="var(--card)"
+                  strokeWidth="1"
+                  opacity={hovered && hovered !== s.key ? 0.4 : 1}
+                  className={`transition-opacity ${clickable(s) ? 'cursor-pointer' : ''}`}
+                  onClick={() => go(s)}
+                  onMouseEnter={() => setHovered(s.key)}
+                  onMouseLeave={() => setHovered(null)}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                {s.label} · {s.count}
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </svg>
+        <div className="flex flex-col gap-1">
+          {slices.map((s) => (
+            <div
+              key={s.key}
+              className={`flex items-center gap-1.5 rounded-sm px-1 -mx-1 text-xs transition-colors ${clickable(s) ? 'cursor-pointer' : ''} ${hovered === s.key ? 'bg-muted' : ''}`}
+              onClick={() => go(s)}
+              onMouseEnter={() => setHovered(s.key)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} aria-hidden />
+              <span className="text-muted-foreground">{s.label}</span>
+              <span className="font-medium">{s.count}</span>
+            </div>
+          ))}
+        </div>
       </div>
+      {totalLabel && (
+        <p className="text-muted-foreground text-xs">
+          {totalLabel} <span className="text-foreground font-medium">{total}</span>
+        </p>
+      )}
     </div>
   )
 }
