@@ -1,6 +1,7 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { AuthBar } from '@/auth/AuthBar'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { AdminSlotContext, SubHeaderContext } from '@/components/subheader'
@@ -29,6 +30,7 @@ function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const [slot, setSlot] = useState<HTMLDivElement | null>(null)
   const [adminSlot, setAdminSlot] = useState<HTMLDivElement | null>(null)
+  const [avatarHovered, setAvatarHovered] = useState(false)
   // On a phone the header is a big share of the viewport; slide it away while
   // scrolling down through the catalog and bring it back on the way up.
   const hidden = useHideOnScroll()
@@ -43,11 +45,28 @@ function Layout({ children }: { children: ReactNode }) {
       >
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
           {/* The avatar opens the About page (the rendered README); the wordmark
-              stays the link home to the catalog, so a home affordance remains. */}
+              stays the link home to the catalog, so a home affordance remains.
+              Hovering it also pops the mascot up full-size in a centered
+              lightbox, which closes the moment the pointer leaves. */}
           <div className="flex min-w-0 shrink items-center gap-2.5">
-            <Link to="/about" aria-label={t('nav.about')} className="shrink-0">
+            <Link
+              to="/about"
+              aria-label={t('nav.about')}
+              className="shrink-0"
+              onMouseEnter={() => setAvatarHovered(true)}
+              onMouseLeave={() => setAvatarHovered(false)}
+            >
               <img src="/georgie.gif" alt="" className="w-8 sm:w-10" />
             </Link>
+            {avatarHovered &&
+              createPortal(
+                <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+                  <div className="rounded-2xl bg-black p-4 shadow-2xl">
+                    <img src="/georgie.gif" alt="" className="w-64 max-w-[80vw] sm:w-80" />
+                  </div>
+                </div>,
+                document.body,
+              )}
             <Link to="/" className="min-w-0">
               <h1 className="truncate text-lg leading-none font-semibold lowercase tracking-tight sm:text-xl">
                 georgie
