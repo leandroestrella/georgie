@@ -106,7 +106,7 @@ export function FilterBar(props: FilterBarProps) {
   const { t, i18n } = useTranslation()
   const tv = useVocab()
   const { isAdmin } = useAuth()
-  const { zoneColor, zoneDescription } = useCatalog()
+  const { zoneColor, zoneDescription, themeDescription } = useCatalog()
 
   // On phones the facets stack full-width — seven of them fill the screen — so
   // they collapse behind a toggle. Desktop keeps them inline (`sm:` styles win).
@@ -121,13 +121,13 @@ export function FilterBar(props: FilterBarProps) {
   }, [scrollingDown])
 
   // Themes narrow to the selected zone; otherwise show every theme.
-  const themeNames = filters.zone
+  const themesInScope = filters.zone
     ? (taxonomies.zones.find((z) => z.name === filters.zone)?.themes ?? [])
     : taxonomies.zones.flatMap((z) => z.themes)
 
   // Each theme belongs to a zone; the theme's colour dot follows that zone's colour.
   const themeZone = new Map<string, string>()
-  taxonomies.zones.forEach((z) => z.themes.forEach((th) => themeZone.set(th, z.name)))
+  taxonomies.zones.forEach((z) => z.themes.forEach((th) => themeZone.set(th.name, z.name)))
 
   const zoneOptions = taxonomies.zones.map((z) => {
     const emoji = zoneEmoji(z.name)
@@ -138,13 +138,14 @@ export function FilterBar(props: FilterBarProps) {
       icon: emoji ? <span className="shrink-0 text-base leading-none">{emoji}</span> : undefined,
     }
   })
-  const themeOptions = themeNames.map((name) => ({
-    value: name,
-    label: tv('theme', name),
+  const themeOptions = themesInScope.map((th) => ({
+    value: th.name,
+    label: tv('theme', th.name),
+    title: themeDescription(th.name, i18n.resolvedLanguage), // localized, shown on hover in the menu
     icon: (
       <span
         className="size-2.5 shrink-0 rounded-full"
-        style={{ background: zoneColor(themeZone.get(name) ?? '').fg }}
+        style={{ background: zoneColor(themeZone.get(th.name) ?? '').fg }}
       />
     ),
   }))

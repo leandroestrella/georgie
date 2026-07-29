@@ -241,31 +241,34 @@ function deriveZone(theme, themeToZone) {
 }
 
 /**
- * Finds the localized description columns on the Zones tab — any header shaped
- * like `Description (xx)` where `xx` is a language code. Returns a map of
+ * Finds the localized columns for a given base header on the Zones tab — any
+ * header shaped like `<base> (xx)` where `xx` is a language code (e.g. `base`
+ * `Title` matches `Title (it)`, `Title (es)`). Returns a map of
  * languageCode → column index.
  *
  * @param {Object<string,number>} headerIndex header name → column index
+ * @param {string} base exact header text preceding the `(xx)` suffix
  * @return {Object<string,number>}
  */
-function localizedDescriptionColumns_(headerIndex) {
+function localizedColumns_(headerIndex, base) {
   var cols = {}
+  var re = new RegExp('^' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ' \\(([a-z]{2})\\)$', 'i')
   for (var name in headerIndex) {
     if (!Object.prototype.hasOwnProperty.call(headerIndex, name)) continue
-    var m = /^Description \(([a-z]{2})\)$/i.exec(String(name).trim())
+    var m = re.exec(String(name).trim())
     if (m) cols[m[1].toLowerCase()] = headerIndex[name]
   }
   return cols
 }
 
 /**
- * Reads one row's non-empty localized descriptions into { languageCode: text }.
+ * Reads one row's non-empty localized values into { languageCode: text }.
  *
  * @param {Array<*>} row
  * @param {Object<string,number>} langCols languageCode → column index
  * @return {Object<string,string>}
  */
-function readLocalizedDescriptions_(row, langCols) {
+function readLocalizedValues_(row, langCols) {
   var out = {}
   for (var lang in langCols) {
     if (!Object.prototype.hasOwnProperty.call(langCols, lang)) continue
@@ -278,7 +281,11 @@ function readLocalizedDescriptions_(row, langCols) {
 /**
  * Parses the row-grouped `Zones` tab into a two-level taxonomy. A row carrying a
  * Title starts a new zone; following rows with an empty Title but a Theme belong
- * to it. Columns are resolved by header name.
+ * to it. Columns are resolved by header name. Zone and theme names/descriptions
+ * are canonical in English (`Title`/`Description`/`Themes`/`Theme description`);
+ * `<base> (xx)` sibling columns (e.g. `Title (it)`, `Themes (es)`) supply
+ * per-language overrides, read the same way the theme→zone map ignores column
+ * order.
  *
  * @param {Array<Array<*>>} values full sheet values incl. header row
  * @return {{ zones: Zone[], themeToZone: Object<string,string> }}
@@ -287,8 +294,11 @@ function parseZones(values) {
   if (!values || !values.length) return { zones: [], themeToZone: {} }
   var h = indexHeaders(values[0])
   var iTitle = h['Title'], iDesc = h['Description'], iTheme = h['Themes'], iMarker = h['Marker']
-  // Optional per-language description columns, e.g. `Description (it)`.
-  var descLangCols = localizedDescriptionColumns_(h)
+  var iThemeDesc = h['Theme description']
+  var zoneNameLangCols = localizedColumns_(h, 'Title')
+  var zoneDescLangCols = localizedColumns_(h, 'Description')
+  var themeNameLangCols = localizedColumns_(h, 'Themes')
+  var themeDescLangCols = localizedColumns_(h, 'Theme description')
   var zones = []
   var themeToZone = {}
   var current = null
@@ -299,9 +309,10 @@ function parseZones(values) {
     if (title) {
       current = {
         name: title,
+        // Non-empty translated names keyed by language code (e.g. { it, es }).
+        names: readLocalizedValues_(row, zoneNameLangCols),
         description: iDesc === undefined ? '' : cellToString(row[iDesc]),
-        // Non-empty translated descriptions keyed by language code (e.g. { it, es }).
-        descriptions: readLocalizedDescriptions_(row, descLangCols),
+        descriptions: readLocalizedValues_(row, zoneDescLangCols),
         // Optional visual marker (emoji or image URL); '' when the column is absent.
         marker: iMarker === undefined ? '' : cellToString(row[iMarker]),
         themes: [],
@@ -310,7 +321,12 @@ function parseZones(values) {
     }
     var theme = iTheme === undefined ? '' : cellToString(row[iTheme])
     if (theme && current) {
-      current.themes.push(theme)
+      current.themes.push({
+        name: theme,
+        names: readLocalizedValues_(row, themeNameLangCols),
+        description: iThemeDesc === undefined ? '' : cellToString(row[iThemeDesc]),
+        descriptions: readLocalizedValues_(row, themeDescLangCols),
+      })
       themeToZone[theme] = current.name
     }
   }

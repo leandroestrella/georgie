@@ -7,16 +7,34 @@ const test = require('node:test')
 const assert = require('node:assert/strict')
 const c = require('./catalog.js')
 
-// A Zones tab shaped exactly like the real one (row-grouped), incl. a Marker column
-// and per-language Description columns.
+// A Zones tab shaped exactly like the real one (row-grouped), incl. a Marker
+// column and per-language Title/Description/Themes/Theme description columns.
+// Column order: Title, Title (it), Title (es), Description, Description (it),
+// Description (es), Themes, Themes (it), Themes (es), Theme description,
+// Theme description (it), Theme description (es), Marker.
 const ZONES_VALUES = [
-  ['Title', 'Description', 'Description (it)', 'Description (es)', 'Themes', 'Marker'],
-  ['Contemporary Art, Curation & Design', 'Physical and visual practices.', 'Pratiche fisiche e visive.', 'Prácticas físicas y visuales.', 'Art History & Theory', '🖍️'],
-  ['', '', '', '', 'Exhibitions & Catalogs', ''],
-  ['', '', '', '', 'Architecture & Spatial Design', ''],
-  ['The Narrative Universes (Fiction & Poetry)', 'The imagined.', "L'immaginato.", '', 'Dystopia & Alternate Realities', 'https://example.com/zone.png'],
-  ['', '', '', '', 'Contemporary & Short Stories', ''],
-  ['', '', '', '', 'Poetry', ''],
+  [
+    'Title', 'Title (it)', 'Title (es)', 'Description', 'Description (it)', 'Description (es)',
+    'Themes', 'Themes (it)', 'Themes (es)', 'Theme description', 'Theme description (it)', 'Theme description (es)',
+    'Marker',
+  ],
+  [
+    'Contemporary Art, Curation & Design', 'Arte contemporanea', 'Arte contemporáneo',
+    'Physical and visual practices.', 'Pratiche fisiche e visive.', 'Prácticas físicas y visuales.',
+    'Art History & Theory', "Storia e teoria dell'arte", 'Historia y teoría del arte',
+    'What came before.', 'Cosa è venuto prima.', '',
+    '🖍️',
+  ],
+  ['', '', '', '', '', '', 'Exhibitions & Catalogs', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', 'Architecture & Spatial Design', '', '', '', '', '', ''],
+  [
+    'The Narrative Universes (Fiction & Poetry)', '', '',
+    'The imagined.', "L'immaginato.", '',
+    'Dystopia & Alternate Realities', '', '', '', '', '',
+    'https://example.com/zone.png',
+  ],
+  ['', '', '', '', '', '', 'Contemporary & Short Stories', '', '', '', '', '', ''],
+  ['', '', '', '', '', '', 'Poetry', '', '', '', '', '', ''],
 ]
 
 const LISTS_VALUES = [
@@ -37,7 +55,7 @@ const CATALOG_HEADER = [
 test('parseZones builds zones + theme→zone map from row groups', () => {
   const { zones, themeToZone } = c.parseZones(ZONES_VALUES)
   assert.equal(zones.length, 2)
-  assert.deepEqual(zones[0].themes, [
+  assert.deepEqual(zones[0].themes.map((t) => t.name), [
     'Art History & Theory', 'Exhibitions & Catalogs', 'Architecture & Spatial Design',
   ])
   assert.equal(themeToZone['Poetry'], 'The Narrative Universes (Fiction & Poetry)')
@@ -62,6 +80,32 @@ test('parseZones reads per-language Description columns into descriptions', () =
   // No localized columns at all → empty descriptions object.
   const noLoc = c.parseZones([['Title', 'Description', 'Themes'], ['Z', 'd', 'T']])
   assert.deepEqual(noLoc.zones[0].descriptions, {})
+})
+
+test('parseZones reads per-language Title/Themes name columns into names', () => {
+  const { zones } = c.parseZones(ZONES_VALUES)
+  assert.deepEqual(zones[0].names, { it: 'Arte contemporanea', es: 'Arte contemporáneo' })
+  // Blank/absent translation cells are omitted (zone 2's Title (it)/(es) are blank).
+  assert.deepEqual(zones[1].names, {})
+  assert.deepEqual(zones[0].themes[0].names, {
+    it: "Storia e teoria dell'arte",
+    es: 'Historia y teoría del arte',
+  })
+  // A theme row with no Themes (it)/(es) cells → empty names object.
+  assert.deepEqual(zones[0].themes[1].names, {})
+})
+
+test('parseZones reads the Theme description column (+ per-language) onto each theme', () => {
+  const { zones } = c.parseZones(ZONES_VALUES)
+  assert.equal(zones[0].themes[0].description, 'What came before.')
+  assert.deepEqual(zones[0].themes[0].descriptions, { it: 'Cosa è venuto prima.' })
+  // A theme row with no Theme description cell → '' rather than undefined.
+  assert.equal(zones[0].themes[1].description, '')
+  assert.deepEqual(zones[0].themes[1].descriptions, {})
+  // No Theme description column at all → '' description, empty descriptions.
+  const noCol = c.parseZones([['Title', 'Description', 'Themes'], ['Z', 'd', 'T']])
+  assert.equal(noCol.zones[0].themes[0].description, '')
+  assert.deepEqual(noCol.zones[0].themes[0].descriptions, {})
 })
 
 test('parseZones reads the Marker column onto each zone (empty when absent)', () => {

@@ -57,9 +57,26 @@ export interface LoanInput {
   loanDate?: string
 }
 
+/** One theme within a zone, e.g. `Classics & Canon`. */
+export interface Theme {
+  name: string
+  /** Per-language name overrides keyed by language code (e.g. `it`, `es`), from
+   *  the `Themes (it)`/`Themes (es)` columns. English lives in `name`; missing
+   *  translations fall back to it. */
+  names?: Record<string, string>
+  /** The English description (the `Theme description` column), '' if unset. */
+  description?: string
+  /** Per-language description overrides, from `Theme description (it)`/`(es)`. */
+  descriptions?: Record<string, string>
+}
+
 /** A top-level zone grouping several themes. */
 export interface Zone {
   name: string
+  /** Per-language name overrides keyed by language code (e.g. `it`, `es`), from
+   *  the `Title (it)`/`Title (es)` columns. English lives in `name`; missing
+   *  translations fall back to it. */
+  names?: Record<string, string>
   /** The English description (the `Description` column on the `Zones` tab). */
   description: string
   /** Per-language description overrides keyed by language code (e.g. `it`, `es`),
@@ -70,7 +87,7 @@ export interface Zone {
   color?: string
   /** Optional visual marker for the zone — an emoji or an image URL (may be absent). */
   marker?: string
-  themes: string[]
+  themes: Theme[]
 }
 
 /** The controlled vocabularies read from the `Zones` and `Lists` tabs. */

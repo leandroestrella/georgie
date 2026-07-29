@@ -22,12 +22,22 @@ interface CatalogContextValue {
   /** Inserts or replaces a book in the cache after a write (optimistic update). */
   applyBook: (book: Book) => void
   zoneColor: (zoneName: string) => ZoneColors
+  /** A zone's name, localized to `lang` when the sheet supplies a translation
+   *  (`Title (it)`/`Title (es)`), else the canonical English name unchanged. */
+  zoneName: (zoneName: string, lang?: string) => string
   /** The curatorial description of a zone (from the `Zones` tab), localized to
    *  `lang` when a translation exists, else the English original; '' if none. */
   zoneDescription: (zoneName: string, lang?: string) => string
   /** The zone's visual marker (emoji or image URL) from the sheet, falling back
    *  to the built-in emoji map; '' when nothing is set. */
   zoneMarker: (zoneName: string) => string
+  /** A theme's name, localized to `lang` when the sheet supplies a translation
+   *  (`Themes (it)`/`Themes (es)`), else the canonical English name unchanged. */
+  themeName: (themeName: string, lang?: string) => string
+  /** The curatorial description of a theme (from the `Zones` tab's `Theme
+   *  description` column), localized to `lang` when a translation exists, else
+   *  the English original; '' if none. */
+  themeDescription: (themeName: string, lang?: string) => string
   /** An owner's (or reader's) visual marker (emoji or image URL) from the sheet,
    *  falling back to the built-in logo map; '' when nothing is set. */
   ownerMarker: (name: string) => string
@@ -77,12 +87,40 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     () => buildZoneColorMap((taxonomies?.zones ?? []).map((z) => z.name)),
     [taxonomies],
   )
+  // name → { en: <Title>, it/es/…: <translations> }. English lives under `en`;
+  // the resolver falls back to it when a language has no translation.
+  const zoneNames = useMemo(
+    () =>
+      new Map<string, Record<string, string>>(
+        (taxonomies?.zones ?? []).map((z) => [z.name, { en: z.name, ...(z.names ?? {}) }]),
+      ),
+    [taxonomies],
+  )
   // name → { en: <Description>, it/es/…: <translations> }. English lives under
   // `en`; the resolver falls back to it when a language has no translation.
   const zoneDescriptions = useMemo(
     () =>
       new Map<string, Record<string, string>>(
         (taxonomies?.zones ?? []).map((z) => [z.name, { en: z.description, ...(z.descriptions ?? {}) }]),
+      ),
+    [taxonomies],
+  )
+  // Same two shapes, flattened across every zone's themes and keyed by theme name.
+  const themeNames = useMemo(
+    () =>
+      new Map<string, Record<string, string>>(
+        (taxonomies?.zones ?? []).flatMap((z) =>
+          z.themes.map((th) => [th.name, { en: th.name, ...(th.names ?? {}) }] as const),
+        ),
+      ),
+    [taxonomies],
+  )
+  const themeDescriptions = useMemo(
+    () =>
+      new Map<string, Record<string, string>>(
+        (taxonomies?.zones ?? []).flatMap((z) =>
+          z.themes.map((th) => [th.name, { en: th.description ?? '', ...(th.descriptions ?? {}) }] as const),
+        ),
       ),
     [taxonomies],
   )
@@ -108,15 +146,46 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       applyBook,
       getBook: (id) => books.find((b) => b.id === id),
       zoneColor: (name) => zoneColorMap.get(name) ?? NEUTRAL_ZONE,
+      zoneName: (name, lang) => {
+        const byLang = zoneNames.get(name)
+        if (!byLang) return name
+        return (lang && byLang[lang]) || byLang.en || name
+      },
       zoneDescription: (name, lang) => {
         const byLang = zoneDescriptions.get(name)
         if (!byLang) return ''
         return (lang && byLang[lang]) || byLang.en || ''
       },
       zoneMarker: (name) => zoneMarkers.get(name) || zoneEmoji(name) || '',
+      themeName: (name, lang) => {
+        const byLang = themeNames.get(name)
+        if (!byLang) return name
+        return (lang && byLang[lang]) || byLang.en || name
+      },
+      themeDescription: (name, lang) => {
+        const byLang = themeDescriptions.get(name)
+        if (!byLang) return ''
+        return (lang && byLang[lang]) || byLang.en || ''
+      },
       ownerMarker: (name) => ownerMarkers[name] || ownerLogo(name) || '',
     }),
-    [books, activeBooks, archivedBooks, taxonomies, loading, error, reload, applyBook, zoneColorMap, zoneDescriptions, zoneMarkers, ownerMarkers],
+    [
+      books,
+      activeBooks,
+      archivedBooks,
+      taxonomies,
+      loading,
+      error,
+      reload,
+      applyBook,
+      zoneColorMap,
+      zoneNames,
+      zoneDescriptions,
+      zoneMarkers,
+      themeNames,
+      themeDescriptions,
+      ownerMarkers,
+    ],
   )
 
   return <CatalogContext value={value}>{children}</CatalogContext>

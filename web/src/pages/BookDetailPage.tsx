@@ -6,7 +6,7 @@ import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCover } from '@/catalog/BookCover'
 import { OwnerBadge } from '@/catalog/OwnerBadge'
 import { languageFlag } from '@/catalog/languageFlags'
-import { ZoneTooltip } from '@/catalog/ZoneEmoji'
+import { ThemeTooltip, ZoneTooltip } from '@/catalog/ZoneEmoji'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
 import { AuthorLinks } from '@/catalog/AuthorLinks'
@@ -113,13 +113,20 @@ export function BookDetailPage() {
                 </TooltipContent>
               </Tooltip>
               <span className="text-muted-foreground text-xs">·</span>
-              <Link
-                to={`/?theme=${encodeURIComponent(book.theme)}`}
-                className="rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
-                style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
-              >
-                {tv('theme', book.theme)}
-              </Link>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to={`/?theme=${encodeURIComponent(book.theme)}`}
+                    className="rounded-full border px-2.5 py-0.5 text-xs font-medium hover:brightness-95"
+                    style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
+                  >
+                    {tv('theme', book.theme)}
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <ThemeTooltip theme={book.theme} />
+                </TooltipContent>
+              </Tooltip>
             </div>
           )}
 

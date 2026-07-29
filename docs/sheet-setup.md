@@ -73,8 +73,9 @@ below it that have a `Themes` value (but a blank `Title`) belong to that zone.
 | `Title`            | the **zone** name (only on a zone's first row)      |
 | `Themes`           | one theme name per row under the zone               |
 | `Description`      | the zone's description (English), on its title row  |
+| `Theme description`| the theme's description (English), on its own row   |
 | `Marker`           | *(optional)* an emoji or image URL for the zone — see [markers.md](markers.md) |
-| `Description (it)`, `Description (es)`, … | *(optional)* translated descriptions — see [translations.md](translations.md) |
+| `Title (it)`, `Themes (es)`, `Description (it)`, `Theme description (es)`, … | *(optional)* translated names/descriptions — see [translations.md](translations.md) |
 
 Example (the `Marker`/`Description` columns omitted for brevity):
 

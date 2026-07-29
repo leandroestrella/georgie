@@ -28,7 +28,7 @@ const draft = (over: Partial<NewBook> = {}): NewBook => ({
   language: ['English'],
   originalLanguage: 'English',
   coverUrl: '',
-  theme: 'Poetry',
+  theme: 'Poetry & Verse',
   owner: 'leandro',
   referenceUrl: '',
   readBy: [],
@@ -49,12 +49,12 @@ describe('reads', () => {
 
   it('getTaxonomies exposes zones, owners and languages', async () => {
     const tax = await getTaxonomies()
-    expect(tax.zones.length).toBe(5)
+    expect(tax.zones.length).toBe(8)
     expect(tax.owners).toContain('maria')
     expect(tax.languages).toContain('English')
     // every theme maps back to a zone
     for (const zone of tax.zones)
-      for (const theme of zone.themes) expect(tax.themeToZone[theme]).toBe(zone.name)
+      for (const theme of zone.themes) expect(tax.themeToZone[theme.name]).toBe(zone.name)
   })
 
   it('getBook finds by id and returns null when missing', async () => {
@@ -75,7 +75,7 @@ describe('writes', () => {
   it('addBook assigns a call-number id and derives the zone', async () => {
     const book = await addBook(draft({ title: '1984', author: 'George Orwell', year: 1950 }))
     expect(book.id).toBe('ORW-198-1950')
-    expect(book.zone).toBe('The Narrative Universes (Fiction & Poetry)') // parent of Poetry
+    expect(book.zone).toBe('The Old Library (Canon & Antiquity)') // parent of Poetry & Verse
     expect((await getBooks()).some((b) => b.id === book.id)).toBe(true)
   })
 
@@ -87,10 +87,10 @@ describe('writes', () => {
   })
 
   it('updateBook patches fields and re-derives zone on theme change', async () => {
-    const book = await addBook(draft({ theme: 'Poetry' }))
-    const updated = await updateBook(book.id, { theme: 'Digital Theory', title: 'Renamed' })
+    const book = await addBook(draft({ theme: 'Poetry & Verse' }))
+    const updated = await updateBook(book.id, { theme: 'Digital & Media Theory', title: 'Renamed' })
     expect(updated.title).toBe('Renamed')
-    expect(updated.zone).toBe('Net-Art, Cybernetics & Sonic Fictions')
+    expect(updated.zone).toBe('The Machine (Systems & Signals)')
   })
 
   it('deleteBook archives (hidden from getBooks) and restoreBook brings it back', async () => {

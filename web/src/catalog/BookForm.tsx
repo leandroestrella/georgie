@@ -226,8 +226,8 @@ export function BookForm({
               <SelectGroup key={zone.name}>
                 <SelectLabel>{tv('zone', zone.name)}</SelectLabel>
                 {zone.themes.map((theme) => (
-                  <SelectItem key={theme} value={theme}>
-                    {tv('theme', theme)}
+                  <SelectItem key={theme.name} value={theme.name}>
+                    {tv('theme', theme.name)}
                   </SelectItem>
                 ))}
               </SelectGroup>

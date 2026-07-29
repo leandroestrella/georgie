@@ -19,6 +19,20 @@ export function ZoneTooltip({ zone }: { zone: string }) {
   )
 }
 
+/** Tooltip body for a theme: its (translated) name and curatorial description. */
+export function ThemeTooltip({ theme }: { theme: string }) {
+  const tv = useVocab()
+  const { i18n } = useTranslation()
+  const { themeDescription } = useCatalog()
+  const description = themeDescription(theme, i18n.resolvedLanguage)
+  return (
+    <div className="max-w-56">
+      <div className="font-medium">{tv('theme', theme)}</div>
+      {description && <div className="text-background/70 mt-0.5">{description}</div>}
+    </div>
+  )
+}
+
 /**
  * The book's zone shown as its marker (an emoji or an image URL from the sheet,
  * via the catalog taxonomy), with the zone name + description in a tooltip. Sits
