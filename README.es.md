@@ -39,6 +39,7 @@ flowchart LR
 - 🗂 categorías guiadas por la propia hoja: zonas (con sus propios colores, y emoji o imágenes como marcadores) que agrupan temas, reflejando los estantes físicos; las insignias de propietario y lector también vienen de la hoja
 - 🌍 interfaz en english, italiano y español (los nombres de zonas/temas/idiomas y las descripciones por zona también se traducen)
 - 🪪 ids legibles con formato de número de catálogo (`ORW-198-1950`), generados una sola vez e inmutables
+- 📊 una página de **estadísticas** solo para admin — libros por zona (con el desglose de los temas de cada zona), por idioma, en idioma original vs. traducidos, y estadísticas de lectura por usuario; cada dato enlaza a la vista filtrada correspondiente del catálogo
 - 📖 una página **acerca de** dentro de la app — el readme del proyecto, mostrada desde el avatar de georgie — con un pie de página que enlaza al código fuente y al autor
 
 ## stack tecnológico
@@ -71,7 +72,7 @@ georgie es una plantilla para cualquiera que quiera catalogar sus propios estant
 2. crea un apps script vinculado a tu hoja: `cd apps-script`, `npm install`, `npx clasp login`, luego `clasp clone <scriptId>` (o crea el proyecto desde Extensions → Apps Script de la hoja y `clasp push`). despliégalo como aplicación web ("execute as: me", "who has access: anyone"). ejecuta cualquier función una vez desde el editor para conceder los scopes (hoja de cálculo + solicitudes externas), pasando por la pantalla de consentimiento
 3. crea un google oauth client id (aplicación web) para el botón de inicio de sesión; añade el origen de tu sitio a sus authorized javascript origins
 4. configura los admin y el client id en el backend:
-   - ejecuta `setupUsersTab` desde el editor de apps script — crea una pestaña `Users` y te añade como primer admin; añade cada admin como una fila (`Email`, `Owner`). esta pestaña es la lista de quién puede escribir
+   - ejecuta `setupUsersTab` desde el editor de apps script — crea una pestaña `Users` y te añade como primer admin; añade cada admin como una fila (`Email`, `Owner`). esta pestaña es la lista de quién puede escribir, y sus valores `Owner` son también las personas de las que la página de estadísticas informa datos de lectura — escribe cada nombre exactamente como aparece en las columnas `Owner` / `Read by` del catálogo (la comparación distingue mayúsculas y minúsculas)
    - añade una script property `OAUTH_CLIENT_ID` (Project Settings → Script Properties) con el client id del paso 3, para que el backend pueda verificar los tokens de inicio de sesión
 5. copia `web/.env.example` a `web/.env.local` y completa `VITE_API_URL` (tu url `/exec`) y `VITE_GOOGLE_CLIENT_ID` — ambos son públicos, así que también pueden vivir en los secrets del repositorio de github para la acción de despliegue
 6. `npm install && npm run build` en `web/`, y aloja la carpeta `dist/` donde sea que tengas hosting estático (se incluye un `.htaccess` para el enrutamiento spa + cabeceras básicas para apache/cpanel)

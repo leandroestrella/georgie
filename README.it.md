@@ -39,6 +39,7 @@ flowchart LR
 - 🗂 categorie guidate dal foglio stesso: zone (con i propri colori, ed emoji o immagini come marcatori) che raggruppano i temi, rispecchiando gli scaffali fisici; anche i badge di proprietario e lettore vengono dal foglio
 - 🌍 interfaccia in english, italiano ed español (si traducono anche i nomi di zone/temi/lingue e le descrizioni per zona)
 - 🪪 id leggibili in stile numero di catalogo (`ORW-198-1950`), generati una sola volta e immutabili
+- 📊 una pagina **statistiche** riservata agli admin — libri per zona (con il dettaglio dei temi di ogni zona), per lingua, in lingua originale vs tradotti, e statistiche di lettura per utente; ogni dato rimanda alla vista filtrata corrispondente del catalogo
 - 📖 una pagina **info** nell'app — il readme del progetto, mostrata a partire dall'avatar di georgie — con un footer che rimanda al codice sorgente e all'autore
 
 ## stack tecnologico
@@ -71,7 +72,7 @@ georgie è un template per chiunque voglia catalogare i propri scaffali:
 2. crea un apps script collegato al tuo foglio: `cd apps-script`, `npm install`, `npx clasp login`, poi `clasp clone <scriptId>` (oppure crea il progetto tramite Extensions → Apps Script del foglio e `clasp push`). distribuiscilo come app web ("esegui come: me", "chi ha accesso: chiunque"). esegui una qualsiasi funzione una volta dall'editor per concedere gli scope (foglio di calcolo + richieste esterne), passando per la schermata di consenso
 3. crea un google oauth client id (applicazione web) per il pulsante di accesso; aggiungi l'origine del tuo sito alle sue authorized javascript origins
 4. configura gli admin e il client id sul backend:
-   - esegui `setupUsersTab` dall'editor di apps script — crea una scheda `Users` e ti aggiunge come primo admin; aggiungi ogni admin come riga (`Email`, `Owner`). questa scheda è la lista di chi può scrivere
+   - esegui `setupUsersTab` dall'editor di apps script — crea una scheda `Users` e ti aggiunge come primo admin; aggiungi ogni admin come riga (`Email`, `Owner`). questa scheda è la lista di chi può scrivere, e i suoi valori `Owner` sono anche le persone di cui la pagina statistiche riporta i dati di lettura — scrivi ciascun nome esattamente come appare nelle colonne `Owner` / `Read by` del catalogo (il confronto distingue maiuscole e minuscole)
    - aggiungi una script property `OAUTH_CLIENT_ID` (Project Settings → Script Properties) con il client id del punto 3, così il backend può verificare i token di accesso
 5. copia `web/.env.example` in `web/.env.local` e compila `VITE_API_URL` (il tuo url `/exec`) e `VITE_GOOGLE_CLIENT_ID` — sono entrambi pubblici, quindi possono anche vivere nei repo secrets di github per l'azione di deploy
 6. `npm install && npm run build` in `web/`, e ospita la cartella `dist/` ovunque tu abbia hosting statico (è incluso un `.htaccess` per il routing spa + header di base per apache/cpanel)

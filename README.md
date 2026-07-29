@@ -39,6 +39,7 @@ flowchart LR
 - 🗂 categories driven by the sheet itself: zones (with their own colors, and emoji or image markers) grouping themes, mirroring the physical shelves; owner and reader badges come from the sheet too
 - 🌍 interface in english, italiano and español (zone/theme/language names and per-zone descriptions translate too)
 - 🪪 human-readable call-number ids (`ORW-198-1950`), generated once and immutable
+- 📊 an admin-only **overview** page — books by zone (drilling down into each zone's themes), by language, original vs. translated, and per-user reading stats; every figure links through to the matching filtered catalog view
 - 📖 an in-app **about** page — the project readme, rendered from the georgie avatar — with a footer linking to the source and the author
 
 ## tech stack
@@ -71,7 +72,7 @@ georgie is a template for anyone who wants to catalog their own shelves:
 2. create a bound apps script on your sheet: `cd apps-script`, `npm install`, `npx clasp login`, then `clasp clone <scriptId>` (or create the project via the sheet's Extensions → Apps Script and `clasp push`). deploy it as a web app ("execute as: me", "who has access: anyone"). run any function once from the editor to grant the scopes (spreadsheet + external requests), clicking through the consent screen
 3. create a google oauth client id (web application) for the sign-in button; add your site's origin to its authorized javascript origins
 4. configure admins & the client id on the backend:
-   - run `setupUsersTab` from the apps script editor — it creates a `Users` tab and seeds you; add each admin as a row (`Email`, `Owner`). this tab is the write allowlist
+   - run `setupUsersTab` from the apps script editor — it creates a `Users` tab and seeds you; add each admin as a row (`Email`, `Owner`). this tab is the write allowlist, and its `Owner` labels are also the people the overview page reports reading stats for — spell each one exactly as it appears in the catalog's `Owner` / `Read by` columns (matching is case-sensitive)
    - add a script property `OAUTH_CLIENT_ID` (Project Settings → Script Properties) with the client id from step 3, so the backend can verify sign-in tokens
 5. copy `web/.env.example` to `web/.env.local` and fill in `VITE_API_URL` (your `/exec` url) and `VITE_GOOGLE_CLIENT_ID` — both are public, so they can also live in github repo secrets for the deploy action
 6. `npm install && npm run build` in `web/`, and host the `dist/` folder anywhere static files live (an `.htaccess` for spa routing + basic headers is included for apache/cpanel)

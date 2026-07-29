@@ -16,6 +16,18 @@ you:
 | `Lists`   | the owner and language option lists               | you        |
 | `Users`   | the admin write-allowlist (`Email`, `Owner`)      | `setupUsersTab` — see the README |
 
+The `Users` tab does double duty: it gates who may write (by `Email`), **and**
+its `Owner` labels are the people the in-app overview page reports reading
+stats for. Only the `Owner` label is ever sent to the browser — the `Email`
+column stays server-side, used solely for the sign-in check.
+
+That second role means the `Owner` value has to line up with the catalog:
+match it **exactly**, including capitalisation, to how that person is written
+in the Catalog tab's `Owner` and `Read by` columns, or their stats will come
+out as zero. It's also why a non-human "owner" you might keep in `Lists`
+(a pet whose books are tracked, say) simply doesn't belong in `Users` — no
+sign-in, and nothing to report.
+
 ---
 
 ## `Catalog` tab — one row per book
