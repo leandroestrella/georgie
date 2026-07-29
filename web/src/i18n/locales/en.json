@@ -145,6 +145,7 @@
   "overview": {
     "title": "Overview",
     "byTheme": "Books by theme",
+    "byZone": "By zone",
     "byLanguage": "Books by language",
     "byUser": "By user",
     "bookCount": "Books owned",
@@ -152,6 +153,10 @@
     "catalogRead": "Read of the whole catalog",
     "readOverall": "read",
     "unreadOverall": "unread",
+    "originalVsTranslated": "Original vs. translated",
+    "original": "original language",
+    "translated": "translated",
+    "unknown": "unknown",
     "other": "other",
     "empty": "No books yet.",
     "signInMessage": "sign in above as an admin to see the household's reading stats."

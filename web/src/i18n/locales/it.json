@@ -145,6 +145,7 @@
   "overview": {
     "title": "Statistiche",
     "byTheme": "Libri per tema",
+    "byZone": "Per zona",
     "byLanguage": "Libri per lingua",
     "byUser": "Per utente",
     "bookCount": "Libri posseduti",
@@ -152,6 +153,10 @@
     "catalogRead": "Letti dell'intero catalogo",
     "readOverall": "letti",
     "unreadOverall": "non letti",
+    "originalVsTranslated": "Lingua originale vs tradotti",
+    "original": "lingua originale",
+    "translated": "tradotti",
+    "unknown": "sconosciuto",
     "other": "altro",
     "empty": "Ancora nessun libro.",
     "signInMessage": "accedi qui sopra come admin per vedere le statistiche di lettura di casa."

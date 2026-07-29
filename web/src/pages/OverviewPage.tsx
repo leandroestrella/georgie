@@ -21,6 +21,9 @@ const LANGUAGE_PALETTE = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4',
 
 const READ_COLOR = '#2a78d6' // validated palette slot 1 (blue)
 const UNREAD_COLOR = '#898781' // dataviz skill's "muted (axis/labels)" role
+const ORIGINAL_COLOR = '#1baf7a' // validated palette slot 3 (aqua)
+const TRANSLATED_COLOR = '#eb6834' // validated palette slot 2 (orange)
+const UNKNOWN_COLOR = '#898781' // same muted role as UNREAD_COLOR — "not determined"
 
 /** Counts occurrences of a book field grouped by a key, in place. */
 function countBy<T>(items: T[], key: (item: T) => string): Map<string, number> {
@@ -51,6 +54,21 @@ function languageCounts(books: Book[]): Map<string, number> {
   const counts = new Map<string, number>()
   for (const b of books) for (const l of b.language) counts.set(l, (counts.get(l) ?? 0) + 1)
   return counts
+}
+
+/** Is this edition in its original language, translated, or is that unknown
+ *  (blank `Original language` — already flagged elsewhere by "needs
+ *  attention", so it's tracked as its own slice here rather than guessed). */
+function originalityCounts(books: Book[]): { original: number; translated: number; unknown: number } {
+  let original = 0
+  let translated = 0
+  let unknown = 0
+  for (const b of books) {
+    if (!b.originalLanguage.trim()) unknown++
+    else if (b.language.includes(b.originalLanguage)) original++
+    else translated++
+  }
+  return { original, translated, unknown }
 }
 
 /** A user's stats: how many books they own, and two read-rate percentages. */
@@ -123,7 +141,7 @@ export function OverviewPage() {
       count: activeBooks.length - readCount,
       color: UNREAD_COLOR,
     },
-  ]
+  ].filter((c) => c.count > 0)
 
   const langCounts = [...languageCounts(activeBooks).entries()]
   const languagePie: PieCount[] = langCounts.map(([lang, count], i) => {
@@ -137,6 +155,13 @@ export function OverviewPage() {
     }
   })
 
+  const originality = originalityCounts(activeBooks)
+  const originalityPie: PieCount[] = [
+    { key: 'original', label: t('overview.original'), count: originality.original, color: ORIGINAL_COLOR },
+    { key: 'translated', label: t('overview.translated'), count: originality.translated, color: TRANSLATED_COLOR },
+    { key: 'unknown', label: t('overview.unknown'), count: originality.unknown, color: UNKNOWN_COLOR },
+  ].filter((c) => c.count > 0)
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-2xl font-semibold">{t('overview.title')}</h1>
@@ -145,42 +170,47 @@ export function OverviewPage() {
         <CardHeader>
           <CardTitle>{t('overview.byTheme')}</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6">
+        <CardContent>
           {zonePie.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
-            <>
-              <CountPieChart counts={zonePie} ariaLabel="books by zone" otherLabel={t('overview.other')} />
+            // One unified 2-column grid: the zone-level pie is the first cell,
+            // so the first zone's theme drill-down sits right beside it
+            // (no separate full-width row / blank space), then the rest of
+            // the per-zone drill-downs continue filling the grid.
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1 rounded-lg border p-3">
+                <p className="text-sm font-medium">{t('overview.byZone')}</p>
+                <CountPieChart counts={zonePie} ariaLabel="books by zone" otherLabel={t('overview.other')} />
+              </div>
               {/* Drill-down: each zone's own book count broken down by theme,
                   in a light→dark ramp of that zone's own hue. */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {[...byZone.keys()].map((zone) => {
-                  const themes = [...themeCountsInZone(activeBooks, zone).entries()]
-                  const hue = zoneColor(zone).hue
-                  const themePie: PieCount[] = themes.map(([theme, count], i) => ({
-                    key: theme,
-                    label: tv('theme', theme),
-                    count,
-                    color: themeShade(hue, i, themes.length),
-                    href: `/?theme=${encodeURIComponent(theme)}`,
-                  }))
-                  return (
-                    <div key={zone} className="flex flex-col gap-1 rounded-lg border p-3">
-                      <p className="flex items-center gap-1.5 text-sm font-medium">
-                        <ZoneEmoji zone={zone} />
-                        {tv('zone', zone)}
-                      </p>
-                      <CountPieChart
-                        counts={themePie}
-                        ariaLabel={`books by theme in ${zone}`}
-                        otherLabel={t('overview.other')}
-                        size="size-16"
-                      />
-                    </div>
-                  )
-                })}
-              </div>
-            </>
+              {[...byZone.keys()].map((zone) => {
+                const themes = [...themeCountsInZone(activeBooks, zone).entries()]
+                const hue = zoneColor(zone).hue
+                const themePie: PieCount[] = themes.map(([theme, count], i) => ({
+                  key: theme,
+                  label: tv('theme', theme),
+                  count,
+                  color: themeShade(hue, i, themes.length),
+                  href: `/?theme=${encodeURIComponent(theme)}`,
+                }))
+                return (
+                  <div key={zone} className="flex flex-col gap-1 rounded-lg border p-3">
+                    <p className="flex items-center gap-1.5 text-sm font-medium">
+                      <ZoneEmoji zone={zone} />
+                      {tv('zone', zone)}
+                    </p>
+                    <CountPieChart
+                      counts={themePie}
+                      ariaLabel={`books by theme in ${zone}`}
+                      otherLabel={t('overview.other')}
+                      size="size-16"
+                    />
+                  </div>
+                )
+              })}
+            </div>
           )}
         </CardContent>
       </Card>
@@ -193,7 +223,19 @@ export function OverviewPage() {
           {languagePie.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
-            <CountPieChart counts={languagePie} ariaLabel="books by language" otherLabel={t('overview.other')} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1 rounded-lg border p-3">
+                <CountPieChart counts={languagePie} ariaLabel="books by language" otherLabel={t('overview.other')} />
+              </div>
+              <div className="flex flex-col gap-1 rounded-lg border p-3">
+                <p className="text-sm font-medium">{t('overview.originalVsTranslated')}</p>
+                <CountPieChart
+                  counts={originalityPie}
+                  ariaLabel="books in original language vs translated"
+                  otherLabel={t('overview.other')}
+                />
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -207,7 +249,7 @@ export function OverviewPage() {
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {users.map((user) => {
                   const stats = userStats(activeBooks, user)
                   return (
