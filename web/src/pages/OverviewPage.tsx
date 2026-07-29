@@ -177,8 +177,10 @@ export function OverviewPage() {
             // One unified 2-column grid: the zone-level pie is the first cell,
             // so the first zone's theme drill-down sits right beside it
             // (no separate full-width row / blank space), then the rest of
-            // the per-zone drill-downs continue filling the grid.
-            <div className="grid gap-4 sm:grid-cols-2">
+            // the per-zone drill-downs continue filling the grid. items-start
+            // so a short cell (few themes) doesn't stretch to match a taller
+            // row-mate — each card sizes to its own content.
+            <div className="grid items-start gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1 rounded-lg border p-3">
                 <p className="text-sm font-medium">{t('overview.byZone')}</p>
                 <CountPieChart counts={zonePie} ariaLabel="books by zone" otherLabel={t('overview.other')} />
@@ -223,7 +225,7 @@ export function OverviewPage() {
           {languagePie.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid items-start gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1 rounded-lg border p-3">
                 <CountPieChart counts={languagePie} ariaLabel="books by language" otherLabel={t('overview.other')} />
               </div>
@@ -249,35 +251,41 @@ export function OverviewPage() {
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
             <>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <CountPieChart counts={readVsUnread} ariaLabel="books read overall" otherLabel={t('overview.other')} />
+              <div className="grid items-start gap-4 sm:grid-cols-2">
                 {users.map((user) => {
                   const stats = userStats(activeBooks, user)
+                  const ownedHref = `/?owner=${encodeURIComponent(user)}`
+                  const ownReadHref = `/?owner=${encodeURIComponent(user)}&reader=${encodeURIComponent(user)}`
+                  const catalogReadHref = `/?reader=${encodeURIComponent(user)}`
                   return (
                     <div key={user} className="flex flex-col gap-2 rounded-lg border p-3">
-                      <Link
-                        to={`/?owner=${encodeURIComponent(user)}`}
-                        className="flex items-center gap-1.5 font-medium hover:underline"
-                      >
+                      <Link to={ownedHref} className="flex items-center gap-1.5 font-medium hover:underline">
                         <OwnerBadge owner={user} className="size-4" />
                         {user}
                       </Link>
                       <p className="text-sm">
                         <span className="text-muted-foreground">{t('overview.bookCount')} </span>
-                        <span className="font-medium">{stats.count}</span>
+                        <Link to={ownedHref} className="font-medium hover:underline">
+                          {stats.count}
+                        </Link>
                       </p>
                       <p className="text-sm">
                         <span className="text-muted-foreground">{t('overview.ownRead')} </span>
-                        <span className="font-medium">{stats.ownReadPct}%</span>
+                        <Link to={ownReadHref} className="font-medium hover:underline">
+                          {stats.ownReadPct}%
+                        </Link>
                       </p>
                       <p className="text-sm">
                         <span className="text-muted-foreground">{t('overview.catalogRead')} </span>
-                        <span className="font-medium">{stats.catalogReadPct}%</span>
+                        <Link to={catalogReadHref} className="font-medium hover:underline">
+                          {stats.catalogReadPct}%
+                        </Link>
                       </p>
                     </div>
                   )
                 })}
               </div>
-              <CountPieChart counts={readVsUnread} ariaLabel="books read overall" otherLabel={t('overview.other')} />
             </>
           )}
         </CardContent>
