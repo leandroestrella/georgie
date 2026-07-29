@@ -268,11 +268,13 @@ export function OverviewPage() {
         <CardHeader>
           <CardTitle>{t('overview.byUser')}</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-6">
+        <CardContent>
           {users.length === 0 ? (
             <p className="text-muted-foreground text-sm">{t('overview.empty')}</p>
           ) : (
-            <>
+            // Chart and user cards side by side (not stacked) so the cards
+            // sit at the same height as the chart instead of below it.
+            <div className="flex flex-wrap items-start gap-6">
               <CountPieChart
                 counts={readVsUnread}
                 ariaLabel="books read overall"
@@ -283,7 +285,7 @@ export function OverviewPage() {
                   the row as 2 wide cards instead of leaving a blank third
                   column — extra columns only appear once there's enough
                   users AND width for another 240px+ card. */}
-              <div className="grid items-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+              <div className="grid min-w-0 flex-1 items-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
                 {users.map((user) => {
                   const stats = userStats(activeBooks, user)
                   const ownedHref = `/?owner=${encodeURIComponent(user)}`
@@ -320,7 +322,7 @@ export function OverviewPage() {
                   )
                 })}
               </div>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
