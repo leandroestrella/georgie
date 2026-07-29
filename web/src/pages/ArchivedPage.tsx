@@ -6,7 +6,7 @@ import { restoreBook } from '@/api/client'
 import { useAuth } from '@/auth/AuthProvider'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingAvatar } from '@/components/LoadingAvatar'
 
 /**
  * Admin-only view of archived (soft-deleted) books, with restore. Archived books
@@ -43,7 +43,7 @@ export function ArchivedPage() {
       {error && <p className="text-destructive text-sm">{error}</p>}
 
       {loading ? (
-        <Skeleton className="h-40 w-full" />
+        <LoadingAvatar />
       ) : archivedBooks.length === 0 ? (
         <p className="text-muted-foreground py-12 text-center">{t('admin.archivedEmpty')}</p>
       ) : (

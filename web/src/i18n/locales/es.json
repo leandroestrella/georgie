@@ -1,9 +1,11 @@
 {
   "app": {
-    "tagline": "un hogar acogedor para tu biblioteca de casa."
+    "tagline": "un hogar acogedor para tu biblioteca de casa.",
+    "loading": "cargando"
   },
   "nav": {
     "about": "acerca de georgie",
+    "overview": "estadísticas",
     "repo": "código en github",
     "portfolio": "leandro estrella — portafolio"
   },
@@ -12,7 +14,6 @@
     "count_one": "{{count}} libro",
     "count_other": "{{count}} libros",
     "empty": "ningún libro coincide con los filtros.",
-    "loading": "cargando las estanterías",
     "clearFilters": "limpiar filtros"
   },
   "filters": {
@@ -140,6 +141,16 @@
     "borrowerPlaceholder": "nombre o apodo",
     "borrowerHint": "Solo nombre o apodo — el catálogo es público.",
     "loanDate": "Fecha del préstamo"
+  },
+  "overview": {
+    "title": "Estadísticas",
+    "byTheme": "Libros por tema",
+    "byOwner": "Por propietario",
+    "bookCount": "Libros en propiedad",
+    "ownRead": "Leídos de los propios",
+    "catalogRead": "Leídos de todo el catálogo",
+    "empty": "Todavía no hay libros.",
+    "signInMessage": "inicia sesión arriba como admin para ver las estadísticas de lectura de casa."
   },
   "lookup": {
     "hint": "Rellena desde la web — solo se completan los campos vacíos, no se sobrescribe nada.",

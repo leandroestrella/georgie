@@ -2,12 +2,14 @@ import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { ChartPieIcon } from 'lucide-react'
 import { AuthBar } from '@/auth/AuthBar'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { AdminSlotContext, SubHeaderContext } from '@/components/subheader'
 import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 import { cn } from '@/lib/utils'
-import { LoadingDots } from '@/components/LoadingDots'
+import { LoadingAvatar } from '@/components/LoadingAvatar'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 // Route-level code splitting: each page is its own chunk, fetched on first
 // visit rather than upfront. AboutPage alone pulls in react-markdown +
@@ -18,6 +20,7 @@ const BookDetailPage = lazy(() => import('@/pages/BookDetailPage').then((m) => (
 const BookFormPage = lazy(() => import('@/pages/BookFormPage').then((m) => ({ default: m.BookFormPage })))
 const ArchivedPage = lazy(() => import('@/pages/ArchivedPage').then((m) => ({ default: m.ArchivedPage })))
 const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
+const OverviewPage = lazy(() => import('@/pages/OverviewPage').then((m) => ({ default: m.OverviewPage })))
 
 /**
  * App shell: a sticky, full-width header (brand · language · sign-in) over the
@@ -79,6 +82,18 @@ function Layout({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-2">
             <LanguageSwitcher />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/overview"
+                  aria-label={t('nav.overview')}
+                  className="hover:bg-accent rounded-md p-2"
+                >
+                  <ChartPieIcon className="size-4" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>{t('nav.overview')}</TooltipContent>
+            </Tooltip>
             {/* A page portals its write-gated primary action here (see
                 useAdminSlotContainer), so it always sits beside sign-in. */}
             <div ref={setAdminSlot} className="flex items-center gap-2" />
@@ -139,20 +154,10 @@ function Layout({ children }: { children: ReactNode }) {
   )
 }
 
-/** Minimal fallback while a route's chunk loads — brief, and each page renders
- *  its own richer loading state (e.g. CatalogPage's skeleton grid) once mounted. */
-function RouteFallback() {
-  return (
-    <div className="flex justify-center py-12">
-      <LoadingDots />
-    </div>
-  )
-}
-
 function App() {
   return (
     <Layout>
-      <Suspense fallback={<RouteFallback />}>
+      <Suspense fallback={<LoadingAvatar />}>
         <Routes>
           <Route path="/" element={<CatalogPage />} />
           {/* `new` before `:id` so it isn't swallowed by the detail route. */}
@@ -161,6 +166,7 @@ function App() {
           <Route path="/book/:id" element={<BookDetailPage />} />
           <Route path="/archived" element={<ArchivedPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/overview" element={<OverviewPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

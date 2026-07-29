@@ -7,7 +7,7 @@ import type { NewBook } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { BookForm, emptyDraft } from '@/catalog/BookForm'
 import { useCatalog } from '@/catalog/CatalogProvider'
-import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingAvatar } from '@/components/LoadingAvatar'
 
 /**
  * Add (`/book/new`) and edit (`/book/:id/edit`) pages. Admin-only in the UI; the
@@ -28,12 +28,7 @@ export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
   if (!isAdmin && !loading) return <Navigate to="/" replace />
 
   if (loading || !taxonomies || (mode === 'edit' && !existing)) {
-    return (
-      <div className="flex max-w-2xl flex-col gap-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
+    return <LoadingAvatar />
   }
 
   const initial = mode === 'edit' && existing ? existing : emptyDraft(owner)

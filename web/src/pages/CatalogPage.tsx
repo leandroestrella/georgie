@@ -9,9 +9,8 @@ import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCard } from '@/catalog/BookCard'
 import { FilterBar } from '@/catalog/FilterBar'
 import { BookTable } from '@/catalog/BookTable'
-import { LoadingDots } from '@/components/LoadingDots'
+import { LoadingAvatar } from '@/components/LoadingAvatar'
 import { useAdminSlotContainer, useSubHeaderContainer } from '@/components/subheader'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   authorOptions,
   filterBooks,
@@ -151,48 +150,35 @@ export function CatalogPage() {
           subHeader,
         )}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted-foreground text-sm">
-          {loading ? (
-            <>
-              {t('catalog.loading')}
-              <LoadingDots />
-            </>
-          ) : (
-            t('catalog.count', { count: visible.length })
-          )}
-        </p>
-
-        {isAdmin && (
-          <Button asChild size="sm" variant="outline" className="gap-1">
-            <Link to="/archived">
-              <ArchiveIcon className="size-3.5" /> {t('admin.archived')}
-              {archivedBooks.length > 0 && ` (${archivedBooks.length})`}
-            </Link>
-          </Button>
-        )}
-      </div>
-
       {loading ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="flex flex-col gap-2">
-              <Skeleton className="aspect-[3/4] w-full rounded-lg" />
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
-            </div>
-          ))}
-        </div>
-      ) : visible.length === 0 ? (
-        <p className="text-muted-foreground py-12 text-center">{t('catalog.empty')}</p>
-      ) : view === 'table' ? (
-        <BookTable books={visible} zoneColor={zoneColor} />
+        <LoadingAvatar />
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {visible.map((book) => (
-            <BookCard key={book.id} book={book} colors={zoneColor(book.zone)} />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-muted-foreground text-sm">{t('catalog.count', { count: visible.length })}</p>
+
+            {isAdmin && (
+              <Button asChild size="sm" variant="outline" className="gap-1">
+                <Link to="/archived">
+                  <ArchiveIcon className="size-3.5" /> {t('admin.archived')}
+                  {archivedBooks.length > 0 && ` (${archivedBooks.length})`}
+                </Link>
+              </Button>
+            )}
+          </div>
+
+          {visible.length === 0 ? (
+            <p className="text-muted-foreground py-12 text-center">{t('catalog.empty')}</p>
+          ) : view === 'table' ? (
+            <BookTable books={visible} zoneColor={zoneColor} />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {visible.map((book) => (
+                <BookCard key={book.id} book={book} colors={zoneColor(book.zone)} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

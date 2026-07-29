@@ -1,9 +1,11 @@
 {
   "app": {
-    "tagline": "a cozy little home for your home library."
+    "tagline": "a cozy little home for your home library.",
+    "loading": "loading"
   },
   "nav": {
     "about": "about georgie",
+    "overview": "overview",
     "repo": "source on github",
     "portfolio": "leandro estrella — portfolio"
   },
@@ -12,7 +14,6 @@
     "count_one": "{{count}} book",
     "count_other": "{{count}} books",
     "empty": "no books match your filters.",
-    "loading": "loading the shelves",
     "clearFilters": "clear filters"
   },
   "filters": {
@@ -140,6 +141,16 @@
     "borrowerPlaceholder": "first name or nickname",
     "borrowerHint": "First name or nickname only — the catalog is public.",
     "loanDate": "Loan date"
+  },
+  "overview": {
+    "title": "Overview",
+    "byTheme": "Books by theme",
+    "byOwner": "By owner",
+    "bookCount": "Books owned",
+    "ownRead": "Read of their own",
+    "catalogRead": "Read of the whole catalog",
+    "empty": "No books yet.",
+    "signInMessage": "sign in above as an admin to see the household's reading stats."
   },
   "lookup": {
     "hint": "Fill the form from the web — only empty fields are filled, nothing is overwritten.",

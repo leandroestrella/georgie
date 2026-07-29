@@ -13,7 +13,7 @@ import { AuthorLinks } from '@/catalog/AuthorLinks'
 import { splitOwners } from '@/catalog/filter'
 import { CoverAdminActions } from '@/catalog/CoverAdminActions'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { LoadingAvatar } from '@/components/LoadingAvatar'
 import { isSafeHttpUrl } from '@/catalog/validation'
 import { useVocab } from '@/i18n/vocab'
 
@@ -47,14 +47,7 @@ export function BookDetailPage() {
     return (
       <div className="flex flex-col gap-6">
         {back}
-        <div className="grid gap-6 sm:grid-cols-[220px_1fr]">
-          <Skeleton className="aspect-[3/4] w-full rounded-lg" />
-          <div className="flex flex-col gap-3">
-            <Skeleton className="h-8 w-2/3" />
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-24 w-full" />
-          </div>
-        </div>
+        <LoadingAvatar />
       </div>
     )
   }

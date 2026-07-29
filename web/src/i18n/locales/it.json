@@ -1,9 +1,11 @@
 {
   "app": {
-    "tagline": "una casa accogliente per la tua biblioteca di casa."
+    "tagline": "una casa accogliente per la tua biblioteca di casa.",
+    "loading": "carico"
   },
   "nav": {
     "about": "info su georgie",
+    "overview": "statistiche",
     "repo": "codice su github",
     "portfolio": "leandro estrella — portfolio"
   },
@@ -12,7 +14,6 @@
     "count_one": "{{count}} libro",
     "count_other": "{{count}} libri",
     "empty": "nessun libro corrisponde ai filtri.",
-    "loading": "carico gli scaffali",
     "clearFilters": "azzera filtri"
   },
   "filters": {
@@ -140,6 +141,16 @@
     "borrowerPlaceholder": "nome o soprannome",
     "borrowerHint": "Solo nome o soprannome — il catalogo è pubblico.",
     "loanDate": "Data del prestito"
+  },
+  "overview": {
+    "title": "Statistiche",
+    "byTheme": "Libri per tema",
+    "byOwner": "Per proprietario",
+    "bookCount": "Libri posseduti",
+    "ownRead": "Letti dei propri",
+    "catalogRead": "Letti dell'intero catalogo",
+    "empty": "Ancora nessun libro.",
+    "signInMessage": "accedi qui sopra come admin per vedere le statistiche di lettura di casa."
   },
   "lookup": {
     "hint": "Compila dal web — riempie solo i campi vuoti, non sovrascrive nulla.",
