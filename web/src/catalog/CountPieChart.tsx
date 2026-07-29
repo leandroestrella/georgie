@@ -110,8 +110,11 @@ export function CountPieChart({
   }
 
   return (
-    <div className="flex flex-col gap-1 pt-1">
-      <div className="flex flex-wrap items-center gap-4">
+    <div className="flex flex-wrap items-start gap-4 pt-1">
+      {/* Chart + total share a column so the total centers under the circle
+          itself, not the whole row (which would skew left of center once the
+          legend — often taller than the chart — sits beside it). */}
+      <div className="flex flex-col items-center gap-1">
         <svg viewBox="0 0 88 88" className={`${size} shrink-0`} role="img" aria-label={ariaLabel}>
           {slices.map((s) => (
             <Tooltip key={s.key}>
@@ -134,30 +137,30 @@ export function CountPieChart({
             </Tooltip>
           ))}
         </svg>
-        <div className="flex flex-col gap-1">
-          {slices.map((s) => (
-            <div
-              key={s.key}
-              className={`flex items-center gap-1.5 rounded-sm px-1 -mx-1 text-xs transition-colors ${clickable(s) ? 'cursor-pointer' : ''} ${hovered === s.key ? 'bg-muted' : ''}`}
-              onClick={() => go(s)}
-              onMouseEnter={() => setHovered(s.key)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} aria-hidden />
-              <span className="text-muted-foreground">{s.label}</span>
-              <span className="font-medium">{s.count}</span>
-            </div>
-          ))}
-        </div>
+        {totalLabel && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="text-muted-foreground cursor-default text-xs font-medium">{total}</p>
+            </TooltipTrigger>
+            <TooltipContent>{totalLabel}</TooltipContent>
+          </Tooltip>
+        )}
       </div>
-      {totalLabel && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <p className="text-muted-foreground w-fit cursor-default text-xs font-medium">{total}</p>
-          </TooltipTrigger>
-          <TooltipContent>{totalLabel}</TooltipContent>
-        </Tooltip>
-      )}
+      <div className="flex flex-col gap-1">
+        {slices.map((s) => (
+          <div
+            key={s.key}
+            className={`flex items-center gap-1.5 rounded-sm px-1 -mx-1 text-xs transition-colors ${clickable(s) ? 'cursor-pointer' : ''} ${hovered === s.key ? 'bg-muted' : ''}`}
+            onClick={() => go(s)}
+            onMouseEnter={() => setHovered(s.key)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <span className="inline-block size-2.5 shrink-0 rounded-full" style={{ backgroundColor: s.color }} aria-hidden />
+            <span className="text-muted-foreground">{s.label}</span>
+            <span className="font-medium">{s.count}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

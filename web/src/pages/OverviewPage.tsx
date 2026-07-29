@@ -279,9 +279,11 @@ export function OverviewPage() {
                 otherLabel={t('overview.other')}
                 totalLabel={t('overview.totalBooks')}
               />
-              {/* Three across on desktop; still 2 on tablet and 1 on a phone,
-                  where three of these stat blocks would wrap badly. */}
-              <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* auto-fit (not a fixed sm:2/lg:3 track count) so 2 users fill
+                  the row as 2 wide cards instead of leaving a blank third
+                  column — extra columns only appear once there's enough
+                  users AND width for another 240px+ card. */}
+              <div className="grid items-start gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
                 {users.map((user) => {
                   const stats = userStats(activeBooks, user)
                   const ownedHref = `/?owner=${encodeURIComponent(user)}`
