@@ -80,6 +80,8 @@ function userStats(books: Book[], user: string) {
   return {
     count: owned.length,
     catalogTotal: books.length,
+    // Co-owned books count for every owner, so these can sum past 100%.
+    ownedPct: books.length > 0 ? Math.round((owned.length / books.length) * 100) : 0,
     ownRead,
     ownTotal: owned.length,
     ownReadPct: owned.length > 0 ? Math.round((ownRead / owned.length) * 100) : 0,
@@ -277,7 +279,9 @@ export function OverviewPage() {
                 otherLabel={t('overview.other')}
                 totalLabel={t('overview.totalBooks')}
               />
-              <div className="grid items-start gap-4 sm:grid-cols-2">
+              {/* Three across on desktop; still 2 on tablet and 1 on a phone,
+                  where three of these stat blocks would wrap badly. */}
+              <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {users.map((user) => {
                   const stats = userStats(activeBooks, user)
                   const ownedHref = `/?owner=${encodeURIComponent(user)}`
@@ -294,6 +298,7 @@ export function OverviewPage() {
                         <Link to={ownedHref} className="font-medium hover:underline">
                           {stats.count}/{stats.catalogTotal}
                         </Link>
+                        <span className="text-muted-foreground"> · {stats.ownedPct}%</span>
                       </p>
                       <p className="text-sm">
                         <span className="text-muted-foreground">{t('overview.ownRead')} </span>

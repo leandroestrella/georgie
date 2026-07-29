@@ -87,8 +87,9 @@ export function CountPieChart({
   ariaLabel: string
   /** Label for the folded slice, e.g. t('overview.other') — already translated. */
   otherLabel: string
-  /** When given, the summed slice total is shown under the chart with this
-   *  label — the whole the slices are parts of. */
+  /** When given, the summed slice total is shown under the chart as a bare
+   *  number, with this label as its hover tooltip — the whole the slices are
+   *  parts of. */
   totalLabel?: string
   maxSlices?: number
   otherColor?: string
@@ -150,9 +151,12 @@ export function CountPieChart({
         </div>
       </div>
       {totalLabel && (
-        <p className="text-muted-foreground text-xs">
-          {totalLabel} <span className="text-foreground font-medium">{total}</span>
-        </p>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <p className="text-muted-foreground w-fit cursor-default text-xs font-medium">{total}</p>
+          </TooltipTrigger>
+          <TooltipContent>{totalLabel}</TooltipContent>
+        </Tooltip>
       )}
     </div>
   )
