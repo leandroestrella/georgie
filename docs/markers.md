@@ -18,11 +18,11 @@ Add a column headed exactly **`Marker`**. Fill it on each zone's **title row**
 (the same row that has the zone name and description); theme-only rows below it
 are left blank.
 
-| Title (zone)                              | Description | Themes | **Marker** |
-| ----------------------------------------- | ----------- | ------ | ---------- |
-| Contemporary Art, Curation & Design       | …           | …      | `🖍️`       |
-| Radical Politics, Philosophy & Society    | …           | …      | `✊`        |
-| Net-Art, Cybernetics & Sonic Fictions     | …           | …      | `https://example.com/net-art.png` |
+| Title (zone)                           | Description | Themes | **Marker** |
+| --------------------------------------- | ----------- | ------ | ---------- |
+| The Studio (Making & Images)            | …           | …      | `📐`       |
+| The Commons (Power & Collective Life)   | …           | …      | `✊`        |
+| The Reading Room (Living Fiction)       | …           | …      | `https://example.com/reading-room.png` |
 
 ### Owners & readers → an `Owner marker` column on the **Lists** tab
 

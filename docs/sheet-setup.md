@@ -79,13 +79,13 @@ below it that have a `Themes` value (but a blank `Title`) belong to that zone.
 
 Example (the `Marker`/`Description` columns omitted for brevity):
 
-| Title (zone)                          | Themes                        |
-| ------------------------------------- | ----------------------------- |
-| Contemporary Art, Curation & Design   | Art theory                    |
-|                                       | Curatorial practice           |
-|                                       | Graphic & type design         |
-| Radical Politics, Philosophy & Society| Political philosophy          |
-|                                       | Anarchism                     |
+| Title (zone)                | Themes                        |
+| ---------------------------- | ----------------------------- |
+| The Studio (Making & Images) | Art theory                    |
+|                               | Curatorial practice           |
+|                               | Graphic & type design         |
+| The Commons (Power & Collective Life) | Political philosophy |
+|                               | Anarchism                     |
 
 Each **Theme** must be unique across the whole tab — it's how a Catalog row's
 `Theme` maps to its parent zone. Zone **colours** are built into the app (not a

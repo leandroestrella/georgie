@@ -37,7 +37,7 @@ flowchart LR
 - 🧹 un filtro "da completare" (anno mancante, `circa`, senza copertina, senza lingua originale) — lo strumento per completare il catalogo direttamente dallo scaffale
 - 🤝 tracciamento dei prestiti — presta un libro (chi lo prende + data), segnalo reso; flag di scambio per i libri offerti su piattaforme di scambio libri
 - 🗂 categorie guidate dal foglio stesso: zone (con i propri colori, ed emoji o immagini come marcatori) che raggruppano i temi, rispecchiando gli scaffali fisici; anche i badge di proprietario e lettore vengono dal foglio
-- 🌍 interfaccia in english, italiano ed español (si traducono anche i nomi di zone/temi/lingue e le descrizioni per zona)
+- 🌍 interfaccia in english, italiano ed español (si traducono anche i nomi di zone/temi/lingue e le descrizioni di zone e temi)
 - 🪪 id leggibili in stile numero di catalogo (`ORW-198-1950`), generati una sola volta e immutabili
 - 📊 una pagina **statistiche** riservata agli admin — libri per zona (con il dettaglio dei temi di ogni zona), per lingua, in lingua originale vs tradotti, e statistiche di lettura per utente; ogni dato rimanda alla vista filtrata corrispondente del catalogo
 - 📖 una pagina **info** nell'app — il readme del progetto, mostrata a partire dall'avatar di georgie — con un footer che rimanda al codice sorgente e all'autore
@@ -87,7 +87,7 @@ le guide pratiche per la gestione quotidiana del catalogo vivono in [`docs/`](do
 - [impostazione del foglio](docs/sheet-setup.md) — lo schema esatto delle colonne `Catalog` / `Zones` / `Lists`
 - [id dei libri](docs/book-ids.md) — come vengono generati gli id in stile numero di catalogo, `=MAKEID`, e il raro caso di rigenerazione manuale
 - [marcatori](docs/markers.md) — i badge di proprietario/lettore/zona guidati dalle colonne del foglio
-- [traduzioni](docs/translations.md) — tradurre nomi di zone/temi/lingue e descrizioni delle zone
+- [traduzioni](docs/translations.md) — tradurre nomi e descrizioni di zone/temi, e nomi delle lingue
 - [hosting delle copertine](cpanel/README.md) — l'endpoint opzionale per ospitare le copertine sul proprio server
 
 ## sviluppo

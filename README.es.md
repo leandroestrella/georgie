@@ -37,7 +37,7 @@ flowchart LR
 - 🧹 un filtro "por completar" (año faltante, `circa`, sin portada, sin idioma original) — la herramienta para terminar el catálogo desde el estante
 - 🤝 seguimiento de préstamos — presta un libro (quién lo tiene + fecha), márcalo como devuelto; marca de intercambio para libros ofrecidos en plataformas de intercambio de libros
 - 🗂 categorías guiadas por la propia hoja: zonas (con sus propios colores, y emoji o imágenes como marcadores) que agrupan temas, reflejando los estantes físicos; las insignias de propietario y lector también vienen de la hoja
-- 🌍 interfaz en english, italiano y español (los nombres de zonas/temas/idiomas y las descripciones por zona también se traducen)
+- 🌍 interfaz en english, italiano y español (los nombres de zonas/temas/idiomas y las descripciones de zonas y temas también se traducen)
 - 🪪 ids legibles con formato de número de catálogo (`ORW-198-1950`), generados una sola vez e inmutables
 - 📊 una página de **estadísticas** solo para admin — libros por zona (con el desglose de los temas de cada zona), por idioma, en idioma original vs. traducidos, y estadísticas de lectura por usuario; cada dato enlaza a la vista filtrada correspondiente del catálogo
 - 📖 una página **acerca de** dentro de la app — el readme del proyecto, mostrada desde el avatar de georgie — con un pie de página que enlaza al código fuente y al autor
@@ -87,7 +87,7 @@ las guías del día a día para gestionar tu catálogo viven en [`docs/`](docs/)
 - [configuración de la hoja](docs/sheet-setup.md) — el esquema exacto de columnas de `Catalog` / `Zones` / `Lists`
 - [ids de los libros](docs/book-ids.md) — cómo se generan los ids con formato de número de catálogo, `=MAKEID`, y el raro caso de regeneración manual
 - [marcadores](docs/markers.md) — las insignias de propietario/lector/zona guiadas por columnas de la hoja
-- [traducciones](docs/translations.md) — traducir nombres de zonas/temas/idiomas y descripciones de zonas
+- [traducciones](docs/translations.md) — traducir nombres y descripciones de zonas/temas, y nombres de idiomas
 - [alojamiento de portadas](cpanel/README.md) — el endpoint opcional para alojar portadas en tu propio servidor
 
 ## desarrollo

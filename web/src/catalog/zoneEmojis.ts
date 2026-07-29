@@ -5,11 +5,14 @@
  * zones with neither a marker nor an entry here simply show nothing.
  */
 export const ZONE_EMOJI: Record<string, string> = {
-  'Contemporary Art, Curation & Design': '🖍️',
-  'Net-Art, Cybernetics & Sonic Fictions': '🤖',
-  'Radical Politics, Philosophy & Society': '✊',
-  'The Narrative Universes (Fiction & Poetry)': '🌐',
-  'Mechanics, Travel & The Physical World': '🔭',
+  'The Reading Room (Living Fiction)': '🌐',
+  'The Old Library (Canon & Antiquity)': '🏛️',
+  'The Archive (Witness & Record)': '📰',
+  'The Studio (Making & Images)': '📐',
+  'The Commons (Power & Collective Life)': '✊',
+  'The Self (Inner Life & Memory)': '🕯️',
+  'The Machine (Systems & Signals)': '⚙️',
+  'The Workshop (Skills & Instruments)': '🧵',
 }
 
 /** The emoji for a zone, or undefined if none is mapped. */

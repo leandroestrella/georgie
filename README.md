@@ -37,7 +37,7 @@ flowchart LR
 - 🧹 a "needs attention" filter (missing year, `circa`, no cover, no original language) — the tool for finishing the catalog from the shelf
 - 🤝 loan tracking — lend a book (borrower + date), return it; exchange flag for books offered on book-exchange platforms
 - 🗂 categories driven by the sheet itself: zones (with their own colors, and emoji or image markers) grouping themes, mirroring the physical shelves; owner and reader badges come from the sheet too
-- 🌍 interface in english, italiano and español (zone/theme/language names and per-zone descriptions translate too)
+- 🌍 interface in english, italiano and español (zone/theme/language names and zone/theme descriptions translate too)
 - 🪪 human-readable call-number ids (`ORW-198-1950`), generated once and immutable
 - 📊 an admin-only **overview** page — books by zone (drilling down into each zone's themes), by language, original vs. translated, and per-user reading stats; every figure links through to the matching filtered catalog view
 - 📖 an in-app **about** page — the project readme, rendered from the georgie avatar — with a footer linking to the source and the author
@@ -87,7 +87,7 @@ day-to-day how-tos for running your catalog live in [`docs/`](docs/):
 - [sheet setup](docs/sheet-setup.md) — the exact `Catalog` / `Zones` / `Lists` column schema
 - [book ids](docs/book-ids.md) — how call-number ids are generated, `=MAKEID`, and the rare manual re-mint
 - [markers](docs/markers.md) — owner/reader/zone badges driven by sheet columns
-- [translations](docs/translations.md) — translating zone/theme/language names and zone descriptions
+- [translations](docs/translations.md) — translating zone/theme names and descriptions, and language names
 - [cover hosting](cpanel/README.md) — the optional self-hosted cover endpoint
 
 ## development
