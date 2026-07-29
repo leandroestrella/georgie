@@ -2,13 +2,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import type { MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Book } from '@/api/types'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { AuthorLinks } from './AuthorLinks'
 import { LanguageFlag } from './LanguageFlag'
 import { OwnerBadges } from './OwnerBadges'
 import { StatusIcons } from './StatusIcons'
-import { ZoneEmoji } from './ZoneEmoji'
+import { ThemeTooltip, ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
 
 const enc = encodeURIComponent
@@ -20,12 +21,19 @@ function ThemeChip({ theme, colors }: { theme: string; colors: ZoneColors }) {
   const tv = useVocab()
   if (!theme) return null
   return (
-    <span
-      className="inline-block w-fit whitespace-nowrap rounded-full border px-2 py-0.5 text-xs"
-      style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
-    >
-      {tv('theme', theme)}
-    </span>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          className="inline-block w-fit whitespace-nowrap rounded-full border px-2 py-0.5 text-xs"
+          style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
+        >
+          {tv('theme', theme)}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <ThemeTooltip theme={theme} />
+      </TooltipContent>
+    </Tooltip>
   )
 }
 

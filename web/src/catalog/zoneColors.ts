@@ -13,7 +13,7 @@ export interface ZoneColors {
   border: string
 }
 
-const ZONE_HUES = [262, 20, 150, 205, 42, 330, 95]
+const ZONE_HUES = [262, 20, 150, 205, 42, 330, 95, 296]
 
 function colorsForHue(hue: number): ZoneColors {
   return {

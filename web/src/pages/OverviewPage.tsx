@@ -197,6 +197,11 @@ export function OverviewPage() {
                   totalLabel={t('overview.totalBooks')}
                 />
               </div>
+              {/* An even zone count would otherwise pair the last per-zone cell
+                  with the "By zone" cell above, leaving the very last one
+                  orphaned on its own row. Leaving this slot blank instead
+                  bumps every per-zone cell onto fresh, evenly filled rows. */}
+              {byZone.size % 2 === 0 && <div aria-hidden className="hidden sm:block" />}
               {/* Drill-down: each zone's own book count broken down by theme,
                   in a light→dark ramp of that zone's own hue. */}
               {[...byZone.keys()].map((zone) => {

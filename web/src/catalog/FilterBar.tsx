@@ -29,7 +29,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCatalog } from './CatalogProvider'
 import { OwnerBadge } from './OwnerBadge'
 import { languageFlag } from './languageFlags'
-import { zoneEmoji } from './zoneEmojis'
+import { isImageUrl } from './markers'
 import { useVocab } from '@/i18n/vocab'
 import {
   activeFilterCount,
@@ -106,7 +106,7 @@ export function FilterBar(props: FilterBarProps) {
   const { t, i18n } = useTranslation()
   const tv = useVocab()
   const { isAdmin } = useAuth()
-  const { zoneColor, zoneDescription, themeDescription } = useCatalog()
+  const { zoneColor, zoneDescription, zoneMarker, themeDescription } = useCatalog()
 
   // On phones the facets stack full-width — seven of them fill the screen — so
   // they collapse behind a toggle. Desktop keeps them inline (`sm:` styles win).
@@ -130,12 +130,16 @@ export function FilterBar(props: FilterBarProps) {
   taxonomies.zones.forEach((z) => z.themes.forEach((th) => themeZone.set(th.name, z.name)))
 
   const zoneOptions = taxonomies.zones.map((z) => {
-    const emoji = zoneEmoji(z.name)
+    const marker = zoneMarker(z.name) // sheet-driven, falls back to the built-in emoji map
     return {
       value: z.name,
       label: tv('zone', z.name),
       title: zoneDescription(z.name, i18n.resolvedLanguage), // localized, shown on hover in the menu
-      icon: emoji ? <span className="shrink-0 text-base leading-none">{emoji}</span> : undefined,
+      icon: !marker ? undefined : isImageUrl(marker) ? (
+        <img src={marker} alt="" loading="lazy" referrerPolicy="no-referrer" className="size-4 shrink-0 object-contain" />
+      ) : (
+        <span className="shrink-0 text-base leading-none">{marker}</span>
+      ),
     }
   })
   const themeOptions = themesInScope.map((th) => ({

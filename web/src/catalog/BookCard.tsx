@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom'
 import type { Book } from '@/api/types'
 import { Card } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { useVocab } from '@/i18n/vocab'
 import { AuthorLinks } from './AuthorLinks'
 import { BookCover } from './BookCover'
 import { OwnerBadges } from './OwnerBadges'
 import { StatusIcons } from './StatusIcons'
-import { ZoneEmoji } from './ZoneEmoji'
+import { ThemeTooltip, ZoneEmoji } from './ZoneEmoji'
 import type { ZoneColors } from './zoneColors'
 
 const enc = encodeURIComponent
@@ -51,13 +52,20 @@ export function BookCard({ book, colors }: { book: Book; colors: ZoneColors }) {
         </p>
         {/* Theme chip, below the author/year. */}
         {book.zone && (
-          <Link
-            to={`/?theme=${enc(book.theme)}`}
-            className="relative z-[1] w-fit rounded-full border px-2 py-0.5 text-[10px] font-medium hover:brightness-95"
-            style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
-          >
-            {tv('theme', book.theme)}
-          </Link>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Link
+                to={`/?theme=${enc(book.theme)}`}
+                className="relative z-[1] w-fit rounded-full border px-2 py-0.5 text-[10px] font-medium hover:brightness-95"
+                style={{ background: colors.bg, color: colors.fg, borderColor: colors.border }}
+              >
+                {tv('theme', book.theme)}
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent>
+              <ThemeTooltip theme={book.theme} />
+            </TooltipContent>
+          </Tooltip>
         )}
         {/* Foot markers spread evenly across the width; sized to the theme chip.
             StatusIcons render as individual flex children (each raised above the
