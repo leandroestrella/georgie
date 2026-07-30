@@ -6,8 +6,7 @@ insert columns freely, and any extra columns you add are simply ignored. What
 matters is that the header text matches **exactly** (including capitalisation and
 spaces).
 
-The workbook has three tabs you create, plus a `Users` tab the backend makes for
-you:
+The workbook has three tabs you create, plus two the backend makes for you:
 
 | Tab       | Holds                                             | Created by |
 | --------- | ------------------------------------------------- | ---------- |
@@ -15,6 +14,11 @@ you:
 | `Zones`   | your categories: zones → themes                   | you        |
 | `Lists`   | the owner and language option lists               | you        |
 | `Users`   | the admin write-allowlist (`Email`, `Owner`)      | `setupUsersTab` — see the README |
+| `History` | the admin activity log (every add/edit/archive/restore/loan/return) | the backend, on the first write after deploy |
+
+`History` needs no setup — it's an append-only audit trail, viewable in-app at
+`/history` (admin-only). If you never see it appear, nothing's wrong; it's
+created lazily on the first logged write, not at deploy time.
 
 The `Users` tab does double duty: it gates who may write (by `Email`), **and**
 its `Owner` labels are the people the in-app overview page reports reading
