@@ -2,7 +2,6 @@ import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { HistoryIcon } from 'lucide-react'
 import { AuthBar } from '@/auth/AuthBar'
 import { useAuth } from '@/auth/AuthProvider'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
@@ -103,16 +102,18 @@ function Layout({ children }: { children: ReactNode }) {
             </Tooltip>
             {/* Admin-only — unlike Overview (public-facing, self-gates with a
                 sign-in prompt), the audit log has nothing to show a signed-out
-                visitor, so the link itself is hidden rather than dead-ending. */}
+                visitor, so the link itself is hidden rather than dead-ending.
+                🕘 matches linkulino's own History nav glyph exactly (a literal
+                emoji, same as Overview's 📊 above). */}
             {isAdmin && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link
                     to="/history"
                     aria-label={t('nav.history')}
-                    className="hover:bg-accent rounded-md p-2"
+                    className="hover:bg-accent rounded-md p-2 text-lg leading-none"
                   >
-                    <HistoryIcon className="size-[1.125rem]" />
+                    🕘
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent>{t('nav.history')}</TooltipContent>
