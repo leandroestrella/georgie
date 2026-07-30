@@ -40,6 +40,7 @@ flowchart LR
 - 🌍 interface in english, italiano and español (zone/theme/language names and zone/theme descriptions translate too)
 - 🪪 human-readable call-number ids (`ORW-198-1950`), generated once and immutable
 - 📊 an admin-only **overview** page — books by zone (drilling down into each zone's themes), by language, original vs. translated, and per-user reading stats; every figure links through to the matching filtered catalog view
+- 🕰️ an admin-only **activity log** — every add, edit, archive, restore, loan and return, newest first, with who did it, what changed, and a link back to the book
 - 📖 an in-app **about** page — the project readme, rendered from the georgie avatar — with a footer linking to the source and the author
 
 ## tech stack

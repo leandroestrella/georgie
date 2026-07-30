@@ -40,6 +40,7 @@ flowchart LR
 - 🌍 interfaccia in english, italiano ed español (si traducono anche i nomi di zone/temi/lingue e le descrizioni di zone e temi)
 - 🪪 id leggibili in stile numero di catalogo (`ORW-198-1950`), generati una sola volta e immutabili
 - 📊 una pagina **statistiche** riservata agli admin — libri per zona (con il dettaglio dei temi di ogni zona), per lingua, in lingua originale vs tradotti, e statistiche di lettura per utente; ogni dato rimanda alla vista filtrata corrispondente del catalogo
+- 🕰️ un **registro attività** riservato agli admin — ogni aggiunta, modifica, archiviazione, ripristino, prestito e reso, dal più recente, con chi l'ha fatto, cosa è cambiato, e un link al libro
 - 📖 una pagina **info** nell'app — il readme del progetto, mostrata a partire dall'avatar di georgie — con un footer che rimanda al codice sorgente e all'autore
 
 ## stack tecnologico

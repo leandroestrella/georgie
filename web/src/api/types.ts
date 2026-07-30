@@ -90,6 +90,25 @@ export interface Zone {
   themes: Theme[]
 }
 
+/** One row of the admin audit log (the `History` tab), newest first. */
+export interface HistoryEntry {
+  /** ISO 8601 UTC. */
+  timestamp: string
+  /** The acting admin's owner label (never a raw email). */
+  actor: string
+  action: 'add' | 'update' | 'archive' | 'restore' | 'loan' | 'return'
+  /** The book's call-number ID — always present (Georgie's "delete" is an
+   *  archive, so there's never a row this can't safely link back to). */
+  entityId: string
+  title: string
+  author: string
+  theme: string
+  /** A field-by-field diff summary (`update`) or a short context line
+   *  (`loan`) — '' when the action name already says everything (`add`,
+   *  `archive`, `restore`, `return`). */
+  changes: string
+}
+
 /** The controlled vocabularies read from the `Zones` and `Lists` tabs. */
 export interface Taxonomies {
   zones: Zone[]

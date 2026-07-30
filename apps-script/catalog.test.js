@@ -230,3 +230,60 @@ test('isbnIsAbsent treats blank and N/A as absent', () => {
   assert.equal(c.isbnIsAbsent('n/a'), true)
   assert.equal(c.isbnIsAbsent('9780349143590'), false)
 })
+
+// --- History (audit log) ---------------------------------------------------
+
+const BOOK_A = {
+  id: 'GRE-LES-2018', title: 'Less', author: 'Andrew Sean Greer', year: 2018,
+  yearPrecision: '', publisher: 'Abacus', isbn: '9780349143590',
+  language: ['English'], originalLanguage: 'English', coverUrl: '',
+  theme: 'Contemporary & Short Stories', zone: 'The Narrative Universes (Fiction & Poetry)',
+  owner: 'leandro', referenceUrl: '', readBy: [], borrowed: false, borrowerName: '',
+  loanDate: '', exchange: false, archived: false,
+}
+
+test('diffBook lists only changed fields, arrays joined, blanks shown as —', () => {
+  const before = BOOK_A
+  const after = { ...BOOK_A, year: 2019, theme: 'Poetry', language: ['English', 'Italian'], publisher: '' }
+  assert.equal(
+    c.diffBook(before, after),
+    'year: 2018 → 2019; publisher: Abacus → —; language: English → English, Italian; theme: Contemporary & Short Stories → Poetry',
+  )
+  // No diffable field changed → ''
+  assert.equal(c.diffBook(before, { ...before }), '')
+  // id/zone/archived/borrowed changes are NOT diffed (own dedicated actions)
+  assert.equal(c.diffBook(before, { ...before, id: 'OTHER-000-0000', zone: 'Other Zone', archived: true, borrowed: true }), '')
+})
+
+test('historyRowCells maps a log entry to History-tab column order by header name', () => {
+  const entry = {
+    timestamp: '2026-07-30T12:00:00.000Z', actor: 'leandro', action: 'update',
+    entityId: 'GRE-LES-2018', title: 'Less', author: 'Andrew Sean Greer',
+    theme: 'Contemporary & Short Stories', changes: 'year: 2018 → 2019',
+  }
+  assert.deepEqual(c.historyRowCells(entry, c.HISTORY_COLUMNS), [
+    '2026-07-30T12:00:00.000Z', 'leandro', 'update', 'GRE-LES-2018', 'Less',
+    'Andrew Sean Greer', 'Contemporary & Short Stories', 'year: 2018 → 2019',
+  ])
+  // Reordered header still lines up correctly — resolved by name, not position.
+  const reordered = ['Actor', 'Timestamp', 'Action', 'Title', 'EntityId', 'Author', 'Changes', 'Theme']
+  assert.deepEqual(c.historyRowCells(entry, reordered), [
+    'leandro', '2026-07-30T12:00:00.000Z', 'update', 'Less', 'GRE-LES-2018',
+    'Andrew Sean Greer', 'year: 2018 → 2019', 'Contemporary & Short Stories',
+  ])
+})
+
+test('parseHistory reads rows newest-first, by header name', () => {
+  const values = [
+    c.HISTORY_COLUMNS,
+    ['2026-07-30T10:00:00.000Z', 'leandro', 'add', 'GRE-LES-2018', 'Less', 'Andrew Sean Greer', 'Contemporary & Short Stories', ''],
+    ['2026-07-30T11:00:00.000Z', 'maria', 'loan', 'GRE-LES-2018', 'Less', 'Andrew Sean Greer', 'Contemporary & Short Stories', 'borrower: Sam · since 2026-07-30'],
+  ]
+  const entries = c.parseHistory(values)
+  assert.equal(entries.length, 2)
+  assert.equal(entries[0].actor, 'maria') // newest first
+  assert.equal(entries[0].action, 'loan')
+  assert.equal(entries[1].actor, 'leandro')
+  assert.deepEqual(c.parseHistory([c.HISTORY_COLUMNS]), []) // header only → no entries
+  assert.deepEqual(c.parseHistory([]), [])
+})

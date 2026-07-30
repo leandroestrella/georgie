@@ -13,7 +13,7 @@
  * (wired up in Phase 2); reads never send it.
  */
 import { config, hasBackend } from '@/config'
-import type { Book, BookPatch, LoanInput, NewBook, Taxonomies } from './types'
+import type { Book, BookPatch, HistoryEntry, LoanInput, NewBook, Taxonomies } from './types'
 import { MOCK_BOOKS, MOCK_TAXONOMIES } from './mock'
 import { uniqueId } from './ids'
 
@@ -58,6 +58,13 @@ export async function getAllBooks(): Promise<Book[]> {
   return data.books
 }
 
+/** Admin-only: the audit log of every write, newest first. */
+export async function getHistory(): Promise<HistoryEntry[]> {
+  if (!hasBackend) return clone(mock.history)
+  const data = await post<{ entries: HistoryEntry[] }>({ action: 'history' })
+  return data.entries
+}
+
 /** Fetches the taxonomy (zones/themes/owners/languages). */
 export async function getTaxonomies(): Promise<Taxonomies> {
   if (!hasBackend) return clone(mock.taxonomies)
@@ -96,21 +103,21 @@ export async function addBook(book: NewBook): Promise<Book> {
 
 /** Applies a partial patch to an existing book. */
 export async function updateBook(id: string, patch: BookPatch): Promise<Book> {
-  if (!hasBackend) return mockPatch(id, patch)
+  if (!hasBackend) return mockPatch(id, patch, 'update')
   const data = await post<{ book: Book }>({ action: 'updateBook', id, patch })
   return data.book
 }
 
 /** Archives a book (soft delete — hidden from the public catalog). */
 export async function deleteBook(id: string): Promise<Book> {
-  if (!hasBackend) return mockPatch(id, { archived: true })
+  if (!hasBackend) return mockPatch(id, { archived: true }, 'archive', '')
   const data = await post<{ book: Book }>({ action: 'deleteBook', id })
   return data.book
 }
 
 /** Restores an archived book. */
 export async function restoreBook(id: string): Promise<Book> {
-  if (!hasBackend) return mockPatch(id, { archived: false })
+  if (!hasBackend) return mockPatch(id, { archived: false }, 'restore', '')
   const data = await post<{ book: Book }>({ action: 'restoreBook', id })
   return data.book
 }
@@ -118,9 +125,10 @@ export async function restoreBook(id: string): Promise<Book> {
 /** Sets a loan (`loan`) or returns the book (`null`). */
 export async function setLoan(id: string, loan: LoanInput | null): Promise<Book> {
   if (!hasBackend) {
-    return loan
-      ? mockPatch(id, { borrowed: true, borrowerName: loan.borrowerName, loanDate: loan.loanDate ?? todayIso() })
-      : mockPatch(id, { borrowed: false, borrowerName: '', loanDate: '' })
+    if (!loan) return mockPatch(id, { borrowed: false, borrowerName: '', loanDate: '' }, 'return', '')
+    const loanDate = loan.loanDate ?? todayIso()
+    const changes = `borrower: ${loan.borrowerName || '(unknown)'} · since ${loanDate}`
+    return mockPatch(id, { borrowed: true, borrowerName: loan.borrowerName, loanDate }, 'loan', changes)
   }
   const data = await post<{ book: Book }>({ action: 'setLoan', id, loan })
   return data.book
@@ -183,17 +191,97 @@ function unwrap<T>(env: ApiEnvelope<T>): T {
 }
 
 // ---------------------------------------------------------------------------
+// Mock-mode audit log — re-implements apps-script/catalog.js's diffBook and
+// logHistory_ as plain TS (can't share code across the two runtimes) so the
+// /history page behaves the same whether backed by the real sheet or these
+// in-memory fixtures. Declared before `mock` below since its initializer
+// calls seedMockHistory() immediately.
+// ---------------------------------------------------------------------------
+
+/** Same field list + exclusions as the backend's `DIFF_FIELDS` in catalog.js. */
+const DIFF_FIELDS: (keyof Book)[] = [
+  'title', 'author', 'year', 'yearPrecision', 'publisher', 'isbn',
+  'language', 'originalLanguage', 'coverUrl', 'theme', 'owner',
+  'referenceUrl', 'readBy', 'exchange',
+]
+
+function diffFieldText(v: unknown): string {
+  if (Array.isArray(v)) return v.join(', ') || '—'
+  return v == null || v === '' ? '—' : String(v)
+}
+
+function diffBookMock(before: Book, after: Book): string {
+  const parts: string[] = []
+  for (const f of DIFF_FIELDS) {
+    const a = diffFieldText(before[f])
+    const b = diffFieldText(after[f])
+    if (a !== b) parts.push(`${f}: ${a} → ${b}`)
+  }
+  return parts.join('; ')
+}
+
+/** The identity `fetchMe()` reports in mock mode — writes are attributed to it. */
+const MOCK_ACTOR = 'leandro'
+
+function pushMockHistory(action: HistoryEntry['action'], book: Book, changes: string): void {
+  mock.history.unshift({
+    timestamp: new Date().toISOString(),
+    actor: MOCK_ACTOR,
+    action,
+    entityId: book.id,
+    title: book.title,
+    author: book.author,
+    theme: book.theme,
+    changes,
+  })
+}
+
+/**
+ * A handful of plausible entries referencing real mock-book ids (so they
+ * click through), rather than an empty "no activity yet" on first load.
+ */
+function seedMockHistory(): HistoryEntry[] {
+  const at = (minutesAgo: number) => new Date(Date.now() - minutesAgo * 60_000).toISOString()
+  const entry = (
+    id: string,
+    action: HistoryEntry['action'],
+    changes: string,
+    minutesAgo: number,
+  ): HistoryEntry | null => {
+    const book = MOCK_BOOKS.find((b) => b.id === id)
+    if (!book) return null
+    return {
+      timestamp: at(minutesAgo),
+      actor: MOCK_ACTOR,
+      action,
+      entityId: book.id,
+      title: book.title,
+      author: book.author,
+      theme: book.theme,
+      changes,
+    }
+  }
+  return [
+    entry('GRE-LES-2018', 'add', '', 60 * 24 * 3),
+    entry('KAP-LAP-2007', 'loan', 'borrower: RebelBooks · since 2024-05-01', 60 * 24 * 2),
+    entry('ROV-ORD-2017', 'update', 'year: 2016 → 2017', 45),
+  ].filter((e): e is HistoryEntry => e !== null)
+}
+
+// ---------------------------------------------------------------------------
 // In-memory mock store (mock mode)
 // ---------------------------------------------------------------------------
 
 const mock = {
   books: clone(MOCK_BOOKS),
   taxonomies: MOCK_TAXONOMIES,
+  history: seedMockHistory(),
 }
 
 /** Resets the in-memory mock store — used by tests. */
 export function __resetMockStore(): void {
   mock.books = clone(MOCK_BOOKS)
+  mock.history = seedMockHistory()
 }
 
 function mockAdd(input: NewBook): Book {
@@ -204,14 +292,17 @@ function mockAdd(input: NewBook): Book {
     zone: mock.taxonomies.themeToZone[input.theme] ?? '',
   }
   mock.books.push(book)
+  pushMockHistory('add', book, '')
   return clone(book)
 }
 
-function mockPatch(id: string, patch: BookPatch): Book {
+function mockPatch(id: string, patch: BookPatch, action: HistoryEntry['action'], changes?: string): Book {
   const book = mock.books.find((b) => b.id === id)
   if (!book) throw new ApiError(`Book not found: ${id}`)
+  const before = clone(book)
   Object.assign(book, patch)
   if (patch.theme !== undefined) book.zone = mock.taxonomies.themeToZone[patch.theme] ?? ''
+  pushMockHistory(action, book, changes !== undefined ? changes : action === 'update' ? diffBookMock(before, book) : '')
   return clone(book)
 }
 

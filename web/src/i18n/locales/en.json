@@ -6,6 +6,7 @@
   "nav": {
     "about": "about georgie",
     "overview": "overview",
+    "history": "activity",
     "repo": "source on github",
     "portfolio": "leandro estrella — portfolio"
   },
@@ -162,6 +163,18 @@
     "totalEditions": "total book-language entries",
     "empty": "No books yet.",
     "signInMessage": "sign in above as an admin to see the household's reading stats."
+  },
+  "history": {
+    "title": "Activity",
+    "empty": "No activity yet.",
+    "action": {
+      "add": "{{actor}} added “{{title}}”",
+      "update": "{{actor}} edited “{{title}}”",
+      "archive": "{{actor}} archived “{{title}}”",
+      "restore": "{{actor}} restored “{{title}}”",
+      "loan": "{{actor}} loaned out “{{title}}”",
+      "return": "{{actor}} marked “{{title}}” returned"
+    }
   },
   "lookup": {
     "hint": "Fill the form from the web — only empty fields are filled, nothing is overwritten.",

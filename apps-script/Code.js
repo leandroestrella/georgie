@@ -4,7 +4,8 @@
  * The ONLY thing that touches the spreadsheet. Runs as the sheet owner and
  * exposes a small JSON API:
  *   - doGet  → public reads  (?action=books, ?action=taxonomies)
- *   - doPost → admin writes   (addBook, updateBook, deleteBook, restoreBook, setLoan)
+ *   - doPost → admin-gated: writes (addBook, updateBook, deleteBook, restoreBook,
+ *     setLoan, saveCover) and admin-only reads (allBooks, history)
  *
  * All pure logic (mapping, taxonomy, ID generation, auth decisions) lives in
  * catalog.js / auth.js and is unit-tested in Node. This file is just the glue:
@@ -23,6 +24,7 @@ var CATALOG_SHEET = 'Catalog'
 var ZONES_SHEET = 'Zones'
 var LISTS_SHEET = 'Lists'
 var USERS_SHEET = 'Users'
+var HISTORY_SHEET = 'History'
 var VERSION = '0.2.0'
 
 /**
@@ -66,18 +68,21 @@ function doPost(e) {
       // see them (Archived view / restore), so this goes through the auth gate.
       case 'allBooks':
         return json({ ok: true, books: getBooks_(true) })
+      // Admin-only read: the audit log of every write, newest first.
+      case 'history':
+        return json({ ok: true, entries: getHistory_() })
       case 'addBook':
         return json({ ok: true, book: addBook_(body.book, admin) })
       case 'updateBook':
-        return json({ ok: true, book: updateBook_(body.id, body.patch) })
+        return json({ ok: true, book: updateBook_(body.id, body.patch, admin.owner, 'update') })
       case 'deleteBook':
-        return json({ ok: true, book: updateBook_(body.id, { archived: true }) })
+        return json({ ok: true, book: updateBook_(body.id, { archived: true }, admin.owner, 'archive', '') })
       case 'restoreBook':
-        return json({ ok: true, book: updateBook_(body.id, { archived: false }) })
+        return json({ ok: true, book: updateBook_(body.id, { archived: false }, admin.owner, 'restore', '') })
       case 'setLoan':
-        return json({ ok: true, book: setLoan_(body.id, body.loan) })
+        return json({ ok: true, book: setLoan_(body.id, body.loan, admin.owner) })
       case 'saveCover':
-        return json({ ok: true, book: saveCover_(body) })
+        return json({ ok: true, book: saveCover_(body, admin.owner) })
       default:
         return json({ ok: false, error: 'unknown action: ' + body.action })
     }
@@ -98,9 +103,10 @@ function doPost(e) {
  * the token verifier already uses.
  *
  * @param {{id: string, url?: string, image?: string, contentType?: string}} body
+ * @param {string} actor the acting admin's owner label, for the audit log
  * @return {Book} the updated book
  */
-function saveCover_(body) {
+function saveCover_(body, actor) {
   var props = PropertiesService.getScriptProperties()
   var endpoint = props.getProperty('COVERS_UPLOAD_URL')
   var secret = props.getProperty('COVERS_UPLOAD_SECRET')
@@ -143,7 +149,7 @@ function saveCover_(body) {
 
   // Cache-buster so re-uploading the same id shows the new image immediately.
   var coverUrl = out.url + (out.url.indexOf('?') === -1 ? '?' : '&') + 'v=' + Date.now()
-  return updateBook_(id, { coverUrl: coverUrl })
+  return updateBook_(id, { coverUrl: coverUrl }, actor, 'update')
 }
 
 // ---------------------------------------------------------------------------
@@ -244,6 +250,7 @@ function addBook_(input, admin) {
     var name = cellToString(h)
     return name in cells ? cells[name] : ''
   }))
+  logHistory_(admin && admin.owner, 'add', book, '')
   return book
 }
 
@@ -252,9 +259,16 @@ function addBook_(input, admin) {
  * known columns. The ID itself is immutable and never changed here.
  * @param {string} id
  * @param {Object} patch partial Book fields to overwrite
+ * @param {string=} actor the acting admin's owner label — when given, logs a
+ *   `History` entry; omit for internal calls that shouldn't log (none today).
+ * @param {string=} action defaults to `'update'` (auto-diffed); pass
+ *   `'archive'`/`'restore'`/`'loan'`/`'return'` for actions whose name alone
+ *   already says what changed.
+ * @param {string=} changes explicit audit-log summary, overriding the
+ *   auto-diff — pass `''` for actions that need no summary at all.
  * @return {Book} the updated book
  */
-function updateBook_(id, patch) {
+function updateBook_(id, patch, actor, action, changes) {
   var sheet = getSheet_(CATALOG_SHEET)
   var values = sheet.getDataRange().getValues()
   var header = values[0]
@@ -274,6 +288,12 @@ function updateBook_(id, patch) {
     return name in cells ? cells[name] : values[rowNumber - 1][i]
   })
   sheet.getRange(rowNumber, 1, 1, header.length).setValues([rowValues])
+
+  if (actor) {
+    var act = action || 'update'
+    var summary = changes !== undefined ? changes : act === 'update' ? diffBook(current, merged) : ''
+    logHistory_(actor, act, merged, summary)
+  }
   return merged
 }
 
@@ -282,17 +302,69 @@ function updateBook_(id, patch) {
  * borrower, date); otherwise borrows it (date defaults to today).
  * @param {string} id
  * @param {{borrowerName?: string, loanDate?: string}|null} loan
+ * @param {string} actor the acting admin's owner label, for the audit log
  * @return {Book}
  */
-function setLoan_(id, loan) {
+function setLoan_(id, loan, actor) {
   if (!loan) {
-    return updateBook_(id, { borrowed: false, borrowerName: '', loanDate: '' })
+    return updateBook_(id, { borrowed: false, borrowerName: '', loanDate: '' }, actor, 'return', '')
   }
-  return updateBook_(id, {
-    borrowed: true,
-    borrowerName: loan.borrowerName || '',
-    loanDate: loan.loanDate || todayIso_(),
-  })
+  var borrowerName = loan.borrowerName || ''
+  var loanDate = loan.loanDate || todayIso_()
+  var summary = 'borrower: ' + (borrowerName || '(unknown)') + ' · since ' + loanDate
+  return updateBook_(id, { borrowed: true, borrowerName: borrowerName, loanDate: loanDate }, actor, 'loan', summary)
+}
+
+// ---------------------------------------------------------------------------
+// History (audit log)
+// ---------------------------------------------------------------------------
+
+/**
+ * Reads the `History` tab, newest first. Returns an empty list rather than
+ * throwing when the tab doesn't exist yet (no admin action has logged
+ * anything yet, or this is a freshly-copied sheet).
+ * @return {Array<Object>}
+ */
+function getHistory_() {
+  var sheet = getSpreadsheet_().getSheetByName(HISTORY_SHEET)
+  if (!sheet) return []
+  return parseHistory(sheet.getDataRange().getValues())
+}
+
+/**
+ * Appends one row to the `History` tab, creating it (with its header row) on
+ * first use. Logging failures must never break the write they're describing —
+ * every error here is swallowed, not rethrown.
+ * @param {string} actor the acting admin's owner label
+ * @param {string} action `add` / `update` / `archive` / `restore` / `loan` / `return`
+ * @param {Book} book the book after the write (its post-write state)
+ * @param {string} changes a diff summary, or '' when the action needs none
+ */
+function logHistory_(actor, action, book, changes) {
+  try {
+    var ss = getSpreadsheet_()
+    var sheet = ss.getSheetByName(HISTORY_SHEET)
+    if (!sheet) {
+      sheet = ss.insertSheet(HISTORY_SHEET)
+      sheet.appendRow(HISTORY_COLUMNS)
+    }
+    var row = historyRowCells(
+      {
+        timestamp: new Date().toISOString(),
+        actor: actor || '',
+        action: action,
+        entityId: book.id,
+        title: book.title,
+        author: book.author,
+        theme: book.theme,
+        changes: changes || '',
+      },
+      HISTORY_COLUMNS,
+    )
+    sheet.appendRow(row)
+  } catch (err) {
+    // Swallowed on purpose — see the JSDoc above.
+  }
 }
 
 // ---------------------------------------------------------------------------

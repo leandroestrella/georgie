@@ -6,6 +6,7 @@
   "nav": {
     "about": "acerca de georgie",
     "overview": "estadísticas",
+    "history": "actividad",
     "repo": "código en github",
     "portfolio": "leandro estrella — portafolio"
   },
@@ -162,6 +163,18 @@
     "totalEditions": "entradas libro-idioma en total",
     "empty": "Todavía no hay libros.",
     "signInMessage": "inicia sesión arriba como admin para ver las estadísticas de lectura de casa."
+  },
+  "history": {
+    "title": "Actividad",
+    "empty": "Todavía no hay actividad.",
+    "action": {
+      "add": "{{actor}} añadió “{{title}}”",
+      "update": "{{actor}} editó “{{title}}”",
+      "archive": "{{actor}} archivó “{{title}}”",
+      "restore": "{{actor}} restauró “{{title}}”",
+      "loan": "{{actor}} prestó “{{title}}”",
+      "return": "{{actor}} marcó “{{title}}” como devuelto"
+    }
   },
   "lookup": {
     "hint": "Rellena desde la web — solo se completan los campos vacíos, no se sobrescribe nada.",

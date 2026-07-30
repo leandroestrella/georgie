@@ -445,6 +445,112 @@ function isbnIsAbsent(isbn) {
   return s === '' || s === NO_ISBN
 }
 
+// ---------------------------------------------------------------------------
+// History (audit log)
+// ---------------------------------------------------------------------------
+
+/** The `History` tab's header row, in column order. Auto-created on first log. */
+var HISTORY_COLUMNS = ['Timestamp', 'Actor', 'Action', 'EntityId', 'Title', 'Author', 'Theme', 'Changes']
+
+/**
+ * Book fields compared for an `update` entry's diff. Deliberately excludes:
+ * `id` (immutable), `zone` (derived from theme — diffing it too would just
+ * echo the theme change), and `archived`/`borrowed`/`borrowerName`/`loanDate`
+ * (those go through their own dedicated actions — archive/restore/loan/return
+ * — whose action name already says what changed, per the "no diff needed"
+ * rule below).
+ * @type {string[]}
+ */
+var DIFF_FIELDS = [
+  'title', 'author', 'year', 'yearPrecision', 'publisher', 'isbn',
+  'language', 'originalLanguage', 'coverUrl', 'theme', 'owner',
+  'referenceUrl', 'readBy', 'exchange',
+]
+
+/**
+ * Renders one Book field for display in a diff (arrays joined, blanks shown
+ * as an em dash so an empty→value change doesn't look like a no-op).
+ * @param {*} v
+ * @return {string}
+ */
+function diffFieldText_(v) {
+  if (Array.isArray(v)) return v.join(', ') || '—'
+  var s = cellToString(v)
+  return s || '—'
+}
+
+/**
+ * Field-by-field diff between two Book snapshots, e.g.
+ * `year: 1998 → 1999; theme: Political Theory → Utopia`. Only changed fields
+ * are listed; '' when nothing in `DIFF_FIELDS` differs.
+ * @param {Object} before
+ * @param {Object} after
+ * @return {string}
+ */
+function diffBook(before, after) {
+  var parts = []
+  for (var i = 0; i < DIFF_FIELDS.length; i++) {
+    var f = DIFF_FIELDS[i]
+    var a = diffFieldText_(before[f])
+    var b = diffFieldText_(after[f])
+    if (a !== b) parts.push(f + ': ' + a + ' → ' + b)
+  }
+  return parts.join('; ')
+}
+
+/**
+ * Builds one `History` row (in header order) from a log entry. Resolved by
+ * header name like every other sheet write in this file, even though the
+ * header is our own constant — reordering `HISTORY_COLUMNS` should never
+ * silently misalign a row.
+ * @param {{timestamp: string, actor: string, action: string, entityId: string, title: string, author: string, theme: string, changes: string}} entry
+ * @param {Array<string>} header
+ * @return {Array<string>}
+ */
+function historyRowCells(entry, header) {
+  var map = {
+    Timestamp: entry.timestamp,
+    Actor: entry.actor,
+    Action: entry.action,
+    EntityId: entry.entityId,
+    Title: entry.title,
+    Author: entry.author,
+    Theme: entry.theme,
+    Changes: entry.changes,
+  }
+  return header.map(function (h) {
+    var v = map[cellToString(h)]
+    return v === undefined || v === null ? '' : v
+  })
+}
+
+/**
+ * Parses the `History` tab's raw values into entries, newest row first (the
+ * tab itself is append-only, so the last row is the most recent). Column
+ * order is resolved by header name.
+ * @param {Array<Array<*>>} values full sheet values incl. header row
+ * @return {Array<Object>}
+ */
+function parseHistory(values) {
+  if (!values || values.length < 2) return []
+  var h = indexHeaders(values[0])
+  var out = []
+  for (var r = values.length - 1; r >= 1; r--) {
+    var row = values[r]
+    out.push({
+      timestamp: cellToString(cell(row, h, 'Timestamp')),
+      actor: cellToString(cell(row, h, 'Actor')),
+      action: cellToString(cell(row, h, 'Action')),
+      entityId: cellToString(cell(row, h, 'EntityId')),
+      title: cellToString(cell(row, h, 'Title')),
+      author: cellToString(cell(row, h, 'Author')),
+      theme: cellToString(cell(row, h, 'Theme')),
+      changes: cellToString(cell(row, h, 'Changes')),
+    })
+  }
+  return out
+}
+
 // Node-only export (skipped in Apps Script, where `module` is undefined).
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -466,5 +572,9 @@ if (typeof module !== 'undefined' && module.exports) {
     makeId: makeId,
     uniqueId: uniqueId,
     isbnIsAbsent: isbnIsAbsent,
+    HISTORY_COLUMNS: HISTORY_COLUMNS,
+    diffBook: diffBook,
+    historyRowCells: historyRowCells,
+    parseHistory: parseHistory,
   }
 }

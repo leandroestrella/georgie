@@ -2,7 +2,9 @@ import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { HistoryIcon } from 'lucide-react'
 import { AuthBar } from '@/auth/AuthBar'
+import { useAuth } from '@/auth/AuthProvider'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { AdminSlotContext, SubHeaderContext } from '@/components/subheader'
 import { useHideOnScroll } from '@/hooks/useHideOnScroll'
@@ -20,6 +22,7 @@ const BookFormPage = lazy(() => import('@/pages/BookFormPage').then((m) => ({ de
 const ArchivedPage = lazy(() => import('@/pages/ArchivedPage').then((m) => ({ default: m.ArchivedPage })))
 const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default: m.AboutPage })))
 const OverviewPage = lazy(() => import('@/pages/OverviewPage').then((m) => ({ default: m.OverviewPage })))
+const HistoryPage = lazy(() => import('@/pages/HistoryPage').then((m) => ({ default: m.HistoryPage })))
 
 /**
  * App shell: a sticky, full-width header (brand · language · sign-in) over the
@@ -30,6 +33,7 @@ const OverviewPage = lazy(() => import('@/pages/OverviewPage').then((m) => ({ de
  */
 function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
+  const { isAdmin } = useAuth()
   const [slot, setSlot] = useState<HTMLDivElement | null>(null)
   const [adminSlot, setAdminSlot] = useState<HTMLDivElement | null>(null)
   const [avatarHovered, setAvatarHovered] = useState(false)
@@ -97,6 +101,23 @@ function Layout({ children }: { children: ReactNode }) {
               </TooltipTrigger>
               <TooltipContent>{t('nav.overview')}</TooltipContent>
             </Tooltip>
+            {/* Admin-only — unlike Overview (public-facing, self-gates with a
+                sign-in prompt), the audit log has nothing to show a signed-out
+                visitor, so the link itself is hidden rather than dead-ending. */}
+            {isAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    to="/history"
+                    aria-label={t('nav.history')}
+                    className="hover:bg-accent rounded-md p-2"
+                  >
+                    <HistoryIcon className="size-[1.125rem]" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>{t('nav.history')}</TooltipContent>
+              </Tooltip>
+            )}
             {/* A page portals its write-gated primary action here (see
                 useAdminSlotContainer), so it always sits beside sign-in. */}
             <div ref={setAdminSlot} className="flex items-center gap-2" />
@@ -170,6 +191,7 @@ function App() {
           <Route path="/archived" element={<ArchivedPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/overview" element={<OverviewPage />} />
+          <Route path="/history" element={<HistoryPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
