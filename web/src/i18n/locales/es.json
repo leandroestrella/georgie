@@ -186,9 +186,9 @@
     },
     "confirmDialog": {
       "title": "Confirmar el intercambio",
-      "noteLabel": "Libro entrante / persona",
-      "notePlaceholder": "título, autor — de quién",
-      "addIncoming": "Añadir el libro entrante"
+      "partnerLabel": "Con quién estás intercambiando",
+      "partnerPlaceholder": "nombre o apodo",
+      "partnerHint": "Solo nombre o apodo — el catálogo es público. Al guardar pasarás directamente a añadir el libro entrante."
     },
     "receivedDialog": {
       "title": "¿Intercambio recibido?",

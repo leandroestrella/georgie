@@ -186,9 +186,9 @@
     },
     "confirmDialog": {
       "title": "Conferma lo scambio",
-      "noteLabel": "Libro in arrivo / persona",
-      "notePlaceholder": "titolo, autore — da chi",
-      "addIncoming": "Aggiungi il libro in arrivo"
+      "partnerLabel": "Con chi stai scambiando",
+      "partnerPlaceholder": "nome o soprannome",
+      "partnerHint": "Solo nome o soprannome — il catalogo è pubblico. Salvando si passa subito ad aggiungere il libro in arrivo."
     },
     "receivedDialog": {
       "title": "Scambio ricevuto?",

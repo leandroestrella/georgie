@@ -30,19 +30,19 @@ import { Label } from '@/components/ui/label'
 /**
  * Admin exchange-stage control (§3.9): offered → confirmed → in transit →
  * received. Each stage renders its next transition plus a withdraw action.
- * "Exchange confirmed" opens a dialog for a free-text note about the incoming
- * book/partner, with an optional "add the incoming book" shortcut that saves
- * the note first, then hands off to the add form (`?exchangeWith=<id>`),
- * which links the two books and marks the incoming one `Borrowed` (not yet on
- * the shelf) — see `BookFormPage`. "Exchange received" archives this book and
- * releases the linked incoming book in one backend call.
+ * "Exchange confirmed" opens a dialog asking only for the partner's name —
+ * saving always hands off to the add form (`?exchangeWith=<id>`), since
+ * confirming an exchange means the incoming book is now known and should be
+ * catalogued right away. `BookFormPage` links the two books and marks the
+ * incoming one `Borrowed` (not yet on the shelf). "Exchange received"
+ * archives this book and releases the linked incoming book in one call.
  */
 export function ExchangeControl({ book }: { book: Book }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { applyBook } = useCatalog()
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [note, setNote] = useState(book.exchangeNote)
+  const [partner, setPartner] = useState(book.exchangeNote)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -63,13 +63,13 @@ export function ExchangeControl({ book }: { book: Book }) {
   }
 
   const openConfirmDialog = () => {
-    setNote(book.exchangeNote)
+    setPartner(book.exchangeNote)
     setError(null)
     setConfirmOpen(true)
   }
 
   const saveConfirmed = () =>
-    run(() => setExchange(book.id, { status: 'confirmed', note: note.trim(), link: book.exchangeLink }))
+    run(() => setExchange(book.id, { status: 'confirmed', note: partner.trim(), link: book.exchangeLink }))
 
   const withdraw = <Button
     size="sm"
@@ -163,14 +163,15 @@ export function ExchangeControl({ book }: { book: Book }) {
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="exchangeNote">{t('exchange.confirmDialog.noteLabel')}</Label>
+              <Label htmlFor="exchangePartner">{t('exchange.confirmDialog.partnerLabel')}</Label>
               <Input
-                id="exchangeNote"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder={t('exchange.confirmDialog.notePlaceholder')}
+                id="exchangePartner"
+                value={partner}
+                onChange={(e) => setPartner(e.target.value)}
+                placeholder={t('exchange.confirmDialog.partnerPlaceholder')}
                 autoFocus
               />
+              <p className="text-muted-foreground text-xs">{t('exchange.confirmDialog.partnerHint')}</p>
             </div>
             {error && <p className="text-destructive text-xs">{error}</p>}
           </div>
@@ -183,23 +184,13 @@ export function ExchangeControl({ book }: { book: Book }) {
               disabled={busy}
               onClick={() =>
                 void saveConfirmed().then((ok) => {
-                  if (ok) setConfirmOpen(false)
-                })
-              }
-            >
-              {busy ? t('form.saving') : t('form.save')}
-            </Button>
-            <Button
-              disabled={busy}
-              onClick={() =>
-                void saveConfirmed().then((ok) => {
                   if (!ok) return
                   setConfirmOpen(false)
                   navigate(`/book/new?exchangeWith=${encodeURIComponent(book.id)}`)
                 })
               }
             >
-              {t('exchange.confirmDialog.addIncoming')}
+              {busy ? t('form.saving') : t('form.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

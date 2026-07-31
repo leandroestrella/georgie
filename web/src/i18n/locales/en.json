@@ -186,9 +186,9 @@
     },
     "confirmDialog": {
       "title": "Confirm the exchange",
-      "noteLabel": "Incoming book / partner",
-      "notePlaceholder": "title, author — from partner",
-      "addIncoming": "Add the incoming book"
+      "partnerLabel": "Who you're exchanging with",
+      "partnerPlaceholder": "first name or nickname",
+      "partnerHint": "First name or nickname only — the catalog is public. Saving takes you straight to adding the incoming book."
     },
     "receivedDialog": {
       "title": "Exchange received?",

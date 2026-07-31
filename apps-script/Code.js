@@ -563,6 +563,100 @@ function migrateExchangeStatus() {
   return 'Migrated ' + migrated + ' row(s) to Exchange status = offered.'
 }
 
+/**
+ * One-click setup for §3.9: adds the `Exchange status` / `Exchange note` /
+ * `Exchange link` header columns to the Catalog tab if they're missing
+ * (appended after the last column — header-name mapping doesn't care about
+ * position), then runs `migrateExchangeStatus()` to carry the old boolean
+ * `Exchange` column over. Run once from the Apps Script editor (select this
+ * function in the dropdown, click Run) — safe to re-run. Does not touch or
+ * delete the old `Exchange` column; remove that by hand once you've checked
+ * the new columns look right.
+ * @return {string} a human-readable summary.
+ */
+function setupAndMigrateExchange() {
+  var sheet = getSheet_(CATALOG_SHEET)
+  var header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+  var headerIndex = indexHeaders(header)
+  var toAdd = [COLUMNS.exchangeStatus, COLUMNS.exchangeNote, COLUMNS.exchangeLink].filter(function (name) {
+    return headerIndex[name] === undefined
+  })
+  if (toAdd.length) {
+    sheet.getRange(1, sheet.getLastColumn() + 1, 1, toAdd.length).setValues([toAdd])
+  }
+  var addedMsg = toAdd.length ? 'Added column(s): ' + toAdd.join(', ') + '. ' : 'Columns already present. '
+  return addedMsg + migrateExchangeStatus()
+}
+
+/**
+ * One-time maintenance: freezes the `ID` column to static values and fixes any
+ * row whose id is broken.
+ *
+ * A live `=MAKEID(...)` formula in `ID` (against the rule in docs/book-ids.md)
+ * can non-deterministically return an error under Sheets' custom-function batch
+ * recalculation (a Google infrastructure limitation, not a bug in `makeId` —
+ * reassigning the formula by hand "fixes" it only because that forces a single,
+ * isolated recalculation). Two duplicate/broken ids in turn break the app: list
+ * views key rows by `id`, so React can render the wrong card on a client-side
+ * filter change, and detail/edit links always resolve to the FIRST row with
+ * that id.
+ *
+ * For every row: a formula cell is overwritten with its already-computed value
+ * (paste-as-values, matching the documented procedure) — never changes what the
+ * id actually reads as. A row whose id is blank or an error sentinel (`#ERROR!`,
+ * `#REF!`, `#N/A`, …) gets a fresh id via the same collision-safe `uniqueId()`
+ * logic `addBook_`/`backfillIds` use. Safe to re-run; a row that's already a
+ * good static id is left untouched.
+ * @return {string} a human-readable summary.
+ */
+function fixIdColumn() {
+  var sheet = getSheet_(CATALOG_SHEET)
+  var lastRow = sheet.getLastRow()
+  var header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+  var headerIndex = indexHeaders(header)
+  var iId = headerIndex[COLUMNS.id]
+  var iTitle = headerIndex[COLUMNS.title]
+  var iAuthor = headerIndex[COLUMNS.author]
+  var iYear = headerIndex[COLUMNS.year]
+  if (iId === undefined) throw new Error('No "ID" column found')
+
+  var idRange = sheet.getRange(2, iId + 1, lastRow - 1, 1)
+  var formulas = idRange.getFormulas()
+  var values = idRange.getValues()
+  var dataRange = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn())
+  var data = dataRange.getValues()
+
+  var used = {}
+  for (var r = 0; r < values.length; r++) {
+    var v = cellToString(values[r][0])
+    if (v && v.indexOf('#') !== 0) used[v] = true // seed with existing good ids
+  }
+
+  var convertedFormulas = 0
+  var fixedBroken = 0
+  var out = []
+  for (var r = 0; r < values.length; r++) {
+    var current = cellToString(values[r][0])
+    var broken = !current || current.indexOf('#') === 0
+    if (broken) {
+      var title = cellToString(data[r][iTitle])
+      if (!title) {
+        out.push([current]) // blank row (no Title) — nothing to assign
+        continue
+      }
+      var id = uniqueId(title, cellToString(data[r][iAuthor]), data[r][iYear], used)
+      used[id] = true
+      out.push([id])
+      fixedBroken++
+    } else {
+      if (formulas[r][0]) convertedFormulas++
+      out.push([current]) // freezes a formula cell to its current value; no-op otherwise
+    }
+  }
+  idRange.setValues(out)
+  return 'Fixed ' + fixedBroken + ' broken id(s); froze ' + convertedFormulas + ' live formula cell(s) to static values.'
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
