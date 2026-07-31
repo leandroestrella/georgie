@@ -61,9 +61,6 @@
     "borrowedBy": "Prestado a {{name}}",
     "loanSince": "desde {{date}}",
     "loanSinceUnknown": "desde fecha desconocida",
-    "forExchange": "Ofrecido para intercambio",
-    "offerExchange": "Ofrecer para intercambio",
-    "withdrawExchange": "Retirar del intercambio",
     "back": "volver al catálogo",
     "notFound": "libro no encontrado"
   },
@@ -98,7 +95,6 @@
     "owner": "Propietario",
     "readBy": "Leído por",
     "referenceUrl": "URL de referencia",
-    "exchange": "Ofrecido para intercambio",
     "idPreview": "El ID será:",
     "select": "Selecciona…",
     "search": "Buscar…",
@@ -173,7 +169,30 @@
       "archive": "{{actor}} archivó “{{title}}”",
       "restore": "{{actor}} restauró “{{title}}”",
       "loan": "{{actor}} prestó “{{title}}”",
-      "return": "{{actor}} marcó “{{title}}” como devuelto"
+      "return": "{{actor}} marcó “{{title}}” como devuelto",
+      "exchange": "{{actor}} actualizó el intercambio de “{{title}}”"
+    }
+  },
+  "exchange": {
+    "offer": "Ofrecer para intercambio",
+    "confirm": "Intercambio confirmado",
+    "markInTransit": "Marcar en tránsito",
+    "received": "Intercambio recibido",
+    "withdraw": "Retirar",
+    "status": {
+      "offered": "Ofrecido para intercambio",
+      "confirmed": "Intercambio confirmado",
+      "inTransit": "En tránsito"
+    },
+    "confirmDialog": {
+      "title": "Confirmar el intercambio",
+      "noteLabel": "Libro entrante / persona",
+      "notePlaceholder": "título, autor — de quién",
+      "addIncoming": "Añadir el libro entrante"
+    },
+    "receivedDialog": {
+      "title": "¿Intercambio recibido?",
+      "body": "«{{title}}» se archivará definitivamente. Si hay un libro entrante vinculado, también se marcará como recibido."
     }
   },
   "lookup": {

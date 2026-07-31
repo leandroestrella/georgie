@@ -7,6 +7,7 @@ import { BookCover } from '@/catalog/BookCover'
 import { OwnerBadge } from '@/catalog/OwnerBadge'
 import { languageFlag } from '@/catalog/languageFlags'
 import { ThemeTooltip, ZoneTooltip } from '@/catalog/ZoneEmoji'
+import { EXCHANGE_STATUS_KEY } from '@/catalog/exchangeStatus'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { AdminBookActions } from '@/catalog/AdminBookActions'
 import { AuthorLinks } from '@/catalog/AuthorLinks'
@@ -62,6 +63,7 @@ export function BookDetailPage() {
   }
 
   const colors = zoneColor(book.zone)
+  const linkedBook = book.exchangeLink ? getBook(book.exchangeLink) : null
   const yearText = book.year
     ? `${book.year}${book.yearPrecision === 'circa' ? ` · ${t('book.firstPublished')}` : ''}`
     : t('book.unknownYear')
@@ -130,7 +132,7 @@ export function BookDetailPage() {
             </div>
           )}
 
-          {(book.borrowed || book.exchange || book.archived) && (
+          {(book.borrowed || book.exchangeStatus || book.archived) && (
             <div className="flex flex-wrap gap-2">
               {book.archived && <Badge variant="outline" className="text-destructive">{t('admin.archivedBadge')}</Badge>}
               {book.borrowed && (
@@ -141,9 +143,17 @@ export function BookDetailPage() {
                   {book.loanDate ? t('book.loanSince', { date: book.loanDate }) : t('book.loanSinceUnknown')}
                 </Badge>
               )}
-              {book.exchange && (
+              {book.exchangeStatus && (
                 <Badge variant="outline" className="gap-1">
-                  <RepeatIcon className="size-3.5" /> {t('book.forExchange')}
+                  <RepeatIcon className="size-3.5" /> {t(`exchange.status.${EXCHANGE_STATUS_KEY[book.exchangeStatus]}`)}
+                  {linkedBook && (
+                    <>
+                      {' · '}
+                      <Link to={`/book/${encodeURIComponent(linkedBook.id)}`} className="underline">
+                        {linkedBook.title}
+                      </Link>
+                    </>
+                  )}
                 </Badge>
               )}
             </div>

@@ -58,7 +58,9 @@ The header row must contain these columns (order doesn't matter):
 | `Borrowed`         | on loan right now?                          | checkbox / `TRUE`·`FALSE`·`1`·`0`·`yes`. |
 | `Borrower name`    | who has it on loan                         | first name / nickname (the catalog is public). |
 | `Loan date`        | when it went out                            | a date, or blank for "unknown". Stored as `YYYY-MM-DD`. |
-| `Exchange`         | offered for exchange?                       | checkbox / boolean, like `Borrowed`. |
+| `Exchange status`  | exchange stage                              | blank, `offered`, `confirmed`, or `in transit`. Anything else is treated as blank. The app also reuses `Borrowed` on an incoming book to mean "not yet on the shelf" while its exchange is in progress. |
+| `Exchange note`    | free text about the exchange                | set at `confirmed` — the incoming book / partner. |
+| `Exchange link`    | the paired book's `ID`                      | links the outgoing and incoming rows so "Exchange received" finishes both in one action. |
 | `Archived`         | soft-deleted?                               | checkbox / boolean. Archived books drop out of the public catalog but stay in the sheet (restorable from the admin Archived view). |
 
 You don't have to fill everything in by hand: the **Add book** form assigns the

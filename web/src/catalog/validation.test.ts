@@ -102,7 +102,7 @@ const book = (over: Partial<Book>): Book => ({
   id: 'X', title: 'T', author: 'A', year: 2000, yearPrecision: '', publisher: '',
   isbn: 'N/A', language: [], originalLanguage: 'English', coverUrl: 'http://c/x.jpg',
   theme: '', zone: '', owner: '', referenceUrl: '', readBy: [], borrowed: false,
-  borrowerName: '', loanDate: '', exchange: false, archived: false,
+  borrowerName: '', loanDate: '', exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: false,
   ...over,
 })
 

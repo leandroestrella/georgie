@@ -35,7 +35,7 @@ flowchart LR
 - 🖼 portadas con una cadena de respaldo: url guardada → open library → amazon por isbn-10 → un marcador de posición teñido según la zona; los admin pueden fijar la portada mostrada — o tomar una foto del libro — en su propio host para que nunca se pierda
 - ✏️ inicio de sesión admin para añadir, editar, archivar (eliminación suave, con una vista de archivados + restauración) y prestar libros
 - 🧹 un filtro "por completar" (año faltante, `circa`, sin portada, sin idioma original) — la herramienta para terminar el catálogo desde el estante
-- 🤝 seguimiento de préstamos — presta un libro (quién lo tiene + fecha), márcalo como devuelto; marca de intercambio para libros ofrecidos en plataformas de intercambio de libros
+- 🤝 seguimiento de préstamos — presta un libro (quién lo tiene + fecha), márcalo como devuelto; un flujo de intercambio por etapas (ofrecido → confirmado → en tránsito → recibido) para libros intercambiados en plataformas de intercambio, que vincula el libro saliente con su reemplazo entrante
 - 🗂 categorías guiadas por la propia hoja: zonas (con sus propios colores, y emoji o imágenes como marcadores) que agrupan temas, reflejando los estantes físicos; las insignias de propietario y lector también vienen de la hoja
 - 🌍 interfaz en english, italiano y español (los nombres de zonas/temas/idiomas y las descripciones de zonas y temas también se traducen)
 - 🪪 ids legibles con formato de número de catálogo (`ORW-198-1950`), generados una sola vez e inmutables

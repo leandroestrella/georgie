@@ -13,7 +13,7 @@
  * (wired up in Phase 2); reads never send it.
  */
 import { config, hasBackend } from '@/config'
-import type { Book, BookPatch, HistoryEntry, LoanInput, NewBook, Taxonomies } from './types'
+import type { Book, BookPatch, ExchangeInput, HistoryEntry, LoanInput, NewBook, Taxonomies } from './types'
 import { MOCK_BOOKS, MOCK_TAXONOMIES } from './mock'
 import { uniqueId } from './ids'
 
@@ -134,6 +134,48 @@ export async function setLoan(id: string, loan: LoanInput | null): Promise<Book>
   return data.book
 }
 
+/** Sets an exchange stage (`exchange`) or withdraws it (`null`). */
+export async function setExchange(id: string, exchange: ExchangeInput | null): Promise<Book> {
+  if (!hasBackend) {
+    if (!exchange) {
+      return mockPatch(id, { exchangeStatus: '', exchangeNote: '', exchangeLink: '' }, 'exchange', 'withdrawn')
+    }
+    const changes = exchange.status + (exchange.note ? ` · ${exchange.note}` : '')
+    return mockPatch(
+      id,
+      { exchangeStatus: exchange.status, exchangeNote: exchange.note ?? '', exchangeLink: exchange.link ?? '' },
+      'exchange',
+      changes,
+    )
+  }
+  const data = await post<{ book: Book }>({ action: 'setExchange', id, exchange })
+  return data.book
+}
+
+/**
+ * Finishes an exchange (stage 4, received): archives the outgoing book and, if
+ * `Exchange link` names another catalog book, clears that book's loan (the
+ * incoming book reuses `Borrowed` to mean "not yet on the shelf" — see
+ * `setExchange`'s callers) and its own `Exchange link`.
+ */
+export async function completeExchange(id: string): Promise<Book> {
+  if (!hasBackend) {
+    const linkedId = mock.books.find((b) => b.id === id)?.exchangeLink
+    const outgoing = mockPatch(
+      id,
+      { exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: true },
+      'archive',
+      '',
+    )
+    if (linkedId && mock.books.some((b) => b.id === linkedId)) {
+      mockPatch(linkedId, { borrowed: false, borrowerName: '', loanDate: '', exchangeLink: '' }, 'return', '')
+    }
+    return outgoing
+  }
+  const data = await post<{ book: Book }>({ action: 'completeExchange', id })
+  return data.book
+}
+
 /**
  * Snapshots a cover to the library's own host and updates the book's `Cover URL`.
  * The image is either fetched from a URL (`url` — the cover currently shown) or
@@ -202,7 +244,7 @@ function unwrap<T>(env: ApiEnvelope<T>): T {
 const DIFF_FIELDS: (keyof Book)[] = [
   'title', 'author', 'year', 'yearPrecision', 'publisher', 'isbn',
   'language', 'originalLanguage', 'coverUrl', 'theme', 'owner',
-  'referenceUrl', 'readBy', 'exchange',
+  'referenceUrl', 'readBy',
 ]
 
 function diffFieldText(v: unknown): string {

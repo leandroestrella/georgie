@@ -3,6 +3,7 @@ import { CircleCheckIcon, HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { EXCHANGE_STATUS_KEY } from './exchangeStatus'
 
 /** An icon with a hover/focus tooltip. */
 export function IconWithTip({
@@ -51,7 +52,7 @@ export function StatusIcons({
   className?: string
 }) {
   const { t } = useTranslation()
-  const available = !book.borrowed && !book.exchange
+  const available = !book.borrowed && !book.exchangeStatus
   if (available && !showAvailable) return null
   return (
     <>
@@ -65,8 +66,11 @@ export function StatusIcons({
           <HandCoinsIcon className="text-muted-foreground size-5" />
         </IconWithTip>
       )}
-      {book.exchange && (
-        <IconWithTip className={className} label={t('book.forExchange')}>
+      {book.exchangeStatus && (
+        <IconWithTip
+          className={className}
+          label={t(`exchange.status.${EXCHANGE_STATUS_KEY[book.exchangeStatus]}`)}
+        >
           <RepeatIcon className="text-muted-foreground size-5" />
         </IconWithTip>
       )}

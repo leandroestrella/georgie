@@ -5,7 +5,8 @@
  * exposes a small JSON API:
  *   - doGet  → public reads  (?action=books, ?action=taxonomies)
  *   - doPost → admin-gated: writes (addBook, updateBook, deleteBook, restoreBook,
- *     setLoan, saveCover) and admin-only reads (allBooks, history)
+ *     setLoan, setExchange, completeExchange, saveCover) and admin-only reads
+ *     (allBooks, history)
  *
  * All pure logic (mapping, taxonomy, ID generation, auth decisions) lives in
  * catalog.js / auth.js and is unit-tested in Node. This file is just the glue:
@@ -81,6 +82,10 @@ function doPost(e) {
         return json({ ok: true, book: updateBook_(body.id, { archived: false }, admin.owner, 'restore', '') })
       case 'setLoan':
         return json({ ok: true, book: setLoan_(body.id, body.loan, admin.owner) })
+      case 'setExchange':
+        return json({ ok: true, book: setExchange_(body.id, body.exchange, admin.owner) })
+      case 'completeExchange':
+        return json({ ok: true, book: completeExchange_(body.id, admin.owner) })
       case 'saveCover':
         return json({ ok: true, book: saveCover_(body, admin.owner) })
       default:
@@ -315,6 +320,76 @@ function setLoan_(id, loan, actor) {
   return updateBook_(id, { borrowed: true, borrowerName: borrowerName, loanDate: loanDate }, actor, 'loan', summary)
 }
 
+/**
+ * Sets or clears a book's exchange stage (offered → confirmed → in transit).
+ * `exchange` = null withdraws it (clears all three exchange fields). Stage 4
+ * ("received") isn't set here — see `completeExchange_`, which archives the
+ * book instead of writing a fourth status value.
+ * @param {string} id
+ * @param {{status: string, note?: string, link?: string}|null} exchange
+ * @param {string} actor the acting admin's owner label, for the audit log
+ * @return {Book}
+ */
+function setExchange_(id, exchange, actor) {
+  if (!exchange) {
+    return updateBook_(
+      id,
+      { exchangeStatus: '', exchangeNote: '', exchangeLink: '' },
+      actor,
+      'exchange',
+      'withdrawn',
+    )
+  }
+  var status = normalizeExchangeStatus(exchange.status)
+  if (!status) throw new Error('Invalid exchange status: ' + exchange.status)
+  var note = exchange.note || ''
+  var link = exchange.link || ''
+  var summary = status + (note ? ' · ' + note : '')
+  return updateBook_(
+    id,
+    { exchangeStatus: status, exchangeNote: note, exchangeLink: link },
+    actor,
+    'exchange',
+    summary,
+  )
+}
+
+/**
+ * Finishes an exchange (stage 4, received): archives the outgoing book and, if
+ * its `Exchange link` names another catalog book, clears that book's loan (it
+ * reused `Borrowed` to mark "incoming, not yet on the shelf" — see
+ * `setExchange_`'s caller in the SPA) and its own `Exchange link`. A missing
+ * or stale link is not an error — the outgoing book is archived regardless.
+ * @param {string} id the outgoing book's id
+ * @param {string} actor the acting admin's owner label, for the audit log
+ * @return {Book} the archived outgoing book
+ */
+function completeExchange_(id, actor) {
+  var linkedId = findBookById_(id).exchangeLink
+  var outgoing = updateBook_(
+    id,
+    { exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: true },
+    actor,
+    'archive',
+    '',
+  )
+  if (linkedId) {
+    try {
+      updateBook_(
+        linkedId,
+        { borrowed: false, borrowerName: '', loanDate: '', exchangeLink: '' },
+        actor,
+        'return',
+        '',
+      )
+    } catch (err) {
+      // The linked book may have been renamed/removed by hand — the outgoing
+      // book is still correctly archived, so this isn't fatal.
+    }
+  }
+  return outgoing
+}
+
 // ---------------------------------------------------------------------------
 // History (audit log)
 // ---------------------------------------------------------------------------
@@ -459,6 +534,35 @@ function setupUsersTab() {
   return USERS_SHEET + ' tab ready with ' + Math.max(0, sheet.getLastRow() - 1) + ' admin(s).'
 }
 
+/**
+ * One-time migration (§3.9): after adding the `Exchange status` / `Exchange
+ * note` / `Exchange link` columns by hand, run this once to carry over the old
+ * boolean `Exchange` column — every truthy row becomes `offered`. Does not
+ * touch or delete the old `Exchange` column; remove it by hand once verified.
+ * Safe to re-run (skips rows that already have a status).
+ * @return {string} a human-readable summary.
+ */
+function migrateExchangeStatus() {
+  var sheet = getSheet_(CATALOG_SHEET)
+  var values = sheet.getDataRange().getValues()
+  var header = values[0]
+  var headerIndex = indexHeaders(header)
+  var iOld = headerIndex['Exchange']
+  var iNew = headerIndex[COLUMNS.exchangeStatus]
+  if (iOld === undefined) return 'No old "Exchange" column found — nothing to migrate.'
+  if (iNew === undefined) return 'Add the "Exchange status" column before running this.'
+
+  var migrated = 0
+  for (var r = 1; r < values.length; r++) {
+    if (cellToString(values[r][iNew])) continue // already has a status
+    if (parseBool(values[r][iOld])) {
+      sheet.getRange(r + 1, iNew + 1).setValue('offered')
+      migrated++
+    }
+  }
+  return 'Migrated ' + migrated + ' row(s) to Exchange status = offered.'
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -510,6 +614,20 @@ function findRowById_(values, headerIndex, id) {
 }
 
 /**
+ * Reads one book by ID, current sheet state. Throws if not found.
+ * @param {string} id
+ * @return {Book}
+ */
+function findBookById_(id) {
+  var values = readValues_(CATALOG_SHEET)
+  var headerIndex = indexHeaders(values[0])
+  var themeToZone = parseZones(readValues_(ZONES_SHEET)).themeToZone
+  var rowNumber = findRowById_(values, headerIndex, id)
+  if (rowNumber === -1) throw new Error('Book not found: ' + id)
+  return mapRowToBook(values[rowNumber - 1], headerIndex, themeToZone)
+}
+
+/**
  * Coerces a raw form input into a well-typed Book (arrays, year, flags).
  * @param {Object} input
  * @return {Book}
@@ -534,7 +652,9 @@ function normalizeInput_(input) {
     borrowed: parseBool(input.borrowed),
     borrowerName: cellToString(input.borrowerName),
     loanDate: cellToString(input.loanDate),
-    exchange: parseBool(input.exchange),
+    exchangeStatus: normalizeExchangeStatus(input.exchangeStatus),
+    exchangeNote: cellToString(input.exchangeNote),
+    exchangeLink: cellToString(input.exchangeLink),
     archived: parseBool(input.archived),
   }
 }
@@ -553,7 +673,8 @@ function mergeBook_(current, patch) {
     if (!Object.prototype.hasOwnProperty.call(patch, key)) continue
     var v = patch[key]
     if (key === 'language' || key === 'readBy') merged[key] = toArray_(v)
-    else if (key === 'borrowed' || key === 'exchange' || key === 'archived') merged[key] = parseBool(v)
+    else if (key === 'borrowed' || key === 'archived') merged[key] = parseBool(v)
+    else if (key === 'exchangeStatus') merged[key] = normalizeExchangeStatus(v)
     else if (key === 'year') merged[key] = v == null || v === '' ? null : parseYear(v)
     else merged[key] = v
   }

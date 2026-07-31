@@ -9,6 +9,13 @@
 /** `''` = a known/exact edition year; `'circa'` = a first-publication year that still wants a colophon check. */
 export type YearPrecision = '' | 'circa'
 
+/**
+ * A book's exchange stage. `''` = not in an exchange. `'received'` (stage 4)
+ * is never stored — completing an exchange archives the outgoing book and
+ * clears the incoming book's loan instead, so it never appears here.
+ */
+export type ExchangeStatus = '' | 'offered' | 'confirmed' | 'in transit'
+
 /** A single catalogued book. Multi-value fields (`language`, `readBy`) arrive as arrays. */
 export interface Book {
   /** Immutable call-number ID, e.g. `ORW-198-1950`. Assigned once at creation. */
@@ -40,7 +47,11 @@ export interface Book {
   borrowerName: string
   /** ISO `YYYY-MM-DD`, or `''` for an unknown (pre-existing) loan. */
   loanDate: string
-  exchange: boolean
+  exchangeStatus: ExchangeStatus
+  /** Free text about the exchange partner / incoming book (set at `confirmed`). */
+  exchangeNote: string
+  /** The paired book's id — the incoming book while outgoing, or vice versa. */
+  exchangeLink: string
   archived: boolean
 }
 
@@ -55,6 +66,15 @@ export interface LoanInput {
   borrowerName: string
   /** ISO date; the backend defaults to today when omitted. */
   loanDate?: string
+}
+
+/** Exchange transition details; `null` withdraws the book from exchange. */
+export interface ExchangeInput {
+  status: Exclude<ExchangeStatus, ''>
+  /** Free text about the exchange partner / incoming book. */
+  note?: string
+  /** The paired book's id, once known (set at `confirmed`). */
+  link?: string
 }
 
 /** One theme within a zone, e.g. `Classics & Canon`. */
@@ -96,7 +116,7 @@ export interface HistoryEntry {
   timestamp: string
   /** The acting admin's owner label (never a raw email). */
   actor: string
-  action: 'add' | 'update' | 'archive' | 'restore' | 'loan' | 'return'
+  action: 'add' | 'update' | 'archive' | 'restore' | 'loan' | 'return' | 'exchange'
   /** The book's call-number ID — always present (Georgie's "delete" is an
    *  archive, so there's never a row this can't safely link back to). */
   entityId: string

@@ -61,9 +61,6 @@
     "borrowedBy": "On loan to {{name}}",
     "loanSince": "since {{date}}",
     "loanSinceUnknown": "since unknown",
-    "forExchange": "Offered for exchange",
-    "offerExchange": "Offer for exchange",
-    "withdrawExchange": "Withdraw from exchange",
     "back": "back to catalog",
     "notFound": "book not found"
   },
@@ -98,7 +95,6 @@
     "owner": "Owner",
     "readBy": "Read by",
     "referenceUrl": "Reference URL",
-    "exchange": "Offered for exchange",
     "idPreview": "ID will be:",
     "select": "Select…",
     "search": "Search…",
@@ -173,7 +169,30 @@
       "archive": "{{actor}} archived “{{title}}”",
       "restore": "{{actor}} restored “{{title}}”",
       "loan": "{{actor}} loaned out “{{title}}”",
-      "return": "{{actor}} marked “{{title}}” returned"
+      "return": "{{actor}} marked “{{title}}” returned",
+      "exchange": "{{actor}} updated the exchange for “{{title}}”"
+    }
+  },
+  "exchange": {
+    "offer": "Offer for exchange",
+    "confirm": "Exchange confirmed",
+    "markInTransit": "Mark in transit",
+    "received": "Exchange received",
+    "withdraw": "Withdraw",
+    "status": {
+      "offered": "Offered for exchange",
+      "confirmed": "Exchange confirmed",
+      "inTransit": "In transit"
+    },
+    "confirmDialog": {
+      "title": "Confirm the exchange",
+      "noteLabel": "Incoming book / partner",
+      "notePlaceholder": "title, author — from partner",
+      "addIncoming": "Add the incoming book"
+    },
+    "receivedDialog": {
+      "title": "Exchange received?",
+      "body": "“{{title}}” will be archived for good. A linked incoming book (if any) will be marked as arrived too."
     }
   },
   "lookup": {

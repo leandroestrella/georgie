@@ -35,7 +35,7 @@ flowchart LR
 - 🖼 copertine con una catena di fallback: url salvato → open library → amazon per isbn-10 → un segnaposto colorato secondo la zona; gli admin possono fissare la copertina mostrata — o scattare una foto del libro — sul proprio host, così non scompare mai
 - ✏️ accesso admin per aggiungere, modificare, archiviare (eliminazione soft, con una vista archiviati + ripristino) e prestare libri
 - 🧹 un filtro "da completare" (anno mancante, `circa`, senza copertina, senza lingua originale) — lo strumento per completare il catalogo direttamente dallo scaffale
-- 🤝 tracciamento dei prestiti — presta un libro (chi lo prende + data), segnalo reso; flag di scambio per i libri offerti su piattaforme di scambio libri
+- 🤝 tracciamento dei prestiti — presta un libro (chi lo prende + data), segnalo reso; un flusso di scambio a tappe (offerto → confermato → in transito → ricevuto) per i libri scambiati su piattaforme di scambio libri, che collega il libro in uscita al suo sostituto in arrivo
 - 🗂 categorie guidate dal foglio stesso: zone (con i propri colori, ed emoji o immagini come marcatori) che raggruppano i temi, rispecchiando gli scaffali fisici; anche i badge di proprietario e lettore vengono dal foglio
 - 🌍 interfaccia in english, italiano ed español (si traducono anche i nomi di zone/temi/lingue e le descrizioni di zone e temi)
 - 🪪 id leggibili in stile numero di catalogo (`ORW-198-1950`), generati una sola volta e immutabili

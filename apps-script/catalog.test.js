@@ -49,7 +49,7 @@ const CATALOG_HEADER = [
   'ID', 'Title', 'Author', 'Year', 'Year precision', 'Publisher', 'ISBN / EAN',
   'Language', 'Original language', 'Cover URL', 'Theme', 'Zone', 'Owner',
   'Reference URL', 'Read by', 'Borrowed', 'Borrower name', 'Loan date',
-  'Exchange', 'Archived',
+  'Exchange status', 'Exchange note', 'Exchange link', 'Archived',
 ]
 
 test('parseZones builds zones + theme→zone map from row groups', () => {
@@ -148,7 +148,7 @@ test('mapRowToBook maps a full row and DERIVES zone from theme', () => {
   const row = [
     'GRE-LES-2018', 'Less', 'Andrew Sean Greer', 2018, '', 'Abacus', '9780349143590',
     'English', 'English', 'https://covers/…-M.jpg', 'Contemporary & Short Stories',
-    'WRONG ZONE', 'leandro', '', 'leandro, maria', false, '', '', false, false,
+    'WRONG ZONE', 'leandro', '', 'leandro, maria', false, '', '', '', '', '', false,
   ]
   const b = c.mapRowToBook(row, idx, themeToZone)
   assert.equal(b.id, 'GRE-LES-2018')
@@ -164,7 +164,7 @@ test('mapRowToBook handles N/A isbn, circa year, blank year, multi-language', ()
   const row = [
     'URB-BAU-2016', 'Bausler Institut', 'Accademia di Belle Arti di Urbino', '', 'circa',
     'Accademia', 'N/A', 'English, Italian', 'English', '', 'Exhibitions & Catalogs',
-    '', 'leandro', '', '', 'TRUE', 'Gianluca', '', 'FALSE', 'FALSE',
+    '', 'leandro', '', '', 'TRUE', 'Gianluca', '', '', '', '', 'FALSE',
   ]
   const b = c.mapRowToBook(row, idx, themeToZone)
   assert.equal(b.year, null)
@@ -214,7 +214,8 @@ test('bookToCells round-trips and writes derived Zone + joined multi-values', ()
     publisher: '', isbn: 'N/A', language: ['English', 'Italian'], originalLanguage: '',
     coverUrl: '', theme: 'Poetry', zone: 'ignored', owner: 'leandro', referenceUrl: '',
     readBy: ['leandro'], borrowed: true, borrowerName: 'Sam', loanDate: '2024-01-01',
-    exchange: false, archived: false,
+    exchangeStatus: 'offered', exchangeNote: 'from marco', exchangeLink: 'CAL-CIT-1972',
+    archived: false,
   }
   const cells = c.bookToCells(book, CATALOG_HEADER, themeToZone)
   assert.equal(cells['Zone'], 'The Narrative Universes (Fiction & Poetry)') // derived
@@ -222,6 +223,19 @@ test('bookToCells round-trips and writes derived Zone + joined multi-values', ()
   assert.equal(cells['Language'], 'English, Italian')
   assert.equal(cells['Read by'], 'leandro')
   assert.equal(cells['Borrowed'], true)
+  assert.equal(cells['Exchange status'], 'offered')
+  assert.equal(cells['Exchange note'], 'from marco')
+  assert.equal(cells['Exchange link'], 'CAL-CIT-1972')
+})
+
+test('normalizeExchangeStatus accepts known values, blanks anything else', () => {
+  assert.equal(c.normalizeExchangeStatus('offered'), 'offered')
+  assert.equal(c.normalizeExchangeStatus('In Transit'), 'in transit')
+  assert.equal(c.normalizeExchangeStatus('  confirmed  '), 'confirmed')
+  assert.equal(c.normalizeExchangeStatus('received'), '') // stage 4 is never stored
+  assert.equal(c.normalizeExchangeStatus('typo'), '')
+  assert.equal(c.normalizeExchangeStatus(''), '')
+  assert.equal(c.normalizeExchangeStatus(undefined), '')
 })
 
 test('isbnIsAbsent treats blank and N/A as absent', () => {
@@ -239,7 +253,7 @@ const BOOK_A = {
   language: ['English'], originalLanguage: 'English', coverUrl: '',
   theme: 'Contemporary & Short Stories', zone: 'The Narrative Universes (Fiction & Poetry)',
   owner: 'leandro', referenceUrl: '', readBy: [], borrowed: false, borrowerName: '',
-  loanDate: '', exchange: false, archived: false,
+  loanDate: '', exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: false,
 }
 
 test('diffBook lists only changed fields, arrays joined, blanks shown as —', () => {
@@ -251,8 +265,20 @@ test('diffBook lists only changed fields, arrays joined, blanks shown as —', (
   )
   // No diffable field changed → ''
   assert.equal(c.diffBook(before, { ...before }), '')
-  // id/zone/archived/borrowed changes are NOT diffed (own dedicated actions)
-  assert.equal(c.diffBook(before, { ...before, id: 'OTHER-000-0000', zone: 'Other Zone', archived: true, borrowed: true }), '')
+  // id/zone/archived/borrowed/exchange* changes are NOT diffed (own dedicated actions)
+  assert.equal(
+    c.diffBook(before, {
+      ...before,
+      id: 'OTHER-000-0000',
+      zone: 'Other Zone',
+      archived: true,
+      borrowed: true,
+      exchangeStatus: 'offered',
+      exchangeNote: 'note',
+      exchangeLink: 'LINK-000-0000',
+    }),
+    '',
+  )
 })
 
 test('historyRowCells maps a log entry to History-tab column order by header name', () => {

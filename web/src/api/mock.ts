@@ -509,7 +509,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -536,7 +538,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -560,7 +564,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": true,
     "borrowerName": "RebelBooks",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -586,7 +592,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": true,
     "borrowerName": "Gianluca",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -612,7 +620,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": true,
     "borrowerName": "Thomas",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -636,7 +646,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": true,
+    "exchangeStatus": "offered",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -660,7 +672,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": true,
+    "exchangeStatus": "confirmed",
+    "exchangeNote": "III Warszawskie Biennale — from marco",
+    "exchangeLink": "VVX-III-2010",
     "archived": false
   },
   {
@@ -682,10 +696,12 @@ export const MOCK_BOOKS: Book[] = [
     "owner": "leandro",
     "referenceUrl": "",
     "readBy": [],
-    "borrowed": false,
-    "borrowerName": "",
+    "borrowed": true,
+    "borrowerName": "III Warszawskie Biennale — from marco",
     "loanDate": "",
-    "exchange": true,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "SAI-TER-1939",
     "archived": false
   },
   {
@@ -711,7 +727,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -735,7 +753,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -761,7 +781,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -787,7 +809,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -813,7 +837,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -838,7 +864,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -862,7 +890,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -889,7 +919,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -915,7 +947,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": true,
+    "exchangeStatus": "in transit",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   },
   {
@@ -939,7 +973,9 @@ export const MOCK_BOOKS: Book[] = [
     "borrowed": false,
     "borrowerName": "",
     "loanDate": "",
-    "exchange": false,
+    "exchangeStatus": "",
+    "exchangeNote": "",
+    "exchangeLink": "",
     "archived": false
   }
 ]

@@ -74,7 +74,7 @@ function matchesStatus(book: Book, status: StatusFilter): boolean {
     case 'borrowed':
       return book.borrowed
     case 'exchange':
-      return book.exchange
+      return book.exchangeStatus !== ''
     case 'available':
       return !book.borrowed
     default:

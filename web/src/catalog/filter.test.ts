@@ -30,7 +30,9 @@ const make = (over: Partial<Book>): Book => ({
   borrowed: false,
   borrowerName: '',
   loanDate: '',
-  exchange: false,
+  exchangeStatus: '',
+  exchangeNote: '',
+  exchangeLink: '',
   archived: false,
   ...over,
 })
@@ -38,7 +40,7 @@ const make = (over: Partial<Book>): Book => ({
 const books: Book[] = [
   make({ id: '1', title: '1984', author: 'George Orwell', year: 1950, zone: 'Fiction', theme: 'Dystopia', owner: 'leandro', language: ['English'], readBy: ['leandro'] }),
   make({ id: '2', title: 'Cien años de soledad', author: 'Gabriel García Márquez', year: 1967, zone: 'Fiction', theme: 'Magical', owner: 'maria', language: ['Spanish'], borrowed: true, borrowerName: 'Sam' }),
-  make({ id: '3', title: 'Sapiens', author: 'Yuval Noah Harari', year: 2011, zone: 'History', theme: 'Macro', owner: 'leandro', language: ['English', 'Italian'], exchange: true, readBy: ['leandro', 'maria'] }),
+  make({ id: '3', title: 'Sapiens', author: 'Yuval Noah Harari', year: 2011, zone: 'History', theme: 'Macro', owner: 'leandro', language: ['English', 'Italian'], exchangeStatus: 'offered', readBy: ['leandro', 'maria'] }),
 ]
 
 describe('search', () => {

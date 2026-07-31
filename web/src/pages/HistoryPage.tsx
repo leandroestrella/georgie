@@ -8,6 +8,7 @@ import {
   HandCoinsIcon,
   PencilIcon,
   PlusIcon,
+  RepeatIcon,
   Undo2Icon,
 } from 'lucide-react'
 import { getHistory } from '@/api/client'
@@ -24,6 +25,7 @@ const ACTION_ICONS: Record<HistoryEntry['action'], typeof PlusIcon> = {
   restore: Undo2Icon,
   loan: HandCoinsIcon,
   return: CircleCheckIcon,
+  exchange: RepeatIcon,
 }
 
 /**

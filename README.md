@@ -35,7 +35,7 @@ flowchart LR
 - 🖼 covers with a fallback chain: stored url → open library → amazon by isbn-10 → a zone-tinted placeholder; admins can pin the shown cover — or snap a photo of the book — to your own host so it never rots
 - ✏️ admin sign-in to add, edit, archive (soft-delete, with an archived view + restore) and lend books
 - 🧹 a "needs attention" filter (missing year, `circa`, no cover, no original language) — the tool for finishing the catalog from the shelf
-- 🤝 loan tracking — lend a book (borrower + date), return it; exchange flag for books offered on book-exchange platforms
+- 🤝 loan tracking — lend a book (borrower + date), return it; a staged exchange flow (offered → confirmed → in transit → received) for books traded on book-exchange platforms — linking the outgoing book to its incoming replacement
 - 🗂 categories driven by the sheet itself: zones (with their own colors, and emoji or image markers) grouping themes, mirroring the physical shelves; owner and reader badges come from the sheet too
 - 🌍 interface in english, italiano and español (zone/theme/language names and zone/theme descriptions translate too)
 - 🪪 human-readable call-number ids (`ORW-198-1950`), generated once and immutable

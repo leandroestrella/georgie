@@ -6,11 +6,13 @@ import { afterEach, describe, expect, it } from 'vitest'
 import {
   __resetMockStore,
   addBook,
+  completeExchange,
   deleteBook,
   getBook,
   getBooks,
   getTaxonomies,
   restoreBook,
+  setExchange,
   setLoan,
   updateBook,
 } from './client'
@@ -35,7 +37,9 @@ const draft = (over: Partial<NewBook> = {}): NewBook => ({
   borrowed: false,
   borrowerName: '',
   loanDate: '',
-  exchange: false,
+  exchangeStatus: '',
+  exchangeNote: '',
+  exchangeLink: '',
   archived: false,
   ...over,
 })
@@ -116,5 +120,43 @@ describe('writes', () => {
 
   it('updateBook throws for an unknown id', async () => {
     await expect(updateBook('NOPE-000-0000', { title: 'x' })).rejects.toThrow(/not found/i)
+  })
+
+  it('walks the exchange flow offered → confirmed → in transit → received, linking and releasing the incoming book', async () => {
+    const outgoing = await addBook(draft({ title: 'Outgoing', theme: 'Poetry & Verse' }))
+    // Mirrors BookFormPage's `?exchangeWith=` handoff: the incoming book is
+    // added Borrowed (not yet on the shelf) and linked back to the outgoing one.
+    const incoming = await addBook(draft({ title: 'Incoming', theme: 'Poetry & Verse' }))
+    await setLoan(incoming.id, { borrowerName: 'from marco' })
+    await updateBook(incoming.id, { exchangeLink: outgoing.id })
+
+    let book = await setExchange(outgoing.id, { status: 'offered' })
+    expect(book.exchangeStatus).toBe('offered')
+
+    book = await setExchange(outgoing.id, { status: 'confirmed', note: 'from marco', link: incoming.id })
+    expect(book.exchangeStatus).toBe('confirmed')
+    expect(book.exchangeNote).toBe('from marco')
+    expect(book.exchangeLink).toBe(incoming.id)
+
+    book = await setExchange(outgoing.id, { status: 'in transit', note: 'from marco', link: incoming.id })
+    expect(book.exchangeStatus).toBe('in transit')
+
+    const archived = await completeExchange(outgoing.id)
+    expect(archived.archived).toBe(true)
+    expect(archived.exchangeStatus).toBe('')
+    expect((await getBooks()).some((b) => b.id === outgoing.id)).toBe(false)
+
+    const released = await getBook(incoming.id)
+    expect(released?.borrowed).toBe(false)
+    expect(released?.exchangeLink).toBe('')
+  })
+
+  it('setExchange(null) withdraws, clearing all three exchange fields', async () => {
+    const book = await addBook(draft({ theme: 'Poetry & Verse' }))
+    await setExchange(book.id, { status: 'offered' })
+    const withdrawn = await setExchange(book.id, null)
+    expect(withdrawn.exchangeStatus).toBe('')
+    expect(withdrawn.exchangeNote).toBe('')
+    expect(withdrawn.exchangeLink).toBe('')
   })
 })

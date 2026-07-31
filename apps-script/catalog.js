@@ -32,9 +32,19 @@ var COLUMNS = {
   borrowed: 'Borrowed',
   borrowerName: 'Borrower name',
   loanDate: 'Loan date',
-  exchange: 'Exchange',
+  exchangeStatus: 'Exchange status',
+  exchangeNote: 'Exchange note',
+  exchangeLink: 'Exchange link',
   archived: 'Archived',
 }
+
+/**
+ * Valid `Exchange status` values, in flow order. `''` means "not in an
+ * exchange". `received` (stage 4) is never stored — completing an exchange
+ * archives the outgoing book instead, so it leaves this list entirely.
+ * @type {string[]}
+ */
+var EXCHANGE_STATUSES = ['offered', 'confirmed', 'in transit']
 
 /** The literal sentinel meaning "this printing genuinely has no ISBN". */
 var NO_ISBN = 'N/A'
@@ -70,6 +80,18 @@ function parseBool(v) {
   if (typeof v === 'boolean') return v
   var s = cellToString(v).toLowerCase()
   return s === 'true' || s === '1' || s === 'yes'
+}
+
+/**
+ * Normalizes an `Exchange status` cell: trims/lowercases and only accepts a
+ * value from `EXCHANGE_STATUSES`. The sheet is hand-editable, so a typo or
+ * stray value degrades to '' (not in an exchange) rather than throwing.
+ * @param {*} v
+ * @return {string}
+ */
+function normalizeExchangeStatus(v) {
+  var s = cellToString(v).toLowerCase()
+  return EXCHANGE_STATUSES.indexOf(s) === -1 ? '' : s
 }
 
 /**
@@ -184,7 +206,9 @@ function mapRowToBook(row, headerIndex, themeToZone) {
     borrowed: parseBool(cell(row, headerIndex, COLUMNS.borrowed)),
     borrowerName: cellToString(cell(row, headerIndex, COLUMNS.borrowerName)),
     loanDate: parseDate(cell(row, headerIndex, COLUMNS.loanDate)),
-    exchange: parseBool(cell(row, headerIndex, COLUMNS.exchange)),
+    exchangeStatus: normalizeExchangeStatus(cell(row, headerIndex, COLUMNS.exchangeStatus)),
+    exchangeNote: cellToString(cell(row, headerIndex, COLUMNS.exchangeNote)),
+    exchangeLink: cellToString(cell(row, headerIndex, COLUMNS.exchangeLink)),
     archived: parseBool(cell(row, headerIndex, COLUMNS.archived)),
   }
 }
@@ -220,7 +244,9 @@ function bookToCells(book, headerRow, themeToZone) {
   out[COLUMNS.borrowed] = !!book.borrowed
   out[COLUMNS.borrowerName] = book.borrowerName || ''
   out[COLUMNS.loanDate] = book.loanDate || ''
-  out[COLUMNS.exchange] = !!book.exchange
+  out[COLUMNS.exchangeStatus] = normalizeExchangeStatus(book.exchangeStatus)
+  out[COLUMNS.exchangeNote] = book.exchangeNote || ''
+  out[COLUMNS.exchangeLink] = book.exchangeLink || ''
   out[COLUMNS.archived] = !!book.archived
   return out
 }
@@ -455,16 +481,17 @@ var HISTORY_COLUMNS = ['Timestamp', 'Actor', 'Action', 'EntityId', 'Title', 'Aut
 /**
  * Book fields compared for an `update` entry's diff. Deliberately excludes:
  * `id` (immutable), `zone` (derived from theme — diffing it too would just
- * echo the theme change), and `archived`/`borrowed`/`borrowerName`/`loanDate`
- * (those go through their own dedicated actions — archive/restore/loan/return
- * — whose action name already says what changed, per the "no diff needed"
+ * echo the theme change), and `archived`/`borrowed`/`borrowerName`/`loanDate`/
+ * `exchangeStatus`/`exchangeNote`/`exchangeLink` (those go through their own
+ * dedicated actions — archive/restore/loan/return/exchange — whose action
+ * name + custom summary already say what changed, per the "no diff needed"
  * rule below).
  * @type {string[]}
  */
 var DIFF_FIELDS = [
   'title', 'author', 'year', 'yearPrecision', 'publisher', 'isbn',
   'language', 'originalLanguage', 'coverUrl', 'theme', 'owner',
-  'referenceUrl', 'readBy', 'exchange',
+  'referenceUrl', 'readBy',
 ]
 
 /**
@@ -557,8 +584,10 @@ if (typeof module !== 'undefined' && module.exports) {
     COLUMNS: COLUMNS,
     NO_ISBN: NO_ISBN,
     ARTICLES: ARTICLES,
+    EXCHANGE_STATUSES: EXCHANGE_STATUSES,
     cellToString: cellToString,
     parseBool: parseBool,
+    normalizeExchangeStatus: normalizeExchangeStatus,
     parseYear: parseYear,
     parseDate: parseDate,
     splitMulti: splitMulti,

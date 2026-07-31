@@ -41,7 +41,9 @@ export function emptyDraft(owner = ''): NewBook {
     borrowed: false,
     borrowerName: '',
     loanDate: '',
-    exchange: false,
+    exchangeStatus: '',
+    exchangeNote: '',
+    exchangeLink: '',
     archived: false,
   }
 }
@@ -300,11 +302,6 @@ export function BookForm({
       <Field id="referenceUrl" label={t('form.referenceUrl')}>
         <Input id="referenceUrl" value={draft.referenceUrl} onChange={(e) => set('referenceUrl', e.target.value)} />
       </Field>
-
-      <label className="flex w-fit items-center gap-2 text-sm">
-        <Checkbox checked={draft.exchange} onCheckedChange={(c) => set('exchange', !!c)} />
-        {t('form.exchange')}
-      </label>
 
       {!isEdit && idPreview && (
         <p className="text-muted-foreground text-xs">

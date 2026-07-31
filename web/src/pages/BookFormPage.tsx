@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeftIcon } from 'lucide-react'
-import { addBook, updateBook } from '@/api/client'
+import { addBook, setExchange, setLoan, updateBook } from '@/api/client'
 import type { NewBook } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { BookForm, emptyDraft } from '@/catalog/BookForm'
@@ -12,9 +12,18 @@ import { LoadingAvatar } from '@/components/LoadingAvatar'
 /**
  * Add (`/book/new`) and edit (`/book/:id/edit`) pages. Admin-only in the UI; the
  * backend independently rejects writes from anyone not on the allowlist.
+ *
+ * Add also supports `?exchangeWith=<id>` (§3.9): reached from an "add the
+ * incoming book" shortcut on the outgoing book's confirmed-exchange dialog.
+ * On save, the new book is marked `Borrowed` (reusing the loan flag to mean
+ * "not yet on the shelf") with the outgoing book's exchange note as the
+ * borrower, and the two books are linked by id — the outgoing book's
+ * "Exchange received" action later clears both in one step.
  */
 export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
   const { id = '' } = useParams()
+  const [searchParams] = useSearchParams()
+  const exchangeWith = mode === 'add' ? searchParams.get('exchangeWith') : null
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isAdmin, owner } = useAuth()
@@ -23,6 +32,7 @@ export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
   const [error, setError] = useState<string | null>(null)
 
   const existing = mode === 'edit' ? getBook(decodeURIComponent(id)) : undefined
+  const outgoing = exchangeWith ? getBook(exchangeWith) : undefined
 
   // Cosmetic guard; enforcement is server-side.
   if (!isAdmin && !loading) return <Navigate to="/" replace />
@@ -42,6 +52,17 @@ export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
           ? await updateBook(existing.id, draft)
           : await addBook(draft)
       applyBook(saved)
+
+      if (mode === 'add' && exchangeWith) {
+        applyBook(await setLoan(saved.id, { borrowerName: outgoing?.exchangeNote || '' }))
+        applyBook(await updateBook(saved.id, { exchangeLink: exchangeWith }))
+        applyBook(
+          await setExchange(exchangeWith, { status: 'confirmed', note: outgoing?.exchangeNote ?? '', link: saved.id }),
+        )
+        navigate(`/book/${encodeURIComponent(exchangeWith)}`)
+        return
+      }
+
       navigate(`/book/${encodeURIComponent(saved.id)}`)
     } catch (e) {
       setError(String(e))
