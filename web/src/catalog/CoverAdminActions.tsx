@@ -1,10 +1,10 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CameraIcon, ImageDownIcon } from 'lucide-react'
 import { saveCover } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
-import { useCatalog } from '@/catalog/CatalogProvider'
+import { useAdminAction } from '@/catalog/useAdminAction'
 import { Button } from '@/components/ui/button'
 
 /**
@@ -53,23 +53,9 @@ export function CoverAdminActions({
 }) {
   const { t } = useTranslation()
   const { isAdmin } = useAuth()
-  const { applyBook } = useCatalog()
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { run, busy, error } = useAdminAction()
   const fileRef = useRef<HTMLInputElement>(null)
   if (!isAdmin) return null
-
-  const run = async (get: () => Promise<Book>) => {
-    setBusy(true)
-    setError(null)
-    try {
-      applyBook(await get())
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setBusy(false)
-    }
-  }
 
   return (
     <div className="flex flex-col items-end gap-1">

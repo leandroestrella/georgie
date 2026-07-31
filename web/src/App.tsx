@@ -1,11 +1,13 @@
-import { Link, Navigate, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AuthBar } from '@/auth/AuthBar'
 import { useAuth } from '@/auth/AuthProvider'
+import { useCatalog } from '@/catalog/CatalogProvider'
 import { LanguageSwitcher } from '@/i18n/LanguageSwitcher'
 import { AdminSlotContext, SubHeaderContext } from '@/components/subheader'
+import { useBusy } from '@/components/BusyProvider'
 import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 import { cn } from '@/lib/utils'
 import { LoadingAvatar } from '@/components/LoadingAvatar'
@@ -32,13 +34,22 @@ const HistoryPage = lazy(() => import('@/pages/HistoryPage').then((m) => ({ defa
  */
 function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
-  const { isAdmin } = useAuth()
+  const { status, isAdmin } = useAuth()
+  const { loading } = useCatalog()
+  const { busy } = useBusy()
+  const location = useLocation()
   const [slot, setSlot] = useState<HTMLDivElement | null>(null)
   const [adminSlot, setAdminSlot] = useState<HTMLDivElement | null>(null)
   const [avatarHovered, setAvatarHovered] = useState(false)
   // On a phone the header is a big share of the viewport; slide it away while
   // scrolling down through the catalog and bring it back on the way up.
   const hidden = useHideOnScroll()
+  // The hover lightbox is a fun extra, not something to show over a loading
+  // state or a page that's currently asking the visitor to sign in (only
+  // Overview does this today) — it would pop up a big mascot right as the
+  // page underneath is still resolving or asking for attention.
+  const overviewNeedsSignIn = location.pathname === '/overview' && status !== 'loading' && !isAdmin
+  const avatarHoverDisabled = loading || busy || overviewNeedsSignIn
 
   return (
     <div className="flex min-h-svh flex-col">
@@ -52,23 +63,25 @@ function Layout({ children }: { children: ReactNode }) {
           {/* The avatar opens the About page (the rendered README); the wordmark
               stays the link home to the catalog, so a home affordance remains.
               Hovering it also pops the mascot up full-size in a centered
-              lightbox, which closes the moment the pointer leaves. */}
+              lightbox (frameless — just the gif), which closes the moment the
+              pointer leaves. Suppressed via `avatarHoverDisabled` while
+              something more important is happening on screen: the catalog's
+              still loading, an admin write is in flight (LoadingOverlay), or
+              the current page is asking the visitor to sign in. */}
           <div className="flex min-w-0 shrink items-center gap-2.5">
             <Link
               to="/about"
               aria-label={t('nav.about')}
               className="shrink-0"
-              onMouseEnter={() => setAvatarHovered(true)}
+              onMouseEnter={() => !avatarHoverDisabled && setAvatarHovered(true)}
               onMouseLeave={() => setAvatarHovered(false)}
             >
               <img src="/georgie.gif" alt="" className="w-8 sm:w-10" />
             </Link>
-            {avatarHovered &&
+            {avatarHovered && !avatarHoverDisabled &&
               createPortal(
                 <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
-                  <div className="rounded-2xl bg-black p-4 shadow-2xl">
-                    <img src="/georgie.gif" alt="" className="w-64 max-w-[80vw] sm:w-80" />
-                  </div>
+                  <img src="/georgie.gif" alt="" className="w-64 max-w-[80vw] sm:w-80" />
                 </div>,
                 document.body,
               )}

@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArchiveIcon, PencilIcon, Undo2Icon } from 'lucide-react'
 import { deleteBook, restoreBook } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
-import { useCatalog } from '@/catalog/CatalogProvider'
+import { useAdminAction } from '@/catalog/useAdminAction'
 import { Button } from '@/components/ui/button'
 import { LoanControl } from './LoanControl'
 import { ExchangeControl } from './ExchangeControl'
@@ -36,27 +35,12 @@ import {
 export function AdminBookActions({ book }: { book: Book }) {
   const { t } = useTranslation()
   const { isAdmin } = useAuth()
-  const { applyBook } = useCatalog()
   const navigate = useNavigate()
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { run, busy, error } = useAdminAction()
 
   if (!isAdmin) return null
 
   const inTransit = book.exchangeStatus === 'in transit'
-
-  const run = async (fn: () => Promise<Book>, after?: () => void) => {
-    setBusy(true)
-    setError(null)
-    try {
-      applyBook(await fn())
-      after?.()
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setBusy(false)
-    }
-  }
 
   return (
     <div className="flex flex-col gap-1">

@@ -30,7 +30,7 @@ export function emptyDraft(owner = ''): NewBook {
     year: null,
     yearPrecision: '',
     publisher: '',
-    isbn: NO_ISBN,
+    isbn: '',
     language: [],
     originalLanguage: '',
     coverUrl: '',

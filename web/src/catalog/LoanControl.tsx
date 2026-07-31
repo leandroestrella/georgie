@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { HandCoinsIcon, Undo2Icon } from 'lucide-react'
 import { setLoan } from '@/api/client'
 import type { Book } from '@/api/types'
-import { useCatalog } from '@/catalog/CatalogProvider'
+import { useAdminAction } from '@/catalog/useAdminAction'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -27,25 +27,10 @@ function today(): string {
  */
 export function LoanControl({ book }: { book: Book }) {
   const { t } = useTranslation()
-  const { applyBook } = useCatalog()
+  const { run, busy, error, setError } = useAdminAction()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(book.borrowerName)
   const [date, setDate] = useState(book.loanDate || today())
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const run = async (fn: () => Promise<Book>, onDone?: () => void) => {
-    setBusy(true)
-    setError(null)
-    try {
-      applyBook(await fn())
-      onDone?.()
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setBusy(false)
-    }
-  }
 
   const openDialog = () => {
     setName(book.borrowerName)

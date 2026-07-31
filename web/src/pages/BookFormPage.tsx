@@ -7,6 +7,7 @@ import type { NewBook } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { BookForm, emptyDraft } from '@/catalog/BookForm'
 import { useCatalog } from '@/catalog/CatalogProvider'
+import { useBusy } from '@/components/BusyProvider'
 import { LoadingAvatar } from '@/components/LoadingAvatar'
 
 /**
@@ -28,6 +29,7 @@ export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
   const navigate = useNavigate()
   const { isAdmin, owner } = useAuth()
   const { getBook, taxonomies, loading, applyBook } = useCatalog()
+  const globalBusy = useBusy()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -46,6 +48,7 @@ export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
   const handleSubmit = async (draft: NewBook) => {
     setSubmitting(true)
     setError(null)
+    globalBusy.begin()
     try {
       const saved =
         mode === 'edit' && existing
@@ -68,6 +71,7 @@ export function BookFormPage({ mode }: { mode: 'add' | 'edit' }) {
       setError(String(e))
     } finally {
       setSubmitting(false)
+      globalBusy.end()
     }
   }
 

@@ -5,6 +5,8 @@ import { RepeatIcon, Undo2Icon } from 'lucide-react'
 import { completeExchange, setExchange } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useCatalog } from '@/catalog/CatalogProvider'
+import { useAdminAction } from '@/catalog/useAdminAction'
+import { useBusy } from '@/components/BusyProvider'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -46,33 +48,20 @@ export function ExchangeControl({ book }: { book: Book }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { applyBook } = useCatalog()
+  const globalBusy = useBusy()
+  const { run, busy, error, setError } = useAdminAction()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [partner, setPartner] = useState(book.exchangeNote)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const run = async (fn: () => Promise<Book>, after?: (b: Book) => void): Promise<boolean> => {
-    setBusy(true)
-    setError(null)
-    try {
-      const b = await fn()
-      applyBook(b)
-      after?.(b)
-      return true
-    } catch (e) {
-      setError(String(e))
-      return false
-    } finally {
-      setBusy(false)
-    }
-  }
 
   // Separate from `run`: completeExchange touches two books, and the linked
   // one must be applied too or the local cache keeps showing it as borrowed
-  // even though the write succeeded.
+  // even though the write succeeded. Drives the shared busy state itself
+  // (rather than going through `run`, which only knows how to apply one).
+  const [receiveBusy, setReceiveBusy] = useState(false)
   const runReceive = async () => {
-    setBusy(true)
+    setReceiveBusy(true)
     setError(null)
+    globalBusy.begin()
     try {
       const { book: outgoing, linked } = await completeExchange(book.id)
       applyBook(outgoing)
@@ -81,7 +70,8 @@ export function ExchangeControl({ book }: { book: Book }) {
     } catch (e) {
       setError(String(e))
     } finally {
-      setBusy(false)
+      setReceiveBusy(false)
+      globalBusy.end()
     }
   }
 
@@ -168,7 +158,7 @@ export function ExchangeControl({ book }: { book: Book }) {
         {book.exchangeStatus === 'in transit' && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button size="sm" variant="outline" className="gap-1" disabled={busy}>
+              <Button size="sm" variant="outline" className="gap-1" disabled={receiveBusy}>
                 <RepeatIcon className="size-3.5" /> {t('exchange.received')}
               </Button>
             </AlertDialogTrigger>

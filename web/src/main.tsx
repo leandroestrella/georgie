@@ -6,6 +6,8 @@ import './i18n'
 import App from './App.tsx'
 import { AuthProvider } from './auth/AuthProvider.tsx'
 import { CatalogProvider } from './catalog/CatalogProvider.tsx'
+import { BusyProvider } from './components/BusyProvider.tsx'
+import { LoadingOverlay } from './components/LoadingOverlay.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
 
 createRoot(document.getElementById('root')!).render(
@@ -14,7 +16,10 @@ createRoot(document.getElementById('root')!).render(
       <AuthProvider>
         <CatalogProvider>
           <TooltipProvider delayDuration={200}>
-            <App />
+            <BusyProvider>
+              <App />
+              <LoadingOverlay />
+            </BusyProvider>
           </TooltipProvider>
         </CatalogProvider>
       </AuthProvider>
