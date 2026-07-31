@@ -950,7 +950,7 @@ export const MOCK_BOOKS: Book[] = [
     "exchangeStatus": "in transit",
     "exchangeNote": "",
     "exchangeLink": "",
-    "archived": false
+    "archived": true
   },
   {
     "id": "MAR-VIA-0000",

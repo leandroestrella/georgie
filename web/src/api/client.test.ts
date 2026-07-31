@@ -140,6 +140,10 @@ describe('writes', () => {
 
     book = await setExchange(outgoing.id, { status: 'in transit', note: 'from marco', link: incoming.id })
     expect(book.exchangeStatus).toBe('in transit')
+    // Archived the moment it ships — once mailed out it's gone for good,
+    // unlike a loan, so it drops out of the active catalog immediately.
+    expect(book.archived).toBe(true)
+    expect((await getBooks()).some((b) => b.id === outgoing.id)).toBe(false)
 
     const archived = await completeExchange(outgoing.id)
     expect(archived.archived).toBe(true)
@@ -158,5 +162,16 @@ describe('writes', () => {
     expect(withdrawn.exchangeStatus).toBe('')
     expect(withdrawn.exchangeNote).toBe('')
     expect(withdrawn.exchangeLink).toBe('')
+  })
+
+  it('setExchange(null) un-archives a book withdrawn while in transit', async () => {
+    const book = await addBook(draft({ theme: 'Poetry & Verse' }))
+    await setExchange(book.id, { status: 'offered' })
+    await setExchange(book.id, { status: 'confirmed' })
+    const inTransit = await setExchange(book.id, { status: 'in transit' })
+    expect(inTransit.archived).toBe(true)
+    const withdrawn = await setExchange(book.id, null)
+    expect(withdrawn.archived).toBe(false)
+    expect((await getBooks()).some((b) => b.id === book.id)).toBe(true)
   })
 })

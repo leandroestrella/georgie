@@ -29,13 +29,18 @@ import { Label } from '@/components/ui/label'
 
 /**
  * Admin exchange-stage control (§3.9): offered → confirmed → in transit →
- * received. Each stage renders its next transition plus a withdraw action.
- * "Exchange confirmed" opens a dialog asking only for the partner's name —
- * saving always hands off to the add form (`?exchangeWith=<id>`), since
+ * received. "Exchange confirmed" opens a dialog asking only for the partner's
+ * name — saving always hands off to the add form (`?exchangeWith=<id>`), since
  * confirming an exchange means the incoming book is now known and should be
  * catalogued right away. `BookFormPage` links the two books and marks the
- * incoming one `Borrowed` (not yet on the shelf). "Exchange received"
- * archives this book and releases the linked incoming book in one call.
+ * incoming one `Borrowed` (not yet on the shelf).
+ *
+ * "Mark in transit" archives the book (see `setExchange`'s doc — once mailed
+ * out it's gone for good, unlike a loan), so it's behind its own confirm
+ * dialog, same as "Exchange received". Withdraw is only offered at
+ * `offered`/`confirmed`, where nothing has shipped yet and it's genuinely
+ * reversible — once in transit there's no undo, only "Exchange received",
+ * which releases the linked incoming book in the same call.
  */
 export function ExchangeControl({ book }: { book: Book }) {
   const { t } = useTranslation()
@@ -107,50 +112,65 @@ export function ExchangeControl({ book }: { book: Book }) {
 
         {book.exchangeStatus === 'confirmed' && (
           <>
-            <Button
-              size="sm"
-              variant="outline"
-              className="gap-1"
-              disabled={busy}
-              onClick={() =>
-                void run(() =>
-                  setExchange(book.id, { status: 'in transit', note: book.exchangeNote, link: book.exchangeLink }),
-                )
-              }
-            >
-              <RepeatIcon className="size-3.5" /> {t('exchange.markInTransit')}
-            </Button>
-            {withdraw}
-          </>
-        )}
-
-        {book.exchangeStatus === 'in transit' && (
-          <>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button size="sm" variant="outline" className="gap-1" disabled={busy}>
-                  <RepeatIcon className="size-3.5" /> {t('exchange.received')}
+                  <RepeatIcon className="size-3.5" /> {t('exchange.markInTransit')}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>{t('exchange.receivedDialog.title')}</AlertDialogTitle>
+                  <AlertDialogTitle>{t('exchange.inTransitDialog.title')}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    {t('exchange.receivedDialog.body', { title: book.title })}
+                    {t('exchange.inTransitDialog.body', { title: book.title })}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>{t('form.cancel')}</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => void run(() => completeExchange(book.id), () => navigate('/'))}
+                    onClick={() =>
+                      void run(() =>
+                        setExchange(book.id, {
+                          status: 'in transit',
+                          note: book.exchangeNote,
+                          link: book.exchangeLink,
+                        }),
+                      )
+                    }
                   >
-                    {t('exchange.received')}
+                    {t('exchange.markInTransit')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
             {withdraw}
           </>
+        )}
+
+        {book.exchangeStatus === 'in transit' && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="outline" className="gap-1" disabled={busy}>
+                <RepeatIcon className="size-3.5" /> {t('exchange.received')}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t('exchange.receivedDialog.title')}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t('exchange.receivedDialog.body', { title: book.title })}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t('form.cancel')}</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => void run(() => completeExchange(book.id), () => navigate('/'))}
+                >
+                  {t('exchange.received')}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
       </div>
       {error && <p className="text-destructive text-xs">{error}</p>}

@@ -322,9 +322,13 @@ function setLoan_(id, loan, actor) {
 
 /**
  * Sets or clears a book's exchange stage (offered → confirmed → in transit).
- * `exchange` = null withdraws it (clears all three exchange fields). Stage 4
- * ("received") isn't set here — see `completeExchange_`, which archives the
- * book instead of writing a fourth status value.
+ * `exchange` = null withdraws it (clears all three exchange fields, restores
+ * to the active catalog). `in transit` also archives the book in the same
+ * write: once it's mailed out, it's physically gone from the shelf for good —
+ * unlike a loan, there's no getting it back, so it shouldn't linger in the
+ * active/public catalog with just a status badge. `offered`/`confirmed` keep
+ * it active, since nothing has shipped yet and either is still reversible.
+ * Stage 4 ("received") isn't set here — see `completeExchange_`.
  * @param {string} id
  * @param {{status: string, note?: string, link?: string}|null} exchange
  * @param {string} actor the acting admin's owner label, for the audit log
@@ -334,7 +338,7 @@ function setExchange_(id, exchange, actor) {
   if (!exchange) {
     return updateBook_(
       id,
-      { exchangeStatus: '', exchangeNote: '', exchangeLink: '' },
+      { exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: false },
       actor,
       'exchange',
       'withdrawn',
@@ -344,10 +348,11 @@ function setExchange_(id, exchange, actor) {
   if (!status) throw new Error('Invalid exchange status: ' + exchange.status)
   var note = exchange.note || ''
   var link = exchange.link || ''
-  var summary = status + (note ? ' · ' + note : '')
+  var archived = status === 'in transit'
+  var summary = status + (note ? ' · ' + note : '') + (archived ? ' (archived — gone for good)' : '')
   return updateBook_(
     id,
-    { exchangeStatus: status, exchangeNote: note, exchangeLink: link },
+    { exchangeStatus: status, exchangeNote: note, exchangeLink: link, archived: archived },
     actor,
     'exchange',
     summary,
@@ -355,14 +360,17 @@ function setExchange_(id, exchange, actor) {
 }
 
 /**
- * Finishes an exchange (stage 4, received): archives the outgoing book and, if
- * its `Exchange link` names another catalog book, clears that book's loan (it
+ * Finishes an exchange (stage 4, received). By this point the outgoing book
+ * was already archived when it went `in transit` (see `setExchange_`) — this
+ * just clears its exchange fields (it stays archived permanently, unlike a
+ * regular soft-delete, since the book is genuinely gone) and, if its
+ * `Exchange link` names another catalog book, clears that book's loan (it
  * reused `Borrowed` to mark "incoming, not yet on the shelf" — see
  * `setExchange_`'s caller in the SPA) and its own `Exchange link`. A missing
- * or stale link is not an error — the outgoing book is archived regardless.
+ * or stale link is not an error.
  * @param {string} id the outgoing book's id
  * @param {string} actor the acting admin's owner label, for the audit log
- * @return {Book} the archived outgoing book
+ * @return {Book} the outgoing book, exchange fields cleared
  */
 function completeExchange_(id, actor) {
   var linkedId = findBookById_(id).exchangeLink
@@ -370,8 +378,8 @@ function completeExchange_(id, actor) {
     id,
     { exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: true },
     actor,
-    'archive',
-    '',
+    'exchange',
+    'received',
   )
   if (linkedId) {
     try {

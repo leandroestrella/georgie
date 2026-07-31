@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeftIcon, Undo2Icon } from 'lucide-react'
+import { ArrowLeftIcon, RepeatIcon, Undo2Icon } from 'lucide-react'
 import { restoreBook } from '@/api/client'
 import { useAuth } from '@/auth/AuthProvider'
 import { useCatalog } from '@/catalog/CatalogProvider'
@@ -64,20 +64,30 @@ export function ArchivedPage() {
                     <Link to={`/book/${encodeURIComponent(book.id)}`} className="hover:underline">
                       {book.title}
                     </Link>
+                    {book.exchangeStatus === 'in transit' && (
+                      <span className="text-muted-foreground ml-2 inline-flex items-center gap-1 text-xs font-normal">
+                        <RepeatIcon className="size-3" /> {t('exchange.status.inTransit')}
+                      </span>
+                    )}
                   </td>
                   <td className="text-muted-foreground p-3">{book.author}</td>
                   <td className="text-muted-foreground p-3 tabular-nums">{book.year ?? '—'}</td>
                   <td className="p-3 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={busy === book.id}
-                      onClick={() => void restore(book.id)}
-                      className="gap-1"
-                    >
-                      <Undo2Icon className="size-3.5" />
-                      {busy === book.id ? t('form.saving') : t('admin.restore')}
-                    </Button>
+                    {/* A book `in transit` can't be plainly restored — see AdminBookActions;
+                        "Exchange received" (its only valid next action) lives on the book's
+                        own page, reached via the title link above. */}
+                    {book.exchangeStatus !== 'in transit' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy === book.id}
+                        onClick={() => void restore(book.id)}
+                        className="gap-1"
+                      >
+                        <Undo2Icon className="size-3.5" />
+                        {busy === book.id ? t('form.saving') : t('admin.restore')}
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}

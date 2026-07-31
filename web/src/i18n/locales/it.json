@@ -190,9 +190,13 @@
       "partnerPlaceholder": "nome o soprannome",
       "partnerHint": "Solo nome o soprannome — il catalogo è pubblico. Salvando si passa subito ad aggiungere il libro in arrivo."
     },
+    "inTransitDialog": {
+      "title": "Segnare in transito?",
+      "body": "«{{title}}» verrà archiviato subito — una volta spedito non lo riavrai indietro, quindi non comparirà più tra i libri attivi. Potrai completare lo scambio da qui una volta ricevuto."
+    },
     "receivedDialog": {
       "title": "Scambio ricevuto?",
-      "body": "«{{title}}» verrà archiviato definitivamente. Un eventuale libro in arrivo collegato verrà segnato come arrivato."
+      "body": "«{{title}}» resterà archiviato definitivamente. Un eventuale libro in arrivo collegato verrà segnato come arrivato."
     }
   },
   "lookup": {

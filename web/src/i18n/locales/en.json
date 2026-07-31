@@ -190,9 +190,13 @@
       "partnerPlaceholder": "first name or nickname",
       "partnerHint": "First name or nickname only — the catalog is public. Saving takes you straight to adding the incoming book."
     },
+    "inTransitDialog": {
+      "title": "Mark in transit?",
+      "body": "“{{title}}” will be archived right away — once it's mailed out you won't have it back, so it stops showing as part of your active library. You can still complete the exchange from here once it's received."
+    },
     "receivedDialog": {
       "title": "Exchange received?",
-      "body": "“{{title}}” will be archived for good. A linked incoming book (if any) will be marked as arrived too."
+      "body": "“{{title}}” will stay archived for good. A linked incoming book (if any) will be marked as arrived too."
     }
   },
   "lookup": {

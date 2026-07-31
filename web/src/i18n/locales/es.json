@@ -190,9 +190,13 @@
       "partnerPlaceholder": "nombre o apodo",
       "partnerHint": "Solo nombre o apodo — el catálogo es público. Al guardar pasarás directamente a añadir el libro entrante."
     },
+    "inTransitDialog": {
+      "title": "¿Marcar en tránsito?",
+      "body": "«{{title}}» se archivará de inmediato — una vez enviado no lo recuperarás, así que dejará de aparecer entre tus libros activos. Podrás completar el intercambio desde aquí cuando lo recibas."
+    },
     "receivedDialog": {
       "title": "¿Intercambio recibido?",
-      "body": "«{{title}}» se archivará definitivamente. Si hay un libro entrante vinculado, también se marcará como recibido."
+      "body": "«{{title}}» quedará archivado definitivamente. Si hay un libro entrante vinculado, también se marcará como recibido."
     }
   },
   "lookup": {

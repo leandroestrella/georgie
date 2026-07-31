@@ -134,16 +134,27 @@ export async function setLoan(id: string, loan: LoanInput | null): Promise<Book>
   return data.book
 }
 
-/** Sets an exchange stage (`exchange`) or withdraws it (`null`). */
+/**
+ * Sets an exchange stage (`exchange`) or withdraws it (`null`, restoring the
+ * book to the active catalog). `in transit` also archives the book in the
+ * same write — once mailed out it's gone for good, unlike a loan, so it
+ * shouldn't linger active with just a status badge.
+ */
 export async function setExchange(id: string, exchange: ExchangeInput | null): Promise<Book> {
   if (!hasBackend) {
     if (!exchange) {
-      return mockPatch(id, { exchangeStatus: '', exchangeNote: '', exchangeLink: '' }, 'exchange', 'withdrawn')
+      return mockPatch(
+        id,
+        { exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: false },
+        'exchange',
+        'withdrawn',
+      )
     }
-    const changes = exchange.status + (exchange.note ? ` · ${exchange.note}` : '')
+    const archived = exchange.status === 'in transit'
+    const changes = exchange.status + (exchange.note ? ` · ${exchange.note}` : '') + (archived ? ' (archived — gone for good)' : '')
     return mockPatch(
       id,
-      { exchangeStatus: exchange.status, exchangeNote: exchange.note ?? '', exchangeLink: exchange.link ?? '' },
+      { exchangeStatus: exchange.status, exchangeNote: exchange.note ?? '', exchangeLink: exchange.link ?? '', archived },
       'exchange',
       changes,
     )
@@ -153,10 +164,12 @@ export async function setExchange(id: string, exchange: ExchangeInput | null): P
 }
 
 /**
- * Finishes an exchange (stage 4, received): archives the outgoing book and, if
- * `Exchange link` names another catalog book, clears that book's loan (the
- * incoming book reuses `Borrowed` to mean "not yet on the shelf" — see
- * `setExchange`'s callers) and its own `Exchange link`.
+ * Finishes an exchange (stage 4, received). The outgoing book was already
+ * archived when it went `in transit`; this clears its exchange fields (it
+ * stays archived for good) and, if `Exchange link` names another catalog
+ * book, clears that book's loan (the incoming book reuses `Borrowed` to mean
+ * "not yet on the shelf" — see `setExchange`'s callers) and its own
+ * `Exchange link`.
  */
 export async function completeExchange(id: string): Promise<Book> {
   if (!hasBackend) {
@@ -164,8 +177,8 @@ export async function completeExchange(id: string): Promise<Book> {
     const outgoing = mockPatch(
       id,
       { exchangeStatus: '', exchangeNote: '', exchangeLink: '', archived: true },
-      'archive',
-      '',
+      'exchange',
+      'received',
     )
     if (linkedId && mock.books.some((b) => b.id === linkedId)) {
       mockPatch(linkedId, { borrowed: false, borrowerName: '', loanDate: '', exchangeLink: '' }, 'return', '')

@@ -26,6 +26,12 @@ import {
  * cosmetic — the backend independently verifies the caller on every write.
  * "Archive" is a soft delete: the book leaves the public catalog but is never
  * destroyed, and can be restored from the Archived view.
+ *
+ * A book `in transit` (§3.9) is archived automatically — once mailed out it's
+ * gone for good, unlike a loan — so it needs its exchange control (specifically
+ * "Exchange received") to stay reachable even while archived, and its plain
+ * "Restore" hidden: restoring would leave it active again with a dangling
+ * `in transit` status, which isn't a real state to come back to.
  */
 export function AdminBookActions({ book }: { book: Book }) {
   const { t } = useTranslation()
@@ -36,6 +42,8 @@ export function AdminBookActions({ book }: { book: Book }) {
   const [error, setError] = useState<string | null>(null)
 
   if (!isAdmin) return null
+
+  const inTransit = book.exchangeStatus === 'in transit'
 
   const run = async (fn: () => Promise<Book>, after?: () => void) => {
     setBusy(true)
@@ -62,15 +70,17 @@ export function AdminBookActions({ book }: { book: Book }) {
         {!book.archived && <LoanControl book={book} />}
 
         {book.archived ? (
-          <Button
-            size="sm"
-            variant="outline"
-            className="gap-1"
-            disabled={busy}
-            onClick={() => void run(() => restoreBook(book.id))}
-          >
-            <Undo2Icon className="size-3.5" /> {t('admin.restore')}
-          </Button>
+          !inTransit && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1"
+              disabled={busy}
+              onClick={() => void run(() => restoreBook(book.id))}
+            >
+              <Undo2Icon className="size-3.5" /> {t('admin.restore')}
+            </Button>
+          )
         ) : (
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -96,7 +106,7 @@ export function AdminBookActions({ book }: { book: Book }) {
         )}
       </div>
       {error && <p className="text-destructive text-xs">{error}</p>}
-      {!book.archived && <ExchangeControl book={book} />}
+      {(!book.archived || inTransit) && <ExchangeControl book={book} />}
     </div>
   )
 }
