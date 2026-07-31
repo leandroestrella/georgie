@@ -30,6 +30,7 @@ import { useCatalog } from './CatalogProvider'
 import { OwnerBadge } from './OwnerBadge'
 import { languageFlag } from './languageFlags'
 import { isImageUrl } from './markers'
+import { needsAttention } from './validation'
 import { useVocab } from '@/i18n/vocab'
 import {
   activeFilterCount,
@@ -106,7 +107,11 @@ export function FilterBar(props: FilterBarProps) {
   const { t, i18n } = useTranslation()
   const tv = useVocab()
   const { isAdmin } = useAuth()
-  const { zoneColor, zoneDescription, zoneMarker, themeDescription } = useCatalog()
+  const { zoneColor, zoneDescription, zoneMarker, themeDescription, activeBooks } = useCatalog()
+  // Hide the tool once there's nothing left to review — but keep it while the
+  // filter is already on, so turning the last flagged book off doesn't strand
+  // the admin on a filtered view with no way to clear it from here.
+  const hasAttentionItems = filters.attention || activeBooks.some(needsAttention)
 
   // On phones the facets stack full-width — seven of them fill the screen — so
   // they collapse behind a toggle. Desktop keeps them inline (`sm:` styles win).
@@ -250,8 +255,9 @@ export function FilterBar(props: FilterBarProps) {
           </SelectContent>
         </Select>
 
-        {/* Admin-only: the tool for finishing the catalog from the shelf. */}
-        {isAdmin && (
+        {/* Admin-only: the tool for finishing the catalog from the shelf. Hidden
+            once there's nothing left needing attention (see hasAttentionItems). */}
+        {isAdmin && hasAttentionItems && (
           <Button
             type="button"
             size="sm"
