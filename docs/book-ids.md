@@ -86,6 +86,12 @@ minting them directly in the sheet, note one rule first:
 > recomputes whenever you sort or insert rows, which would silently re-mint IDs —
 > exactly what must never happen. So compute in a **helper column**, then
 > **Copy → Paste special → Values only** into `ID`, and delete the helper.
+> Google Sheets custom functions can also fail intermittently under batch
+> recalculation (a platform limitation, not a `makeId` bug) — if `ID` ever
+> ends up with a live `=MAKEID(...)` formula anyway, or with broken cells
+> (`#ERROR!`, blank) from that, run `fixIdColumn` once from the Apps Script
+> editor: it freezes any live formula to its computed value and assigns a
+> fresh, collision-checked id to anything broken.
 
 ### Option A — the `=MAKEID` custom function (exact)
 
