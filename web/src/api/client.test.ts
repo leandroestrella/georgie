@@ -145,10 +145,15 @@ describe('writes', () => {
     expect(book.archived).toBe(true)
     expect((await getBooks()).some((b) => b.id === outgoing.id)).toBe(false)
 
-    const archived = await completeExchange(outgoing.id)
+    const { book: archived, linked } = await completeExchange(outgoing.id)
     expect(archived.archived).toBe(true)
     expect(archived.exchangeStatus).toBe('')
     expect((await getBooks()).some((b) => b.id === outgoing.id)).toBe(false)
+    // The linked (incoming) book's updated state must come back from
+    // completeExchange itself — the caller applies it to the local cache,
+    // which would otherwise keep showing it as borrowed.
+    expect(linked?.id).toBe(incoming.id)
+    expect(linked?.borrowed).toBe(false)
 
     const released = await getBook(incoming.id)
     expect(released?.borrowed).toBe(false)

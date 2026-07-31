@@ -170,8 +170,11 @@ export async function setExchange(id: string, exchange: ExchangeInput | null): P
  * book, clears that book's loan (the incoming book reuses `Borrowed` to mean
  * "not yet on the shelf" — see `setExchange`'s callers) and its own
  * `Exchange link`.
+ *
+ * Returns BOTH books: the caller must apply the linked one too, or the local
+ * cache keeps showing it as borrowed even though the write succeeded.
  */
-export async function completeExchange(id: string): Promise<Book> {
+export async function completeExchange(id: string): Promise<{ book: Book; linked: Book | null }> {
   if (!hasBackend) {
     const linkedId = mock.books.find((b) => b.id === id)?.exchangeLink
     const outgoing = mockPatch(
@@ -180,13 +183,13 @@ export async function completeExchange(id: string): Promise<Book> {
       'exchange',
       'received',
     )
-    if (linkedId && mock.books.some((b) => b.id === linkedId)) {
-      mockPatch(linkedId, { borrowed: false, borrowerName: '', loanDate: '', exchangeLink: '' }, 'return', '')
-    }
-    return outgoing
+    const linked =
+      linkedId && mock.books.some((b) => b.id === linkedId)
+        ? mockPatch(linkedId, { borrowed: false, borrowerName: '', loanDate: '', exchangeLink: '' }, 'return', '')
+        : null
+    return { book: outgoing, linked }
   }
-  const data = await post<{ book: Book }>({ action: 'completeExchange', id })
-  return data.book
+  return post<{ book: Book; linked: Book | null }>({ action: 'completeExchange', id })
 }
 
 /**

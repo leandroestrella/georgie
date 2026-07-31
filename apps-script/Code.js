@@ -84,8 +84,10 @@ function doPost(e) {
         return json({ ok: true, book: setLoan_(body.id, body.loan, admin.owner) })
       case 'setExchange':
         return json({ ok: true, book: setExchange_(body.id, body.exchange, admin.owner) })
-      case 'completeExchange':
-        return json({ ok: true, book: completeExchange_(body.id, admin.owner) })
+      case 'completeExchange': {
+        var completed = completeExchange_(body.id, admin.owner)
+        return json({ ok: true, book: completed.outgoing, linked: completed.linked })
+      }
       case 'saveCover':
         return json({ ok: true, book: saveCover_(body, admin.owner) })
       default:
@@ -367,10 +369,12 @@ function setExchange_(id, exchange, actor) {
  * `Exchange link` names another catalog book, clears that book's loan (it
  * reused `Borrowed` to mark "incoming, not yet on the shelf" — see
  * `setExchange_`'s caller in the SPA) and its own `Exchange link`. A missing
- * or stale link is not an error.
+ * or stale link is not an error. Returns BOTH books — the caller must apply
+ * the linked one too, or the SPA's local cache keeps showing it as borrowed
+ * even though the sheet is correct (this bit us once already).
  * @param {string} id the outgoing book's id
  * @param {string} actor the acting admin's owner label, for the audit log
- * @return {Book} the outgoing book, exchange fields cleared
+ * @return {{outgoing: Book, linked: Book|null}}
  */
 function completeExchange_(id, actor) {
   var linkedId = findBookById_(id).exchangeLink
@@ -381,9 +385,10 @@ function completeExchange_(id, actor) {
     'exchange',
     'received',
   )
+  var linked = null
   if (linkedId) {
     try {
-      updateBook_(
+      linked = updateBook_(
         linkedId,
         { borrowed: false, borrowerName: '', loanDate: '', exchangeLink: '' },
         actor,
@@ -395,7 +400,7 @@ function completeExchange_(id, actor) {
       // book is still correctly archived, so this isn't fatal.
     }
   }
-  return outgoing
+  return { outgoing: outgoing, linked: linked }
 }
 
 // ---------------------------------------------------------------------------

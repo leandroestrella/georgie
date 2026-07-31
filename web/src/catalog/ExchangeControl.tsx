@@ -67,6 +67,24 @@ export function ExchangeControl({ book }: { book: Book }) {
     }
   }
 
+  // Separate from `run`: completeExchange touches two books, and the linked
+  // one must be applied too or the local cache keeps showing it as borrowed
+  // even though the write succeeded.
+  const runReceive = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      const { book: outgoing, linked } = await completeExchange(book.id)
+      applyBook(outgoing)
+      if (linked) applyBook(linked)
+      navigate('/')
+    } catch (e) {
+      setError(String(e))
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const openConfirmDialog = () => {
     setPartner(book.exchangeNote)
     setError(null)
@@ -164,7 +182,7 @@ export function ExchangeControl({ book }: { book: Book }) {
               <AlertDialogFooter>
                 <AlertDialogCancel>{t('form.cancel')}</AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={() => void run(() => completeExchange(book.id), () => navigate('/'))}
+                  onClick={() => void runReceive()}
                 >
                   {t('exchange.received')}
                 </AlertDialogAction>
