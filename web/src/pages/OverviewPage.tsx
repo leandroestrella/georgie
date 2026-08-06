@@ -5,7 +5,7 @@ import { useCatalog } from '@/catalog/CatalogProvider'
 import { OwnerBadge } from '@/catalog/OwnerBadge'
 import { ZoneEmoji } from '@/catalog/ZoneEmoji'
 import { CountPieChart, type PieCount } from '@/catalog/CountPieChart'
-import { splitOwners } from '@/catalog/filter'
+import { bookOriginality, splitOwners } from '@/catalog/filter'
 import { languageFlag } from '@/catalog/languageFlags'
 import { LoadingAvatar } from '@/components/LoadingAvatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,15 +58,18 @@ function languageCounts(books: Book[]): Map<string, number> {
 
 /** Is this edition in its original language, translated, or is that unknown
  *  (blank `Original language` — already flagged elsewhere by "needs
- *  attention", so it's tracked as its own slice here rather than guessed). */
+ *  attention", so it's tracked as its own slice here rather than guessed).
+ *  Classification itself lives in `bookOriginality` (shared with the
+ *  catalog's own `originality` filter, so the two never drift apart). */
 function originalityCounts(books: Book[]): { original: number; translated: number; unknown: number } {
   let original = 0
   let translated = 0
   let unknown = 0
   for (const b of books) {
-    if (!b.originalLanguage.trim()) unknown++
-    else if (b.language.includes(b.originalLanguage)) original++
-    else translated++
+    const kind = bookOriginality(b)
+    if (kind === 'original') original++
+    else if (kind === 'translated') translated++
+    else unknown++
   }
   return { original, translated, unknown }
 }
@@ -141,12 +144,13 @@ export function OverviewPage() {
   const users = taxonomies.users ?? []
   const readCount = activeBooks.filter((b) => b.readBy.length > 0).length
   const readVsUnread: PieCount[] = [
-    { key: 'read', label: t('overview.readOverall'), count: readCount, color: READ_COLOR },
+    { key: 'read', label: t('overview.readOverall'), count: readCount, color: READ_COLOR, href: '/?read=read' },
     {
       key: 'unread',
       label: t('overview.unreadOverall'),
       count: activeBooks.length - readCount,
       color: UNREAD_COLOR,
+      href: '/?read=unread',
     },
   ].filter((c) => c.count > 0)
 
@@ -164,8 +168,23 @@ export function OverviewPage() {
 
   const originality = originalityCounts(activeBooks)
   const originalityPie: PieCount[] = [
-    { key: 'original', label: t('overview.original'), count: originality.original, color: ORIGINAL_COLOR },
-    { key: 'translated', label: t('overview.translated'), count: originality.translated, color: TRANSLATED_COLOR },
+    {
+      key: 'original',
+      label: t('overview.original'),
+      count: originality.original,
+      color: ORIGINAL_COLOR,
+      href: '/?originality=original',
+    },
+    {
+      key: 'translated',
+      label: t('overview.translated'),
+      count: originality.translated,
+      color: TRANSLATED_COLOR,
+      href: '/?originality=translated',
+    },
+    // Left non-clickable: "unknown" is a data gap (blank Original language),
+    // not a real category to browse by — it's already surfaced via "needs
+    // attention" instead.
     { key: 'unknown', label: t('overview.unknown'), count: originality.unknown, color: UNKNOWN_COLOR },
   ].filter((c) => c.count > 0)
 
@@ -190,8 +209,12 @@ export function OverviewPage() {
             <div className="grid items-start gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1 rounded-lg border p-3">
                 <p className="text-sm font-medium">{t('overview.byZone')}</p>
+                {/* Every zone gets its own named slice — a handful at most,
+                    unlike themes/languages, so there's no need to fold the
+                    tail into "other". */}
                 <CountPieChart
                   counts={zonePie}
+                  maxSlices={zonePie.length}
                   ariaLabel="books by zone"
                   otherLabel={t('overview.other')}
                   totalLabel={t('overview.totalBooks')}
@@ -216,10 +239,13 @@ export function OverviewPage() {
                 }))
                 return (
                   <div key={zone} className="flex flex-col gap-1 rounded-lg border p-3">
-                    <p className="flex items-center gap-1.5 text-sm font-medium">
+                    <Link
+                      to={`/?zone=${encodeURIComponent(zone)}`}
+                      className="flex items-center gap-1.5 text-sm font-medium hover:underline"
+                    >
                       <ZoneEmoji zone={zone} />
                       {tv('zone', zone)}
-                    </p>
+                    </Link>
                     <CountPieChart
                       counts={themePie}
                       ariaLabel={`books by theme in ${zone}`}

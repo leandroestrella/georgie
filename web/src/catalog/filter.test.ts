@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Book } from '@/api/types'
 import {
   authorOptions,
+  bookOriginality,
   EMPTY_FILTERS,
   filterBooks,
   hasActiveFilters,
@@ -68,6 +69,25 @@ describe('facet filters', () => {
     expect(filterBooks(books, { ...EMPTY_FILTERS, status: 'borrowed' }).map((b) => b.id)).toEqual(['2'])
     expect(filterBooks(books, { ...EMPTY_FILTERS, status: 'exchange' }).map((b) => b.id)).toEqual(['3'])
     expect(filterBooks(books, { ...EMPTY_FILTERS, status: 'available' }).map((b) => b.id)).toEqual(['1', '3'])
+  })
+
+  it('filters by read/unread', () => {
+    expect(filterBooks(books, { ...EMPTY_FILTERS, read: 'read' }).map((b) => b.id)).toEqual(['1', '3'])
+    expect(filterBooks(books, { ...EMPTY_FILTERS, read: 'unread' }).map((b) => b.id)).toEqual(['2'])
+  })
+
+  it('filters by originality (original / translated / unknown)', () => {
+    const originality = [
+      make({ id: 'o', language: ['English'], originalLanguage: 'English' }),
+      make({ id: 't', language: ['Italian'], originalLanguage: 'English' }),
+      make({ id: 'u', language: ['English'], originalLanguage: '' }),
+    ]
+    expect(bookOriginality(originality[0])).toBe('original')
+    expect(bookOriginality(originality[1])).toBe('translated')
+    expect(bookOriginality(originality[2])).toBe('unknown')
+    expect(filterBooks(originality, { ...EMPTY_FILTERS, originality: 'original' }).map((b) => b.id)).toEqual(['o'])
+    expect(filterBooks(originality, { ...EMPTY_FILTERS, originality: 'translated' }).map((b) => b.id)).toEqual(['t'])
+    expect(filterBooks(originality, { ...EMPTY_FILTERS, originality: 'unknown' }).map((b) => b.id)).toEqual(['u'])
   })
 
   it('combines filters with AND', () => {

@@ -6,6 +6,10 @@ import type { Book } from '@/api/types'
 import { needsAttention } from './validation'
 
 export type StatusFilter = 'all' | 'available' | 'borrowed' | 'exchange'
+/** Whether *anyone* has read the edition — unrelated to which user. */
+export type ReadFilter = 'all' | 'read' | 'unread'
+/** A book's relationship between `language` and `originalLanguage` — see `bookOriginality`. */
+export type OriginalityFilter = 'all' | 'original' | 'translated' | 'unknown'
 export type SortKey = 'title' | 'author' | 'year'
 export type SortDir = 'asc' | 'desc'
 
@@ -18,6 +22,8 @@ export interface CatalogFilters {
   language: string | null
   readBy: string | null
   status: StatusFilter
+  read: ReadFilter
+  originality: OriginalityFilter
   /** Admin-only: show only records that still need work (see `needsAttention`). */
   attention: boolean
 }
@@ -31,6 +37,8 @@ export const EMPTY_FILTERS: CatalogFilters = {
   language: null,
   readBy: null,
   status: 'all',
+  read: 'all',
+  originality: 'all',
   attention: false,
 }
 
@@ -44,6 +52,8 @@ export function activeFilterCount(f: CatalogFilters): number {
     (f.language !== null ? 1 : 0) +
     (f.readBy !== null ? 1 : 0) +
     (f.status !== 'all' ? 1 : 0) +
+    (f.read !== 'all' ? 1 : 0) +
+    (f.originality !== 'all' ? 1 : 0) +
     (f.attention ? 1 : 0)
   )
 }
@@ -82,6 +92,34 @@ function matchesStatus(book: Book, status: StatusFilter): boolean {
   }
 }
 
+function matchesRead(book: Book, read: ReadFilter): boolean {
+  switch (read) {
+    case 'read':
+      return book.readBy.length > 0
+    case 'unread':
+      return book.readBy.length === 0
+    default:
+      return true
+  }
+}
+
+/**
+ * Classifies a book's edition against the language it was originally
+ * written in: `unknown` when `Original language` is blank (already flagged
+ * elsewhere by "needs attention" rather than guessed), `original` when this
+ * edition's language(s) include it, `translated` otherwise. Shared by the
+ * Overview page's original-vs-translated chart and this filter so the two
+ * never drift apart.
+ */
+export function bookOriginality(book: Book): 'original' | 'translated' | 'unknown' {
+  if (!book.originalLanguage.trim()) return 'unknown'
+  return book.language.includes(book.originalLanguage) ? 'original' : 'translated'
+}
+
+function matchesOriginality(book: Book, originality: OriginalityFilter): boolean {
+  return originality === 'all' || bookOriginality(book) === originality
+}
+
 /** Applies all active filters (AND-combined) to the catalog. */
 export function filterBooks(books: Book[], f: CatalogFilters): Book[] {
   return books.filter(
@@ -94,6 +132,8 @@ export function filterBooks(books: Book[], f: CatalogFilters): Book[] {
       (f.language === null || b.language.includes(f.language)) &&
       (f.readBy === null || b.readBy.includes(f.readBy)) &&
       matchesStatus(b, f.status) &&
+      matchesRead(b, f.read) &&
+      matchesOriginality(b, f.originality) &&
       (!f.attention || needsAttention(b)),
   )
 }

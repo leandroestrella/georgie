@@ -18,6 +18,8 @@ import {
   readerOptions,
   sortBooks,
   type CatalogFilters,
+  type OriginalityFilter,
+  type ReadFilter,
   type SortDir,
   type SortKey,
   type StatusFilter,
@@ -34,6 +36,8 @@ function readState(params: URLSearchParams) {
     language: params.get('lang'),
     readBy: params.get('reader'),
     status: (params.get('status') as StatusFilter) || 'all',
+    read: (params.get('read') as ReadFilter) || 'all',
+    originality: (params.get('originality') as OriginalityFilter) || 'all',
     attention: params.get('attention') === '1',
   }
   return {
@@ -53,6 +57,8 @@ const FILTER_TO_PARAM: Record<keyof CatalogFilters, string> = {
   language: 'lang',
   readBy: 'reader',
   status: 'status',
+  read: 'read',
+  originality: 'originality',
   attention: 'attention',
 }
 
@@ -96,7 +102,7 @@ export function CatalogPage() {
   )
 
   const onClear = useCallback(() => {
-    setParam({ q: null, author: null, zone: null, theme: null, owner: null, lang: null, reader: null, status: null, attention: null })
+    setParam({ q: null, author: null, zone: null, theme: null, owner: null, lang: null, reader: null, status: null, read: null, originality: null, attention: null })
   }, [setParam])
 
   const visible = useMemo(
