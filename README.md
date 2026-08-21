@@ -42,6 +42,7 @@ flowchart LR
 - 📊 an admin-only **overview** page — books by zone (drilling down into each zone's themes), by language, original vs. translated, and per-user reading stats; every figure links through to the matching filtered catalog view
 - 🕘 an admin-only **activity log** — every add, edit, archive, restore, loan and return, newest first, with who did it, what changed, and a link back to the book
 - 📖 an in-app **about** page — the project readme, rendered from the georgie avatar — with a footer linking to the source and the author
+- 🗄️ daily backups of the whole spreadsheet, pulled by a cPanel cron job via a Google service account and exported to XLSX, stored behind a deny-all `.htaccess` — rotation keeps the last 14 daily plus 6 monthly snapshots (optional, self-hosted setup)
 
 ## tech stack
 
@@ -54,14 +55,15 @@ flowchart LR
 - [google identity services](https://developers.google.com/identity) — admin sign-in
 - [google sheets](https://www.google.com/sheets/about/) — the database
 - [ftp-deploy-action](https://github.com/SamKirkland/FTP-Deploy-Action) — deploys to cpanel on push to `master`
+- php — two small cpanel scripts: cover uploads and the daily spreadsheet backup (see [cpanel/README.md](cpanel/README.md), [docs/backups.md](docs/backups.md)); nothing else in the stack touches php
 
 ## repository layout
 
 ```
 web/          the spa (vite + react)
 apps-script/  the backend api (synced with clasp)
-cpanel/       optional php endpoint for hosting covers on your own server
-docs/         maintainer guides (book ids, sheet markers, translations)
+cpanel/       optional php: cover hosting, and the daily spreadsheet-backup cron script
+docs/         maintainer guides (book ids, sheet markers, translations, backups)
 assets/       brand art
 ```
 
@@ -78,6 +80,7 @@ georgie is a template for anyone who wants to catalog their own shelves:
 5. copy `web/.env.example` to `web/.env.local` and fill in `VITE_API_URL` (your `/exec` url) and `VITE_GOOGLE_CLIENT_ID` — both are public, so they can also live in github repo secrets for the deploy action
 6. `npm install && npm run build` in `web/`, and host the `dist/` folder anywhere static files live (an `.htaccess` for spa routing + basic headers is included for apache/cpanel)
 7. *(optional)* to let admins save covers to your own host, drop [`cpanel/upload-cover.php`](cpanel/upload-cover.php) on the server and add the `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` script properties — see [cpanel/README.md](cpanel/README.md)
+8. *(optional)* for daily spreadsheet backups, drop [`cpanel/run-backup.php`](cpanel/run-backup.php) on the server and add a cPanel Cron Job — see [docs/backups.md](docs/backups.md)
 
 both config values are safe to publish (the oauth client id is public by design, and every write is gated server-side by google id-token verification against the `Users` allowlist) — nothing secret ever lands in the repo.
 
@@ -90,6 +93,7 @@ day-to-day how-tos for running your catalog live in [`docs/`](docs/):
 - [markers](docs/markers.md) — owner/reader/zone badges driven by sheet columns
 - [translations](docs/translations.md) — translating zone/theme names and descriptions, and language names
 - [cover hosting](cpanel/README.md) — the optional self-hosted cover endpoint
+- [spreadsheet backups](docs/backups.md) — the optional daily backup cron job
 
 ## development
 

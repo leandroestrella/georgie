@@ -42,6 +42,7 @@ flowchart LR
 - 📊 una página de **estadísticas** solo para admin — libros por zona (con el desglose de los temas de cada zona), por idioma, en idioma original vs. traducidos, y estadísticas de lectura por usuario; cada dato enlaza a la vista filtrada correspondiente del catálogo
 - 🕘 un **registro de actividad** solo para admin — cada alta, edición, archivado, restauración, préstamo y devolución, del más reciente al más antiguo, con quién lo hizo, qué cambió, y un enlace al libro
 - 📖 una página **acerca de** dentro de la app — el readme del proyecto, mostrada desde el avatar de georgie — con un pie de página que enlaza al código fuente y al autor
+- 🗄️ copias de seguridad diarias de toda la hoja, obtenidas por un cron de cPanel mediante una cuenta de servicio de Google y exportadas a XLSX, protegidas por un `.htaccess` que deniega todo acceso — la rotación mantiene las últimas 14 diarias más 6 mensuales (opcional, configuración autoalojada)
 
 ## stack tecnológico
 
@@ -54,13 +55,14 @@ flowchart LR
 - [google identity services](https://developers.google.com/identity) — inicio de sesión admin
 - [google sheets](https://www.google.com/sheets/about/) — la base de datos
 - [ftp-deploy-action](https://github.com/SamKirkland/FTP-Deploy-Action) — despliega a cpanel en cada push a `master`
+- php — dos pequeños scripts de cpanel: subida de portadas y la copia de seguridad diaria de la hoja (ver [cpanel/README.md](cpanel/README.md), [docs/backups.md](docs/backups.md)); nada más en el stack usa php
 
 ## estructura del repositorio
 
 ```
 web/          la spa (vite + react)
 apps-script/  la api de backend (sincronizada con clasp)
-cpanel/       endpoint php opcional para alojar portadas en tu propio servidor
+cpanel/       php opcional: alojamiento de portadas y el script cron de copia de seguridad de la hoja
 docs/         guías para quien gestiona el catálogo (ids de libros, marcadores de la hoja, traducciones)
 assets/       material gráfico de la marca
 ```
@@ -78,6 +80,7 @@ georgie es una plantilla para cualquiera que quiera catalogar sus propios estant
 5. copia `web/.env.example` a `web/.env.local` y completa `VITE_API_URL` (tu url `/exec`) y `VITE_GOOGLE_CLIENT_ID` — ambos son públicos, así que también pueden vivir en los secrets del repositorio de github para la acción de despliegue
 6. `npm install && npm run build` en `web/`, y aloja la carpeta `dist/` donde sea que tengas hosting estático (se incluye un `.htaccess` para el enrutamiento spa + cabeceras básicas para apache/cpanel)
 7. *(opcional)* para permitir que los admin guarden portadas en tu propio host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) en el servidor y añade las script properties `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` — ver [cpanel/README.md](cpanel/README.md)
+8. *(opcional)* para copias de seguridad diarias de la hoja, copia [`cpanel/run-backup.php`](cpanel/run-backup.php) en el servidor y añade un Cron Job de cPanel — ver [docs/backups.md](docs/backups.md)
 
 ambos valores de configuración son seguros de publicar (el client id de oauth es público por diseño, y cada escritura está protegida del lado del servidor mediante la verificación del id-token de google contra la lista `Users`) — ningún secreto llega jamás al repositorio.
 
@@ -90,6 +93,7 @@ las guías del día a día para gestionar tu catálogo viven en [`docs/`](docs/)
 - [marcadores](docs/markers.md) — las insignias de propietario/lector/zona guiadas por columnas de la hoja
 - [traducciones](docs/translations.md) — traducir nombres y descripciones de zonas/temas, y nombres de idiomas
 - [alojamiento de portadas](cpanel/README.md) — el endpoint opcional para alojar portadas en tu propio servidor
+- [copias de seguridad de la hoja](docs/backups.md) — el cron job opcional de copia de seguridad diaria
 
 ## desarrollo
 

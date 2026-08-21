@@ -13,6 +13,11 @@ browser (admin)  ──▶  Apps Script (admin-gated)  ──▶  upload-cover.p
 The browser never talks to the PHP endpoint directly and never holds the secret —
 Apps Script does, after it has verified the admin.
 
+This directory also holds [`run-backup.php`](run-backup.php), the daily
+spreadsheet-backup cron script — a different setup, and the opposite data
+flow (it *pulls* from Google rather than being pushed to), so it's
+documented separately in [docs/backups.md](../docs/backups.md).
+
 ## One-time setup
 
 ### 1. Put the endpoint on the host

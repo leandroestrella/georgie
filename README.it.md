@@ -42,6 +42,7 @@ flowchart LR
 - 📊 una pagina **statistiche** riservata agli admin — libri per zona (con il dettaglio dei temi di ogni zona), per lingua, in lingua originale vs tradotti, e statistiche di lettura per utente; ogni dato rimanda alla vista filtrata corrispondente del catalogo
 - 🕘 un **registro attività** riservato agli admin — ogni aggiunta, modifica, archiviazione, ripristino, prestito e reso, dal più recente, con chi l'ha fatto, cosa è cambiato, e un link al libro
 - 📖 una pagina **info** nell'app — il readme del progetto, mostrata a partire dall'avatar di georgie — con un footer che rimanda al codice sorgente e all'autore
+- 🗄️ backup giornalieri dell'intero foglio, prelevati da un cron job su cPanel tramite un service account Google ed esportati in XLSX, protetti da un `.htaccess` che nega ogni accesso — la rotazione mantiene gli ultimi 14 giornalieri più 6 mensili (opzionale, configurazione self-hosted)
 
 ## stack tecnologico
 
@@ -54,13 +55,14 @@ flowchart LR
 - [google identity services](https://developers.google.com/identity) — accesso admin
 - [google sheets](https://www.google.com/sheets/about/) — il database
 - [ftp-deploy-action](https://github.com/SamKirkland/FTP-Deploy-Action) — deploy su cpanel a ogni push su `master`
+- php — due piccoli script cpanel: upload delle copertine e il backup giornaliero del foglio (vedi [cpanel/README.md](cpanel/README.md), [docs/backups.md](docs/backups.md)); nient'altro nello stack usa php
 
 ## struttura del repository
 
 ```
 web/          la spa (vite + react)
 apps-script/  l'api di backend (sincronizzata con clasp)
-cpanel/       endpoint php opzionale per ospitare le copertine sul proprio server
+cpanel/       php opzionale: hosting delle copertine e lo script cron per il backup del foglio
 docs/         guide per chi gestisce il catalogo (id dei libri, marcatori del foglio, traduzioni)
 assets/       materiale grafico del brand
 ```
@@ -78,6 +80,7 @@ georgie è un template per chiunque voglia catalogare i propri scaffali:
 5. copia `web/.env.example` in `web/.env.local` e compila `VITE_API_URL` (il tuo url `/exec`) e `VITE_GOOGLE_CLIENT_ID` — sono entrambi pubblici, quindi possono anche vivere nei repo secrets di github per l'azione di deploy
 6. `npm install && npm run build` in `web/`, e ospita la cartella `dist/` ovunque tu abbia hosting statico (è incluso un `.htaccess` per il routing spa + header di base per apache/cpanel)
 7. *(opzionale)* per permettere agli admin di salvare le copertine sul tuo host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) sul server e aggiungi le script property `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` — vedi [cpanel/README.md](cpanel/README.md)
+8. *(opzionale)* per i backup giornalieri del foglio, copia [`cpanel/run-backup.php`](cpanel/run-backup.php) sul server e aggiungi un Cron Job su cPanel — vedi [docs/backups.md](docs/backups.md)
 
 entrambi i valori di configurazione sono sicuri da pubblicare (il client id oauth è pubblico per design, e ogni scrittura è protetta lato server dalla verifica del token id google rispetto alla lista `Users`) — nessun segreto finisce mai nel repository.
 
@@ -90,6 +93,7 @@ le guide pratiche per la gestione quotidiana del catalogo vivono in [`docs/`](do
 - [marcatori](docs/markers.md) — i badge di proprietario/lettore/zona guidati dalle colonne del foglio
 - [traduzioni](docs/translations.md) — tradurre nomi e descrizioni di zone/temi, e nomi delle lingue
 - [hosting delle copertine](cpanel/README.md) — l'endpoint opzionale per ospitare le copertine sul proprio server
+- [backup del foglio](docs/backups.md) — il cron job opzionale per il backup giornaliero
 
 ## sviluppo
 
