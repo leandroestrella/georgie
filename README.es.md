@@ -80,7 +80,7 @@ georgie es una plantilla para cualquiera que quiera catalogar sus propios estant
 5. copia `web/.env.example` a `web/.env.local` y completa `VITE_API_URL` (tu url `/exec`) y `VITE_GOOGLE_CLIENT_ID` — ambos son públicos, así que también pueden vivir en los secrets del repositorio de github para la acción de despliegue
 6. `npm install && npm run build` en `web/`, y aloja la carpeta `dist/` donde sea que tengas hosting estático (se incluye un `.htaccess` para el enrutamiento spa + cabeceras básicas para apache/cpanel)
 7. *(opcional)* para permitir que los admin guarden portadas en tu propio host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) en el servidor y añade las script properties `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` — ver [cpanel/README.md](cpanel/README.md)
-8. *(opcional)* para copias de seguridad diarias de la hoja, copia [`cpanel/run-backup.php`](cpanel/run-backup.php) en el servidor y añade un Cron Job de cPanel — ver [docs/backups.md](docs/backups.md)
+8. *(opcional)* para copias de seguridad diarias de la hoja, copia [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) en el servidor y añade un Cron Job de cPanel — ver [docs/backups.md](docs/backups.md)
 
 ambos valores de configuración son seguros de publicar (el client id de oauth es público por diseño, y cada escritura está protegida del lado del servidor mediante la verificación del id-token de google contra la lista `Users`) — ningún secreto llega jamás al repositorio.
 

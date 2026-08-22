@@ -63,14 +63,14 @@ jobs:
           # Adjust to the georgie subdomain docroot relative to the FTP account root.
           server-dir: ./
           # cpanel/upload-cover.php + covers/ (uploaded book covers), and
-          # run-backup.php + private/ (the spreadsheet-backup cron script and
-          # its config/backups — see docs/backups.md), are all placed on the
-          # server by hand — none of them are part of this git-tracked
-          # web/dist/ build. The action treats `exclude` as covering both the
-          # publish AND delete side of its sync (see its own docs), so
-          # without this, the sync would see them as "removed" from the
-          # source and delete them on the next deploy. Re-listing the
-          # action's own defaults here since setting `exclude` at all
+          # backup/run-backup.php + private/ (the spreadsheet-backup cron
+          # script and its config/backups — see docs/backups.md), are all
+          # placed on the server by hand — none of them are part of this
+          # git-tracked web/dist/ build. The action treats `exclude` as
+          # covering both the publish AND delete side of its sync (see its
+          # own docs), so without this, the sync would see them as "removed"
+          # from the source and delete them on the next deploy. Re-listing
+          # the action's own defaults here since setting `exclude` at all
           # replaces them rather than adding to them.
           exclude: |
             **/.git*
@@ -79,4 +79,4 @@ jobs:
             **/covers/**
             **/upload-cover.php
             **/private/**
-            **/run-backup.php
+            **/backup/**

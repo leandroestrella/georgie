@@ -2,16 +2,33 @@
 /**
  * Georgie — catalog spreadsheet backup cron job.
  *
- * Runs from a cPanel cron job (`php .../run-backup.php`), never over HTTP —
- * the guard below refuses any real web request outright. It checks for
- * $_SERVER['REQUEST_METHOD'] rather than PHP_SAPI === 'cli': some cPanel
+ * Lives in a backup/ subfolder of the docroot, not the docroot root itself.
+ * The first attempt placed it directly at docroot root and every cron run
+ * failed with a bare "Status: 500 Internal Server Error" + empty body —
+ * none of this script's own error paths, meaning PHP never even got to
+ * execute it. linkulino's identical script, on the same cPanel account,
+ * worked from day one from inside its own backup/ subfolder. The likely
+ * cause: a per-domain PHP dispatcher (MultiPHP/PHP-FPM routing, common on
+ * cPanel/CloudLinux) can intercept a script sitting directly in a domain's
+ * registered docroot and try to route it as a web request instead of a
+ * plain CLI process, dumping raw CGI-style response headers with nothing
+ * behind them; a script in a subfolder isn't recognized the same way.
+ * Confirmed only circumstantially (both projects share the exact contrast:
+ * subfolder works, docroot root doesn't), not from cPanel's own internals —
+ * but low-risk to just match the proven-working layout rather than dig
+ * further.
+ *
+ * Runs from a cPanel cron job (`php .../backup/run-backup.php`), never over
+ * HTTP — the guard below refuses any real web request outright. It checks
+ * for $_SERVER['REQUEST_METHOD'] rather than PHP_SAPI === 'cli': some cPanel
  * setups (PHP Selector/MultiPHP) run cron's `php` command through a
  * CGI-flavored binary rather than a true CLI one, which reports a SAPI name
  * other than "cli" even for a legitimate cron invocation — REQUEST_METHOD is
  * only ever set by an actual web server handling an actual HTTP request, so
  * it's the portable signal regardless of which SAPI cron happens to use
  * (this exact pitfall was hit and fixed while building the same feature in
- * linkulino — see docs/backups.md).
+ * linkulino — see docs/backups.md). A separate concern from the subfolder
+ * placement above — both are real, independent cPanel gotchas.
  *
  * Pulls the sheet FROM Google rather than having Apps Script push it here:
  * linkulino's identical push design (Apps Script POSTing to a receiving
@@ -22,12 +39,13 @@
  * Google reaches in, so there's no inbound request for a WAF to block.
  *
  * Setup (see docs/backups.md):
- *   1. Copy this file into the georgie docroot, same as cpanel/upload-cover.php.
+ *   1. Copy this file into a backup/ folder inside the georgie docroot.
  *   2. Create a Google service account with Viewer access to the spreadsheet,
- *      and a private/ folder next to this script (see docs/backups.md for
- *      the .htaccess deny-all that keeps it unservable) holding
- *      georgie-backup-config.php with its credentials.
- *   3. Add a cPanel Cron Job running `php .../run-backup.php` daily.
+ *      and a private/ folder next to run-backup.php's *parent* — i.e. a
+ *      sibling of backup/, at the docroot root, same as before this moved
+ *      (see docs/backups.md for the .htaccess deny-all that keeps it
+ *      unservable) — holding georgie-backup-config.php with its credentials.
+ *   3. Add a cPanel Cron Job running `php .../backup/run-backup.php` daily.
  *
  * Auth: a Google service account, not the app's own OAuth sign-in — a
  * service account's key-based auth doesn't carry the "testing app" 7-day
@@ -51,7 +69,10 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
 }
 
 $configFilename = isset($argv[1]) && $argv[1] !== '' ? basename($argv[1]) : 'georgie-backup-config.php';
-$configPath = __DIR__ . '/private/' . $configFilename;
+// private/ is a sibling of the docroot, not of this script — dirname(__DIR__)
+// walks up out of backup/ first, so the already-deployed private/ folder
+// doesn't need to move just because this script did.
+$configPath = dirname(__DIR__) . '/private/' . $configFilename;
 if (!is_file($configPath)) {
     fwrite(STDERR, "Backup not configured — missing $configPath\n");
     exit(1);

@@ -80,7 +80,7 @@ georgie is a template for anyone who wants to catalog their own shelves:
 5. copy `web/.env.example` to `web/.env.local` and fill in `VITE_API_URL` (your `/exec` url) and `VITE_GOOGLE_CLIENT_ID` — both are public, so they can also live in github repo secrets for the deploy action
 6. `npm install && npm run build` in `web/`, and host the `dist/` folder anywhere static files live (an `.htaccess` for spa routing + basic headers is included for apache/cpanel)
 7. *(optional)* to let admins save covers to your own host, drop [`cpanel/upload-cover.php`](cpanel/upload-cover.php) on the server and add the `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` script properties — see [cpanel/README.md](cpanel/README.md)
-8. *(optional)* for daily spreadsheet backups, drop [`cpanel/run-backup.php`](cpanel/run-backup.php) on the server and add a cPanel Cron Job — see [docs/backups.md](docs/backups.md)
+8. *(optional)* for daily spreadsheet backups, drop [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) on the server and add a cPanel Cron Job — see [docs/backups.md](docs/backups.md)
 
 both config values are safe to publish (the oauth client id is public by design, and every write is gated server-side by google id-token verification against the `Users` allowlist) — nothing secret ever lands in the repo.
 

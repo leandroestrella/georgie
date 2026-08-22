@@ -49,6 +49,27 @@ delete it. That exclusion is already in place, covering the backup files
 and (newly, while adding this) `upload-cover.php`/`covers/` too, which
 turned out to have the same unprotected gap.
 
+## why `run-backup.php` lives in its own `backup/` subfolder
+
+The first live attempt put `run-backup.php` directly at the docroot root
+(a sibling of `index.html`), matching `upload-cover.php`'s placement. Every
+cron run failed with a bare `Status: 500 Internal Server Error` and an
+empty body — not one of this script's own error messages (those all print
+something specific; see the troubleshooting list below), meaning PHP never
+actually got to execute the script's code at all. linkulino's identical
+script, on the same cPanel account, has worked from day one running out of
+its own `backup/` subfolder. The likely cause: a per-domain PHP dispatcher
+(MultiPHP/PHP-FPM routing, common on cPanel/CloudLinux) can intercept a
+script sitting directly in a domain's *registered* docroot and try to route
+it as a web request instead of a plain CLI process, dumping raw CGI-style
+response headers with nothing behind them — a script one level down in a
+subfolder isn't recognized the same way. This is circumstantial (both
+projects show the same contrast — subfolder works, docroot root doesn't —
+but neither was confirmed against cPanel's own internals), not proven, but
+low-risk to just match the working layout rather than dig further. `private/`
+itself didn't need to move — the script resolves it via `dirname(__DIR__)`,
+a sibling of the docroot, not of `run-backup.php`'s own new folder.
+
 ## setup
 
 **1. Create a Google service account.** In [Google Cloud
@@ -73,11 +94,14 @@ Get the spreadsheet's id from its URL:
 `https://docs.google.com/spreadsheets/d/`**`THIS_PART`**`/edit`.
 
 **3. Put the script on the host.** Copy
-[`cpanel/run-backup.php`](../cpanel/run-backup.php) into the georgie
-docroot via SSH or FTP, same as [`cpanel/upload-cover.php`](../cpanel/README.md).
+[`cpanel/backup/run-backup.php`](../cpanel/backup/run-backup.php) into a
+**`backup/` folder inside the georgie docroot** via SSH or FTP — not the
+docroot root itself; see "why `run-backup.php` lives in its own `backup/`
+subfolder" above.
 
 **4. Create `private/` and its config**, via File Manager or SFTP, as a
-sibling of `run-backup.php` in the docroot:
+sibling of the `backup/` folder — i.e. at the docroot root, alongside
+`index.html`, not inside `backup/`:
 
 ```apache
 # private/.htaccess — blocks every request under this folder, whatever the
@@ -121,7 +145,7 @@ the filename as the script's first argument — see step 6.
 > ```bash
 > curl -s https://<subdomain>/private/georgie-backup-config.php
 > # should NOT return the file's contents — confirms .htaccess is blocking it
-> curl -s https://<subdomain>/run-backup.php
+> curl -s https://<subdomain>/backup/run-backup.php
 > # "This script only runs from cron, not the web." — confirms the CLI guard
 > ```
 
@@ -132,11 +156,14 @@ the filename as the script's first argument — see step 6.
 | Minute | `0` |
 | Hour | `3` |
 | Day/Month/Weekday | `*` |
-| Command | `php /full/path/to/docroot/run-backup.php` (append a config filename as a second word to target a specific environment, e.g. `... run-backup.php georgie-backup-config-prod.php`) |
+| Command | `php /full/path/to/docroot/backup/run-backup.php` (append a config filename as a second word to target a specific environment, e.g. `... run-backup.php georgie-backup-config-prod.php`) |
 
 cPanel's Cron Jobs page usually shows which exact `php` command your
 account should use (sometimes a full versioned path like
-`/usr/local/bin/ea-php82`) — use that if plain `php` doesn't resolve.
+`/usr/local/bin/ea-php82`) — use that if plain `php` doesn't resolve. If
+plain `php` *does* resolve but the run still fails with a bare
+`Status: 500` and empty output, that's not a `php` binary problem — see
+"why `run-backup.php` lives in its own `backup/` subfolder" above.
 
 **6. Test it by hand first** — don't wait for 3am. If you don't have
 SSH/Terminal access, set the cron to run every 5 minutes temporarily with
@@ -144,7 +171,7 @@ output redirected to a log file inside the already-protected `private/`
 folder, so you get fast feedback without needing shell access:
 
 ```
-*/5 * * * * php /full/path/to/docroot/run-backup.php > /full/path/to/docroot/private/last-run.log 2>&1
+*/5 * * * * php /full/path/to/docroot/backup/run-backup.php > /full/path/to/docroot/private/last-run.log 2>&1
 ```
 
 Wait a few minutes, check `private/last-run.log`:

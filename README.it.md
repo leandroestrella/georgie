@@ -80,7 +80,7 @@ georgie è un template per chiunque voglia catalogare i propri scaffali:
 5. copia `web/.env.example` in `web/.env.local` e compila `VITE_API_URL` (il tuo url `/exec`) e `VITE_GOOGLE_CLIENT_ID` — sono entrambi pubblici, quindi possono anche vivere nei repo secrets di github per l'azione di deploy
 6. `npm install && npm run build` in `web/`, e ospita la cartella `dist/` ovunque tu abbia hosting statico (è incluso un `.htaccess` per il routing spa + header di base per apache/cpanel)
 7. *(opzionale)* per permettere agli admin di salvare le copertine sul tuo host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) sul server e aggiungi le script property `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` — vedi [cpanel/README.md](cpanel/README.md)
-8. *(opzionale)* per i backup giornalieri del foglio, copia [`cpanel/run-backup.php`](cpanel/run-backup.php) sul server e aggiungi un Cron Job su cPanel — vedi [docs/backups.md](docs/backups.md)
+8. *(opzionale)* per i backup giornalieri del foglio, copia [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) sul server e aggiungi un Cron Job su cPanel — vedi [docs/backups.md](docs/backups.md)
 
 entrambi i valori di configurazione sono sicuri da pubblicare (il client id oauth è pubblico per design, e ogni scrittura è protetta lato server dalla verifica del token id google rispetto alla lista `Users`) — nessun segreto finisce mai nel repository.
 
