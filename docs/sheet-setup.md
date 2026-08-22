@@ -58,10 +58,10 @@ The header row must contain these columns (order doesn't matter):
 | `Borrowed`         | on loan right now?                          | checkbox / `TRUE`·`FALSE`·`1`·`0`·`yes`. |
 | `Borrower name`    | who has it on loan                         | first name / nickname (the catalog is public). |
 | `Loan date`        | when it went out                            | a date, or blank for "unknown". Stored as `YYYY-MM-DD`. |
-| `Exchange status`  | exchange stage                              | blank, `offered`, `confirmed`, or `in transit`. Anything else is treated as blank. The app also reuses `Borrowed` on an incoming book to mean "not yet on the shelf" while its exchange is in progress. |
+| `Exchange status`  | exchange stage                              | blank, `offered`, `confirmed`, or `in transit`. Anything else is treated as blank. The app also reuses `Borrowed` on an incoming book to mean "not yet on the shelf" while its exchange is in progress. Moving to `in transit` also sets `Archived` to `TRUE` automatically — see below. |
 | `Exchange note`    | free text about the exchange                | set at `confirmed` — the incoming book / partner. |
 | `Exchange link`    | the paired book's `ID`                      | links the outgoing and incoming rows so "Exchange received" finishes both in one action. |
-| `Archived`         | soft-deleted?                               | checkbox / boolean. Archived books drop out of the public catalog but stay in the sheet (restorable from the admin Archived view). |
+| `Archived`         | soft-deleted?                               | checkbox / boolean. Archived books drop out of the public catalog but stay in the sheet (restorable from the admin Archived view). **Also set automatically** the moment a book's exchange goes `in transit` — once mailed out, it's gone for good, unlike a loan, so the app archives it immediately rather than waiting for "Exchange received". Don't restore it by hand while `Exchange status` still reads `in transit`; that leaves a dangling state the app doesn't expect. |
 
 You don't have to fill everything in by hand: the **Add book** form assigns the
 `ID`, derives the `Zone`, and can fetch Title/Author/Year/Publisher/Language/Cover
