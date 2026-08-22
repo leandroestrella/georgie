@@ -21,10 +21,12 @@ apps-script/.clasp.dev.json
 apps-script/.clasp.prod.json
 .clasprc.json
 
-# spreadsheet-backup secret — the only real copy belongs on the cPanel server
-# itself, outside git entirely (see docs/backups.md); this exists purely as
-# a safety net against a local draft copy landing here by accident.
+# spreadsheet-backup secret and its output — the only real copies belong on
+# the cPanel server itself, outside git entirely (see docs/backups.md); these
+# exist purely as a safety net against a local draft/downloaded copy landing
+# here by accident (e.g. pulling a backup down to inspect it).
 georgie-backup-config*.php
+backup-*.xlsx
 
 # logs
 logs/
