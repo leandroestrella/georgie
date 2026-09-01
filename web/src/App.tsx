@@ -26,11 +26,11 @@ const OverviewPage = lazy(() => import('@/pages/OverviewPage').then((m) => ({ de
 const HistoryPage = lazy(() => import('@/pages/HistoryPage').then((m) => ({ default: m.HistoryPage })))
 
 /**
- * App shell: a sticky, full-width header (brand · language · sign-in) over the
- * routed page, plus two slots pages fill via a portal — one on the brand row,
- * next to sign-in, for a page's write-gated admin action (e.g. "add book"), so
- * it always sits beside the login control; one below that for the rest of a
- * page's toolbar — e.g. the catalog filter bar — anchoring it to the header.
+ * App shell: a sticky, full-width header over the routed page — a main row
+ * (brand · language · nav icons) and, directly below it, a sign-in row (a
+ * page's write-gated admin action, e.g. "add book" · sign-in/avatar/sign-out)
+ * — plus a slot pages fill via a portal for the rest of a page's toolbar,
+ * e.g. the catalog filter bar, anchoring it to the header.
  */
 function Layout({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
@@ -59,7 +59,7 @@ function Layout({ children }: { children: ReactNode }) {
           hidden && '-translate-y-full',
         )}
       >
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           {/* The wordmark is the only brand mark up here now — it's the link
               home to the catalog. The animated mascot lives in the footer
               (its /about link + hover lightbox moved there with it). */}
@@ -111,11 +111,15 @@ function Layout({ children }: { children: ReactNode }) {
                 <TooltipContent>{t('nav.history')}</TooltipContent>
               </Tooltip>
             )}
-            {/* A page portals its write-gated primary action here (see
-                useAdminSlotContainer), so it always sits beside sign-in. */}
-            <div ref={setAdminSlot} className="flex items-center gap-2" />
-            <AuthBar />
           </div>
+        </div>
+        {/* Row 2: a page's write-gated admin action (left, e.g. "add book") +
+            sign-in/avatar/sign-out (right) — always its own row below the main
+            button bar, matching linkulino's own two-row header exactly (see
+            linkulino's App.tsx Layout) rather than crowding onto the brand row. */}
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 pb-3 sm:px-6">
+          <div ref={setAdminSlot} className="flex items-center gap-2" />
+          <AuthBar />
         </div>
         {/* Pages portal their sticky toolbar here (see useSubHeaderContainer). */}
         <div ref={setSlot} />
