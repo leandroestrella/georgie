@@ -23,9 +23,13 @@ export interface AuthContextValue {
   configured: boolean
   /** Whether the GIS library has loaded and initialized. */
   googleReady: boolean
+  /** Whether the GIS library is being loaded after a "sign in" click. */
+  googleLoading: boolean
   error: string | null
   /** Triggers the Google account chooser / One Tap. */
   signIn: () => void
+  /** Loads Google sign-in on demand (never on page load, see LNDR-154). */
+  startSignIn: () => void
   signOut: () => void
   /** Renders the official Google button into the given element. */
   renderButton: (el: HTMLElement | null) => void
@@ -70,13 +74,16 @@ function loadGsi(): Promise<void> {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const configured = config.googleClientId.length > 0
-  const [status, setStatus] = useState<AuthStatus>(hasBackend && configured ? 'loading' : 'anonymous')
+  const [status, setStatus] = useState<AuthStatus>('anonymous')
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [owner, setOwner] = useState('')
   const [googleReady, setGoogleReady] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const tokenRef = useRef<string | null>(null)
+  /** Set once GIS loading has started, so repeated clicks don't reload it. */
+  const gsiStartedRef = useRef(false)
 
   // Writes carry the current ID token; register the provider once.
   useEffect(() => {
@@ -113,13 +120,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('signed-in')
   }, [])
 
-  // Backend mode: load + initialize Google Identity Services.
-  useEffect(() => {
-    if (!hasBackend || !configured) return
-    let cancelled = false
+  /**
+   * Loads and initializes Google Identity Services on demand, the first time
+   * a visitor clicks "sign in". Once it's ready, AuthBar swaps its plain
+   * button for the official Google one.
+   */
+  const startSignIn = useCallback(() => {
+    if (gsiStartedRef.current) return
+    gsiStartedRef.current = true
+    setGoogleLoading(true)
     loadGsi()
       .then(() => {
-        if (cancelled || !window.google) return
+        if (!window.google) throw new Error('failed to load Google sign-in')
         window.google.accounts.id.initialize({
           client_id: config.googleClientId,
           callback: (resp) => void handleCredential(resp.credential),
@@ -127,16 +139,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           cancel_on_tap_outside: true,
         })
         setGoogleReady(true)
-        setStatus('anonymous')
       })
       .catch((err) => {
+        // Let the visitor try again.
+        gsiStartedRef.current = false
         setError(String(err))
-        setStatus('anonymous')
       })
-    return () => {
-      cancelled = true
-    }
-  }, [configured, handleCredential])
+      .finally(() => setGoogleLoading(false))
+  }, [handleCredential])
 
   const signIn = useCallback(() => {
     window.google?.accounts.id.prompt()
@@ -160,8 +170,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user, isAdmin, owner, configured, googleReady, error, signIn, signOut, renderButton }),
-    [status, user, isAdmin, owner, configured, googleReady, error, signIn, signOut, renderButton],
+    () => ({ status, user, isAdmin, owner, configured, googleReady, googleLoading, error, signIn, startSignIn, signOut, renderButton }),
+    [status, user, isAdmin, owner, configured, googleReady, googleLoading, error, signIn, startSignIn, signOut, renderButton],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

@@ -65,6 +65,7 @@
     "notFound": "libro non trovato"
   },
   "auth": {
+    "signIn": "accedi",
     "signOut": "esci",
     "admin": "admin · {{owner}}",
     "notAdmin": "non sei admin",
