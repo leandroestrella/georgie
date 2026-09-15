@@ -28,7 +28,7 @@ export interface AuthContextValue {
   error: string | null
   /** Triggers the Google account chooser / One Tap. */
   signIn: () => void
-  /** Loads Google sign-in on demand (never on page load, see LNDR-154). */
+  /** Loads Google sign-in on demand (never on page load). */
   startSignIn: () => void
   signOut: () => void
   /** Renders the official Google button into the given element. */
