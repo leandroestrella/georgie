@@ -4,6 +4,7 @@
     "loading": "carico"
   },
   "nav": {
+    "privacy": "privacy",
     "about": "info su georgie",
     "overview": "statistiche",
     "history": "attività",
