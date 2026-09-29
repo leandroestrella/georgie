@@ -14,12 +14,12 @@ import { LoadingAvatar } from '@/components/LoadingAvatar'
  */
 export function ArchivedPage() {
   const { t } = useTranslation()
-  const { isAdmin } = useAuth()
+  const { status, isAdmin } = useAuth()
   const { archivedBooks, loading, applyBook } = useCatalog()
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  if (!isAdmin && !loading) return <Navigate to="/" replace />
+  if (status !== 'loading' && !isAdmin && !loading) return <Navigate to="/" replace />
 
   const restore = async (id: string) => {
     setBusy(id)

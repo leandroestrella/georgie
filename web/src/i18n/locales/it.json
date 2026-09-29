@@ -67,6 +67,7 @@
   },
   "auth": {
     "signIn": "accedi",
+    "restoring": "accesso in corso…",
     "signOut": "esci",
     "admin": "admin · {{owner}}",
     "notAdmin": "non sei admin",

@@ -36,6 +36,16 @@ export function AuthBar() {
     return <span className="text-muted-foreground hidden text-xs sm:inline">{t('auth.notConfigured')}</span>
   }
 
+  if (status === 'loading') {
+    // A remembered session is being re-checked with the backend, which can take
+    // a few seconds; a "sign in" button here would read as "you were signed out".
+    return (
+      <span key="restoring" className="text-muted-foreground text-xs">
+        {t('auth.restoring')}
+      </span>
+    )
+  }
+
   if (status === 'signed-in' && user) {
     return (
       <div key="signed-in" className="flex min-w-0 items-center gap-2 sm:gap-3">

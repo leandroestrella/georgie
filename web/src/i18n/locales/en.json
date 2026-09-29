@@ -67,6 +67,7 @@
   },
   "auth": {
     "signIn": "sign in",
+    "restoring": "signing in…",
     "signOut": "sign out",
     "admin": "admin · {{owner}}",
     "notAdmin": "not an admin",

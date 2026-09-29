@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { getAllBooks, getBooks, getTaxonomies } from '@/api/client'
 import type { Book, Taxonomies } from '@/api/types'
@@ -57,17 +57,39 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  /** Whether the books on hand came from the admin read (null before the first load). */
+  const [loadedAsAdmin, setLoadedAsAdmin] = useState<boolean | null>(null)
+  /**
+   * Bumped on every reload. A remembered admin session is re-validated after
+   * the public list has already been requested, and Apps Script response times
+   * vary a lot — so the public reply can land after the admin one. Only the
+   * latest request may write its result.
+   */
+  const requestRef = useRef(0)
+  /** Taxonomies are the same for visitors and admins: fetched once, not again on sign-in. */
+  const taxonomiesRef = useRef<Taxonomies | null>(null)
 
   const reload = useCallback(() => {
+    const request = ++requestRef.current
+    const current = () => request === requestRef.current
     setLoading(true)
     setError(null)
-    Promise.all([isAdmin ? getAllBooks() : getBooks(), getTaxonomies()])
+    const cached = taxonomiesRef.current
+    Promise.all([isAdmin ? getAllBooks() : getBooks(), cached ? Promise.resolve(cached) : getTaxonomies()])
       .then(([b, t]) => {
+        taxonomiesRef.current = t
+        if (!current()) return
         setBooks(b)
         setTaxonomies(t)
       })
-      .catch((e) => setError(String(e)))
-      .finally(() => setLoading(false))
+      .catch((e) => {
+        if (current()) setError(String(e))
+      })
+      .finally(() => {
+        if (!current()) return
+        setLoading(false)
+        setLoadedAsAdmin(isAdmin)
+      })
   }, [isAdmin])
 
   // Re-runs when admin status flips, so signing in pulls in the archived books.
@@ -133,6 +155,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const ownerMarkers = useMemo(() => taxonomies?.ownerMarkers ?? {}, [taxonomies])
   const activeBooks = useMemo(() => books.filter((b) => !b.archived), [books])
   const archivedBooks = useMemo(() => books.filter((b) => b.archived), [books])
+  // Also "loading" for the render between an admin signing in (or a remembered
+  // session being restored) and the admin reload starting: the books on hand
+  // are still the public ones, without the archive.
+  const pending = loading || (isAdmin && loadedAsAdmin === false)
 
   const value = useMemo<CatalogContextValue>(
     () => ({
@@ -140,7 +166,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       activeBooks,
       archivedBooks,
       taxonomies,
-      loading,
+      loading: pending,
       error,
       reload,
       applyBook,
@@ -174,7 +200,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       activeBooks,
       archivedBooks,
       taxonomies,
-      loading,
+      pending,
       error,
       reload,
       applyBook,

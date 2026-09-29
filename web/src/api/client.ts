@@ -218,7 +218,7 @@ async function get<T>(action: string): Promise<T> {
   } catch (err) {
     throw new ApiError(`Network error contacting the backend: ${String(err)}`)
   }
-  return unwrap<T>(await res.json())
+  return unwrap<T>(await readJson(res))
 }
 
 async function post<T>(body: Record<string, unknown>): Promise<T> {
@@ -235,7 +235,20 @@ async function post<T>(body: Record<string, unknown>): Promise<T> {
   } catch (err) {
     throw new ApiError(`Network error contacting the backend: ${String(err)}`)
   }
-  return unwrap<T>(await res.json())
+  return unwrap<T>(await readJson(res))
+}
+
+/**
+ * Parses a backend response. When Apps Script itself fails (overloaded,
+ * timed out, quota hit) it answers with an HTML error page instead of our JSON
+ * envelope; report that plainly rather than as a JSON syntax error.
+ */
+async function readJson<T>(res: Response): Promise<ApiEnvelope<T>> {
+  try {
+    return await res.json()
+  } catch {
+    throw new ApiError(`The backend didn't answer properly (HTTP ${res.status}); please try again in a moment.`)
+  }
 }
 
 /** Narrows the `{ ok }` envelope, throwing `ApiError` on failure. */
