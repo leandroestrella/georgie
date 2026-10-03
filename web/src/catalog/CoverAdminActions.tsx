@@ -5,7 +5,7 @@ import { saveCover } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { useAdminAction } from '@/catalog/useAdminAction'
-import { Button } from '@/components/ui/button'
+import { Button } from '@lndrstrll/pomuku-ui'
 
 /**
  * Downscale an image file to a JPEG and return its base64 (without the data-URL

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@lndrstrll/pomuku-ui'
 import { createFrameDecoder, isbnFromBarcode, secureOriginForCamera } from './scanner'
 
 /** How often to sample a frame. ~7/s is plenty and keeps phones cool. */

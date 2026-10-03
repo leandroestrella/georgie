@@ -1,15 +1,17 @@
 import { CheckIcon, ChevronsUpDownIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui/button'
 import {
+  Button,
   Command,
   CommandEmpty,
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  cn,
+} from '@lndrstrll/pomuku-ui'
 
 export interface MultiSelectOption {
   value: string

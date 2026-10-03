@@ -18,7 +18,7 @@ import type { HistoryEntry } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { OwnerBadge } from '@/catalog/OwnerBadge'
-import { LoadingAvatar } from '@/components/LoadingAvatar'
+import { LoadingAvatar } from '@lndrstrll/pomuku-ui'
 import { useVocab } from '@/i18n/vocab'
 
 const ACTION_ICONS: Record<HistoryEntry['action'], typeof PlusIcon> = {

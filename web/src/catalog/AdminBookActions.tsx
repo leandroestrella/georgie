@@ -5,10 +5,8 @@ import { deleteBook, restoreBook } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { useAdminAction } from '@/catalog/useAdminAction'
-import { Button } from '@/components/ui/button'
-import { LoanControl } from './LoanControl'
-import { ExchangeControl } from './ExchangeControl'
 import {
+  Button,
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -18,7 +16,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
+} from '@lndrstrll/pomuku-ui'
+import { LoanControl } from './LoanControl'
+import { ExchangeControl } from './ExchangeControl'
 
 /**
  * Edit / archive / restore controls, rendered only for signed-in admins. This is

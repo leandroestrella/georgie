@@ -5,8 +5,7 @@ import { ArrowLeftIcon, RepeatIcon, Undo2Icon } from 'lucide-react'
 import { restoreBook } from '@/api/client'
 import { useAuth } from '@/auth/AuthProvider'
 import { useCatalog } from '@/catalog/CatalogProvider'
-import { Button } from '@/components/ui/button'
-import { LoadingAvatar } from '@/components/LoadingAvatar'
+import { Button, LoadingAvatar } from '@lndrstrll/pomuku-ui'
 
 /**
  * Admin-only view of archived (soft-deleted) books, with restore. Archived books

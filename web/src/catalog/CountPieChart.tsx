@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@lndrstrll/pomuku-ui'
 
 /** Past this many explicit slices, the remainder folds into "➕ other". */
 const MAX_SLICES = 6

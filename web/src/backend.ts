@@ -9,9 +9,11 @@
  */
 import { createAuth } from '@lndrstrll/pomuku-auth'
 import { createClient, demoFetch } from '@lndrstrll/pomuku-data'
+import { isLanguage } from '@lndrstrll/pomuku-i18n'
 import { makeId, type Book as BookRow } from '../../server/src/schema'
 import { config, hasBackend } from '@/config'
 import { MOCK_BOOKS, MOCK_TAXONOMIES } from '@/api/mock'
+import { i18n } from '@/i18n'
 
 /** The owner label mock mode is signed in as; mock writes are attributed to it. */
 export const MOCK_OWNER = 'leandro'
@@ -58,6 +60,10 @@ export const auth = createAuth({
   client,
   app: 'georgie',
   demo: hasBackend ? undefined : { name: MOCK_OWNER, role: 'member' },
+  // The language saved on the account, unless a link asked for one with `?lng=`.
+  onLanguage: (language) => {
+    if (isLanguage(language) && !new URLSearchParams(window.location.search).has('lng')) void i18n.changeLanguage(language)
+  },
 })
 
 /**

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BookIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
-import { cn } from '@/lib/utils'
+import { cn } from '@lndrstrll/pomuku-ui'
 import { coverSources, isBlankPixel } from './covers'
 import { NEUTRAL_ZONE, type ZoneColors } from './zoneColors'
 

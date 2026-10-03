@@ -4,16 +4,16 @@ import { HandCoinsIcon, Undo2Icon } from 'lucide-react'
 import { setLoan } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useAdminAction } from '@/catalog/useAdminAction'
-import { Button } from '@/components/ui/button'
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+  Input,
+  Label,
+} from '@lndrstrll/pomuku-ui'
 
 /** Today as ISO `YYYY-MM-DD`, for the loan-date default. */
 function today(): string {

@@ -1,6 +1,8 @@
 {
   "app": {
-    "tagline": "un hogar acogedor para tu biblioteca de casa.",
+    "tagline": "un hogar acogedor para tu biblioteca de casa."
+  },
+  "common": {
     "loading": "cargando"
   },
   "nav": {
@@ -67,10 +69,7 @@
   },
   "auth": {
     "signIn": "iniciar sesión",
-    "restoring": "iniciando sesión…",
     "signOut": "cerrar sesión",
-    "admin": "admin · {{owner}}",
-    "notAdmin": "no eres admin",
     "notConfigured": "acceso no configurado"
   },
   "error": {

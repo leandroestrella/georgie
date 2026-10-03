@@ -1,6 +1,8 @@
 {
   "app": {
-    "tagline": "a cozy little home for your home library.",
+    "tagline": "a cozy little home for your home library."
+  },
+  "common": {
     "loading": "loading"
   },
   "nav": {
@@ -67,10 +69,7 @@
   },
   "auth": {
     "signIn": "sign in",
-    "restoring": "signing in…",
     "signOut": "sign out",
-    "admin": "admin · {{owner}}",
-    "notAdmin": "not an admin",
     "notConfigured": "sign-in not configured"
   },
   "error": {

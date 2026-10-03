@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Book } from '@/api/types'
-import { useBusy } from '@/components/BusyProvider'
+import { useBusy } from '@lndrstrll/pomuku-ui'
 import { useCatalog } from '@/catalog/CatalogProvider'
 
 /**

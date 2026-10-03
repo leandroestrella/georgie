@@ -14,18 +14,19 @@ import {
 } from 'lucide-react'
 import type { Taxonomies } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
-import { useHideOnScroll } from '@/hooks/useHideOnScroll'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
+  useHideOnScroll,
+  cn,
+  Button,
+  Input,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@lndrstrll/pomuku-ui'
 import { useCatalog } from './CatalogProvider'
 import { OwnerBadge } from './OwnerBadge'
 import { languageFlag } from './languageFlags'
