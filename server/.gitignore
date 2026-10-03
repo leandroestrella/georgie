@@ -1,0 +1,6 @@
+# wrangler's local state and local secrets
+.wrangler/
+.dev.vars
+
+# your own instance's settings: a copy of wrangler.jsonc with its values filled in
+wrangler.local.jsonc
