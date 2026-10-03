@@ -5,7 +5,7 @@
  * sending the requests, and prints what Cloudflare recorded for each. The free
  * plan allows 10 ms of CPU per request.
  *
- *   npm run measure -- [times] [--base <worker origin>] [--token <access token>]
+ *   npm run measure -- [times] [--base <worker origin>] [--config <wrangler settings file>] [--token <access token>]
  *
  * First a "Sync now" (asked until done, as the sheet's menu does — on an empty
  * database this is the first import), then the public reads, `times` times
@@ -13,6 +13,8 @@
  * save and the push to the sheet that follows it: a loan set on the first book
  * of the catalog, then returned.
  *
+ * `--config` names the settings file of the Worker whose logs to follow
+ * (`wrangler.local.jsonc` when left out); `--base` is that Worker's address.
  * The sync secret is read from SYNC_SECRET or from `.dev.vars`; nothing secret
  * is printed. Rows read and written come from each answer's `server-timing`
  * header and count the request itself, not the work done after the answer.
@@ -36,7 +38,7 @@ if (!secret) {
 }
 
 const events = []
-const tail = spawn('npx', ['wrangler', 'tail', '-c', 'wrangler.local.jsonc', '--format', 'json'], {
+const tail = spawn('npx', ['wrangler', 'tail', '-c', arg('config') ?? 'wrangler.local.jsonc', '--format', 'json'], {
   cwd: new URL('..', import.meta.url),
   stdio: ['ignore', 'pipe', 'inherit'],
 })

@@ -2,5 +2,8 @@
 .wrangler/
 .dev.vars
 
-# your own instance's settings: a copy of wrangler.jsonc with its values filled in
+# your own instances' settings: copies of wrangler.jsonc with their values filled in
 wrangler.local.jsonc
+wrangler.*.local.jsonc
+# and their secrets, kept at hand for the sheet's script properties
+.*.vars

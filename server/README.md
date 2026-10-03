@@ -74,6 +74,11 @@ npm run migrate     # creates the database's tables
 npm run deploy      # prints the worker's address
 ```
 
+To keep development away from the real catalog, run a second instance against a
+copy of the spreadsheet: another settings file (say `wrangler.dev.local.jsonc`,
+also gitignored) with its own worker name, database and `SHEET_ID`, passed to
+wrangler with `-c`.
+
 ### Connecting the sheet
 
 1. **A service account.** In Google Cloud, a project with the **Google Sheets
@@ -115,22 +120,23 @@ from the theme. Keep the column as a formula of your own, or remove it.
 
 Cloudflare's free plan allows 10 ms of CPU per request, and D1 caps the rows
 read (5 million) and written (100,000) per day. Measured on the deployed Worker
-from Cloudflare's own logs, with a catalog of 380 books (`npm run measure`):
+from Cloudflare's own logs, with a catalog of 390 books (`npm run measure`):
 
 | Request | CPU | Rows read | Rows written |
 | --- | --- | --- | --- |
-| `GET /catalog` (237 KB) | 6–8 ms | 380 | 0 |
-| `GET /taxonomies` | 2–4 ms | 4 | 0 |
+| `GET /catalog` (246 KB) | 7 ms, 11 at most | 390 | 0 |
+| `GET /taxonomies` | 2–5 ms | 4 | 0 |
 | a save, with the push to the sheet that follows it | 9 ms, 12 at most | about 10 | about 6 |
 | a visit, the last look at the sheet recent | 0 ms | 0 | 0 |
-| a pull of the `Catalog` tab, nothing changed | 20–23 ms | 764 | 1 |
-| the first import, 100 books per request | 18–38 ms | up to 603 | about 500 |
+| a pull of the `Catalog` tab, nothing changed | 20–23 ms | two per book | 1 |
+| the first import, 100 books per request | 23–45 ms | up to 603 | about 500 |
 
-A pull of the whole `Catalog` tab takes about twice the CPU the plan allows.
-Cloudflare let every one of them finish (it tolerates occasional overruns), and a
-pull only runs when the sheet has changed — after "Sync now", or on a visit once
-the last look is five minutes old. A library several times this size, or a sheet
-edited all day, should expect to need the paid plan.
+A pull of the whole `Catalog` tab takes about twice the CPU the plan allows, and
+reading the whole catalog is close to it. Cloudflare let every request finish
+(it tolerates occasional overruns), and a pull only runs when the sheet has
+changed — after "Sync now", or on a visit once the last look is five minutes
+old. A library several times this size, or a sheet edited all day, should expect
+to need the paid plan.
 
 ## Commands
 
