@@ -91,11 +91,13 @@ npm run deploy      # prints the worker's address
 4. **The `Users` tab** needs two more columns next to `Email` and `Owner`:
    `Language` and `Role`. Both can stay empty; `Role` takes `admin` for someone
    who may manage users and access tokens.
-5. **The sheet's script.** In the spreadsheet, Extensions → Apps Script: add
-   pomuku's `sheet-script/Code.js` (in `node_modules/@lndrstrll/pomuku-server/`),
-   and set two script properties: `SYNC_URL`
+5. **The sheet's script.** [`../apps-script/sync.js`](../apps-script/sync.js)
+   adds a **Sync** menu to the spreadsheet. Push it to the sheet's bound Apps
+   Script project (`cd ../apps-script && npm run push`, or paste the file in
+   under Extensions → Apps Script), then set two script properties there
+   (Project settings → Script properties): `SYNC_URL`
    (`https://<the worker's address>/api/v1/sync`) and `SYNC_SECRET` (the same
-   text as the worker's). Reload the sheet: a **Sync** menu appears.
+   text as the worker's). Reload the sheet; the first use asks for permission.
 6. **Sync → Sync now.** With an existing sheet this is the first import: every
    row of `Catalog` and `Users` goes into the database, a hundred per request,
    and a book without an `ID` gets one, written back to the sheet.
