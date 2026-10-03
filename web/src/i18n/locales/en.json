@@ -173,7 +173,9 @@
       "restore": "{{actor}} restored “{{title}}”",
       "loan": "{{actor}} loaned out “{{title}}”",
       "return": "{{actor}} marked “{{title}}” returned",
-      "exchange": "{{actor}} updated the exchange for “{{title}}”"
+      "exchange": "{{actor}} updated the exchange for “{{title}}”",
+      "delete": "{{actor}} removed “{{title}}”",
+      "conflict": "a spreadsheet edit to “{{title}}” was replaced by one made in the app"
     }
   },
   "exchange": {

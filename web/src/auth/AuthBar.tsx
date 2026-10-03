@@ -28,7 +28,7 @@ function GoogleButton() {
  * who may write.
  */
 export function AuthBar() {
-  const { status, user, isAdmin, owner, configured, googleReady, googleLoading, error, signOut, startSignIn } = useAuth()
+  const { status, user, isAdmin, owner, configured, mock, googleReady, googleLoading, error, signOut, startSignIn } = useAuth()
   const { t } = useTranslation()
 
   if (!configured) {
@@ -49,9 +49,9 @@ export function AuthBar() {
   if (status === 'signed-in' && user) {
     return (
       <div key="signed-in" className="flex min-w-0 items-center gap-2 sm:gap-3">
-        {/* The email is the widest thing in the header — desktop only. */}
+        {/* The name is the widest thing in the header — desktop only. */}
         <div className="hidden min-w-0 text-right leading-tight sm:block">
-          <div className="truncate text-sm">{user.email || user.name}</div>
+          <div className="truncate text-sm">{user.name}</div>
           <div className="text-muted-foreground text-xs">
             {isAdmin ? t('auth.admin', { owner }) : t('auth.notAdmin')}
           </div>
@@ -60,15 +60,18 @@ export function AuthBar() {
         {user.picture && (
           <img
             src={user.picture}
-            alt={user.email}
-            title={user.email}
+            alt=""
+            title={user.name}
             className="size-7 shrink-0 rounded-full sm:size-8"
             referrerPolicy="no-referrer"
           />
         )}
-        <Button variant="outline" size="sm" className="shrink-0" onClick={signOut}>
-          {t('auth.signOut')}
-        </Button>
+        {/* Mock mode is signed in as a sample person; there is nothing to sign out of. */}
+        {!mock && (
+          <Button variant="outline" size="sm" className="shrink-0" onClick={signOut}>
+            {t('auth.signOut')}
+          </Button>
+        )}
       </div>
     )
   }

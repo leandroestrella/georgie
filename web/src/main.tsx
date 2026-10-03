@@ -5,10 +5,16 @@ import './index.css'
 import './i18n'
 import App from './App.tsx'
 import { AuthProvider } from './auth/AuthProvider.tsx'
+import { client } from './backend.ts'
 import { CatalogProvider } from './catalog/CatalogProvider.tsx'
 import { BusyProvider } from './components/BusyProvider.tsx'
 import { LoadingOverlay } from './components/LoadingOverlay.tsx'
 import { TooltipProvider } from './components/ui/tooltip.tsx'
+
+// Someone opened the app: the backend takes a look at the spreadsheet, if its
+// last look is a few minutes old, so edits made there show up without anyone
+// asking. Once per page load; never fails.
+client.visit()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -173,7 +173,9 @@
       "restore": "{{actor}} restauró “{{title}}”",
       "loan": "{{actor}} prestó “{{title}}”",
       "return": "{{actor}} marcó “{{title}}” como devuelto",
-      "exchange": "{{actor}} actualizó el intercambio de “{{title}}”"
+      "exchange": "{{actor}} actualizó el intercambio de “{{title}}”",
+      "delete": "{{actor}} eliminó “{{title}}”",
+      "conflict": "un cambio en “{{title}}” hecho en la hoja fue reemplazado por uno hecho en la app"
     }
   },
   "exchange": {

@@ -7,7 +7,7 @@
  *
  *   npm run compare -- [--old <apps script /exec url>] [--new <worker origin>]
  *
- * `--old` defaults to VITE_API_URL in ../web/.env.local, `--new` to
+ * `--old` defaults to LEGACY_API_URL in ../web/.env.local, `--new` to
  * https://georgie.pomuku.workers.dev. Read-only: public reads on both sides.
  *
  * The two differ in shape, not in content, and the comparison allows for that:
@@ -23,13 +23,13 @@ const arg = (name) => {
 function envLocal() {
   const file = new URL('../../web/.env.local', import.meta.url)
   if (!existsSync(file)) return undefined
-  return /^VITE_API_URL=(.+)$/m.exec(readFileSync(file, 'utf8'))?.[1]?.trim()
+  return /^LEGACY_API_URL=(.+)$/m.exec(readFileSync(file, 'utf8'))?.[1]?.trim()
 }
 
 const oldUrl = arg('old') ?? envLocal()
 const newUrl = (arg('new') ?? 'https://georgie.pomuku.workers.dev').replace(/\/$/, '')
 if (!oldUrl) {
-  console.error('no Apps Script URL: pass --old, or set VITE_API_URL in web/.env.local')
+  console.error('no Apps Script URL: pass --old, or set LEGACY_API_URL in web/.env.local')
   process.exit(1)
 }
 

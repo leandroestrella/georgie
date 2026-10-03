@@ -2,18 +2,18 @@
  * Public runtime configuration for the Georgie SPA.
  *
  * Everything here is safe to commit and ship in the client bundle:
- *  - the Apps Script `/exec` URL is a public web-app endpoint (writes are
- *    still gated server-side by Google ID-token verification), and
+ *  - the backend's address is a public endpoint (writes are gated server-side:
+ *    every one needs a session of someone on the `Users` tab), and
  *  - a Google OAuth *client ID* is public by design (it is not a secret).
  *
  * Values are read from Vite env vars (`VITE_*`) when present so that anyone
  * cloning the repo can point their own instance at their own backend without
  * editing source — see `.env.example` and the README "run your own instance"
- * guide. The fallbacks below are empty on purpose; the app surfaces a clear
- * message when the backend URL is not configured.
+ * guide. The fallbacks below are empty on purpose: with no backend URL the app
+ * runs on mock data.
  */
 export const config = {
-  /** Apps Script web-app endpoint, e.g. https://script.google.com/macros/s/<id>/exec */
+  /** The backend's address, without `/api/v1`, e.g. https://georgie.<account>.workers.dev */
   apiUrl: import.meta.env.VITE_API_URL ?? '',
 
   /** Google OAuth 2.0 Web client ID used by Google Identity Services sign-in. */
