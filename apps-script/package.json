@@ -4,14 +4,12 @@
   "private": true,
   "license": "Apache-2.0",
   "author": "Leandro Estrella",
-  "description": "Georgie backend — Google Apps Script web app bound to the library spreadsheet, synced with clasp.",
+  "description": "Georgie — the library spreadsheet's own script: its Sync menu, pushed to the sheet's bound Apps Script project with clasp.",
   "scripts": {
     "login": "clasp login",
     "pull": "clasp pull",
     "push": "clasp push -f",
-    "deploy": "clasp deploy",
     "open": "clasp open",
-    "test": "node --test",
     "use:dev": "cp .clasp.dev.json .clasp.json && echo 'clasp target → DEV sheet'",
     "use:prod": "cp .clasp.prod.json .clasp.json && echo 'clasp target → PROD (real) sheet'",
     "target": "node -e \"const c=require('./.clasp.json');const d=require('./.clasp.dev.json');console.log(c.scriptId===d.scriptId?'DEV':'PROD', c.scriptId)\""

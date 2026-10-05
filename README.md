@@ -64,7 +64,7 @@ flowchart LR
 ```
 web/          the spa (vite + react)
 server/       the backend: a cloudflare worker with its database, kept in sync with the sheet
-apps-script/  the sheet's own script: its "sync" menu (and the previous backend, kept for a while as a fallback)
+apps-script/  the sheet's own script: its "sync" menu
 cpanel/       optional php: cover hosting, and the daily spreadsheet-backup cron script
 docs/         maintainer guides (book ids, sheet markers, translations, backups)
 assets/       brand art

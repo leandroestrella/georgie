@@ -3,21 +3,12 @@
  * local runtime, a pretend Google for sign-in, and a spreadsheet kept in memory
  * shaped like the real one (same tabs, same headers, hand-edited quirks).
  *
- * While the Apps Script backend is still around, its pure logic is the
- * reference: the taxonomy and the call-number IDs are checked against it.
  */
-import { createRequire } from 'node:module'
 import { d1, migrate, type Cell } from '@lndrstrll/pomuku-server'
 import { memorySheets, testD1, testGoogle } from '@lndrstrll/pomuku-server/testing'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { makeId, schema } from './schema.js'
+import { schema } from './schema.js'
 import { georgie, type GeorgieEnv } from './worker.js'
-
-const legacy = createRequire(import.meta.url)('../../apps-script/catalog.js') as {
-  makeId: (title: string, author: string, year: number | string) => string
-  parseZones: (values: Cell[][]) => unknown
-  parseLists: (values: Cell[][]) => unknown
-}
 
 const SECRET = 'a-long-sync-secret'
 const LEANDRO = 'leandro@example.com'
@@ -118,20 +109,6 @@ beforeAll(async () => {
 })
 afterAll(() => dispose?.())
 
-describe('call-number ids', () => {
-  it('are built exactly as the apps script backend built them', () => {
-    const cases: [string, string, number | string][] = [
-      ['1984', 'George Orwell', 1950],
-      ['The Dispossessed', 'Ursula K. Le Guin', 1974],
-      ['¿Qué es la propiedad?', 'Pierre-Joseph Proudhon', 2007],
-      ["L'étranger", 'Albert Camus; Someone Else', 1942],
-      ['Il nome della rosa', 'Umberto Eco & Altri', 868],
-      ['A', '', ''],
-    ]
-    for (const [title, author, year] of cases) expect(makeId(title, author, year)).toBe(legacy.makeId(title, author, year))
-  })
-})
-
 describe('the first import', () => {
   it('builds the database from the existing sheet, keeping ids and giving one to a row without', async () => {
     expect((await syncNow()).done).toBe(true)
@@ -158,10 +135,30 @@ describe('the first import', () => {
     expect(json.rows.find((book: any) => book.id === 'LEG-DIS-1974')).toMatchObject({ archived: true, yearPrecision: 'circa' })
   })
 
-  it('serves the taxonomy as the apps script backend parsed it, with only the owner labels of users', async () => {
+  it('serves the taxonomy parsed from the Zones and Lists tabs, with only the owner labels of users', async () => {
     const { json } = await call('GET', '/taxonomies')
-    expect(json.taxonomies).toEqual({ ...(legacy.parseZones(TABS.Zones!) as object), ...(legacy.parseLists(TABS.Lists!) as object), users: ['leandro', 'maria'] })
-    expect(json.taxonomies.themeToZone).toEqual({ Dystopia: 'The Reading Room', Classics: 'The Reading Room', 'Political Theory': 'The Commons' })
+    expect(json.taxonomies).toEqual({
+      // a row with a Title starts a zone; the rows under it with only a theme belong to it
+      zones: [
+        {
+          name: 'The Reading Room', names: { it: 'La Sala di Lettura' }, description: 'Fiction being written now', descriptions: {}, marker: '🌐',
+          themes: [
+            { name: 'Dystopia', names: { es: 'Distopía' }, description: 'Imagined futures', descriptions: {} },
+            { name: 'Classics', names: {}, description: '', descriptions: {} },
+          ],
+        },
+        {
+          name: 'The Commons', names: {}, description: 'Power and collective life', descriptions: {}, marker: 'https://example.com/commons.png',
+          themes: [{ name: 'Political Theory', names: {}, description: '', descriptions: {} }],
+        },
+      ],
+      themeToZone: { Dystopia: 'The Reading Room', Classics: 'The Reading Room', 'Political Theory': 'The Commons' },
+      // three independent lists; a marker sits on its owner's row
+      owners: ['leandro', 'maria', 'hugo'],
+      languages: ['English', 'Italian', 'Spanish', 'French'],
+      ownerMarkers: { leandro: '🦊', hugo: '🐕' },
+      users: ['leandro', 'maria'],
+    })
     expect(JSON.stringify(json)).not.toContain('@')
   })
 })

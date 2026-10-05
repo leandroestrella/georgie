@@ -12,7 +12,6 @@
     "migrations": "pomuku-migrations --schema src/schema.ts",
     "migrate": "wrangler d1 migrations apply georgie --remote -c wrangler.local.jsonc",
     "migrate:local": "wrangler d1 migrations apply georgie --local -c wrangler.local.jsonc",
-    "compare": "node scripts/compare.mjs",
     "measure": "node scripts/measure.mjs",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
