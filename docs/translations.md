@@ -34,10 +34,10 @@ language.
 
 ### After editing
 
-Reads are live, so editing a translation just needs a reload. Adding a brand-new
-`<Column> (xx)` **column** is picked up by header name, so it needs the Apps
-Script backend deployed with the current `apps-script/` code (`clasp push` +
-redeploy) once — after that, editing values needs no redeploy.
+An edit made in the sheet reaches the app on the next sync: run **Sync → Sync
+now** from the sheet's menu (or wait for the next visit to pick it up), then
+reload. A brand-new `<Column> (xx)` **column** is picked up the same way, by its
+header name — no code change, no redeploy.
 
 ## Language names — in code
 

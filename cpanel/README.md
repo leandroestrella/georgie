@@ -6,12 +6,13 @@ app currently shows, or by uploading a photo of the physical book. The saved URL
 is written back into the sheet's `Cover URL` column.
 
 ```
-browser (admin)  ──▶  Apps Script (admin-gated)  ──▶  upload-cover.php (secret)  ──▶  covers/<id>.jpg
-                         writes Cover URL ◀───────────── returns the public URL
+browser (admin)  ──▶  backend (signed-in only)  ──▶  upload-cover.php (secret)  ──▶  covers/<id>.jpg
+                         saves Cover URL ◀───────────── returns the public URL
 ```
 
 The browser never talks to the PHP endpoint directly and never holds the secret —
-Apps Script does, after it has verified the admin.
+the backend (the Worker in [`server/`](../server/README.md)) does, after it has
+checked that the request comes from someone signed in.
 
 This directory also holds [`backup/run-backup.php`](backup/run-backup.php),
 the daily spreadsheet-backup cron script — a different setup, and the
@@ -39,24 +40,24 @@ Pick a long random string. Set it in **two** places to the same value:
 - **On the host** — as the `COVER_UPLOAD_SECRET` environment variable (cPanel →
   MultiPHP INI / "Environment Variables"), or, if that's awkward, edit the
   `$SECRET = ...` line in `upload-cover.php`.
-- **In Apps Script** — Project Settings → Script Properties → `COVERS_UPLOAD_SECRET`.
+- **On the backend** — as the Worker's `COVERS_UPLOAD_SECRET` secret:
 
-### 3. Point Apps Script at the endpoint
-Add one more Script Property:
+  ```bash
+  cd server
+  npx wrangler secret put COVERS_UPLOAD_SECRET -c wrangler.local.jsonc
+  ```
+
+### 3. Point the backend at the endpoint
+In `server/wrangler.local.jsonc`, set:
 
 - `COVERS_UPLOAD_URL` = `https://<your-host>/upload-cover.php`
 
 ### 4. Deploy the backend
-The `saveCover` action needs to be live:
 
 ```bash
-cd apps-script
-npm run push
-npx clasp deploy -i <dev deploymentId>     # then the prod id when going live
+cd server
+npm run deploy
 ```
-
-No re-authorization is needed — `saveCover` uses `UrlFetchApp`, which the token
-verifier already uses.
 
 ## Test it
 `curl` a quick check (replace the secret and host):
@@ -75,4 +76,4 @@ file afterwards.)
 - Re-saving a book replaces its cover file; the app appends a `?v=` cache-buster
   so the new image shows immediately.
 - The secret is the only gate on the PHP endpoint, so keep it long and private.
-  It lives on the host and in Script Properties — never in the repo or the client.
+  It lives on the host and among the Worker's secrets — never in the repo or the client.

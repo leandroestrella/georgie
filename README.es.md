@@ -12,17 +12,18 @@ una aplicación web para gestionar nuestra biblioteca física de casa — explor
 
 ## ¿cómo funciona?
 
-el catálogo vive en un google sheet. una aplicación web estática lo lee y lo muestra públicamente; los admin inician sesión con google para hacer cambios, que pasan por una api de google apps script de vuelta a la hoja.
+el catálogo vive en una pequeña base de datos detrás de un backend que responde en una fracción de segundo. una google sheet sigue siendo una copia completa y editable, mantenida en sincronía en los dos sentidos: un cambio hecho en la app llega a la hoja unos segundos después, y una edición hecha en la hoja llega a la app la próxima vez que alguien la abre (o enseguida, desde el menú "sync" de la hoja). una app web estática lee y muestra el catálogo públicamente; los admin inician sesión con google para hacer cambios.
 
 ```mermaid
-%%{init: {'theme': 'dark'}}%%
+%{init: {'theme': 'dark'}}%
 flowchart LR
-    V[visitante] -->|explora, busca, filtra| SPA[app web georgie]
+    V[visitante] -->|navega, busca, filtra| SPA[app web georgie]
     A[admin] -->|inicio de sesión con google| SPA
-    A -.->|escanear código de barras / buscar isbn| SPA
-    SPA -->|lectura del catálogo| GAS[api apps script]
-    SPA -->|escrituras, token verificado| GAS
-    GAS --> SHEET[(google sheet privado)]
+    A -.->|escanea código de barras / busca isbn| SPA
+    SPA -->|lecturas, y escrituras con una sesión| API[backend: cloudflare worker]
+    API --> DB[(base de datos)]
+    API <-->|sincronización, en los dos sentidos| SHEET[(google sheet privada)]
+    A -.->|ediciones en bloque| SHEET
     SPA -->|metadatos| EXT[google books / open library]
     SPA -->|portadas| COV[tu host / open library / amazon]
 ```
@@ -51,9 +52,10 @@ flowchart LR
 - [react-router](https://reactrouter.com/) — enrutamiento del lado del cliente
 - [react-i18next](https://react.i18next.com/) — internacionalización (english / italiano / español)
 - [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) — escaneo de códigos de barras, con el `BarcodeDetector` nativo del navegador cuando está disponible
-- [google apps script](https://developers.google.com/apps-script) + [clasp](https://github.com/google/clasp) — api de backend vinculada a la hoja
+- [pomuku](https://github.com/leandroestrella/pomuku) — los paquetes compartidos sobre los que está construida georgie: componentes y tema, inicio de sesión, cliente de datos, traducciones, y el núcleo del backend
+- [hono](https://hono.dev) sobre [cloudflare workers](https://workers.cloudflare.com/) + [d1](https://developers.cloudflare.com/d1/) — la api de backend y su base de datos (alcanza con el plan gratuito)
 - [google identity services](https://developers.google.com/identity) — inicio de sesión admin
-- [google sheets](https://www.google.com/sheets/about/) — la base de datos
+- [google sheets](https://www.google.com/sheets/about/) — la copia editable de la base de datos, mantenida en sincronía en los dos sentidos; un pequeño [apps script](https://developers.google.com/apps-script) añade a la hoja el menú "sync"
 - [ftp-deploy-action](https://github.com/SamKirkland/FTP-Deploy-Action) — despliega a cpanel en cada push a `master`
 - php — dos pequeños scripts de cpanel: subida de portadas y la copia de seguridad diaria de la hoja (ver [cpanel/README.md](cpanel/README.md), [docs/backups.md](docs/backups.md)); nada más en el stack usa php
 
@@ -61,7 +63,8 @@ flowchart LR
 
 ```
 web/          la spa (vite + react)
-apps-script/  la api de backend (sincronizada con clasp)
+server/       el backend: un cloudflare worker con su base de datos, mantenido en sincronía con la hoja
+apps-script/  el script de la hoja: su menú "sync" (y el backend anterior, conservado por un tiempo como respaldo)
 cpanel/       php opcional: alojamiento de portadas y el script cron de copia de seguridad de la hoja
 docs/         guías para quien gestiona el catálogo (ids de libros, marcadores de la hoja, traducciones)
 assets/       material gráfico de la marca
@@ -71,25 +74,22 @@ assets/       material gráfico de la marca
 
 georgie es una plantilla para cualquiera que quiera catalogar sus propios estantes:
 
-1. copia la plantilla de google sheet — una pestaña `Catalog` con las columnas de los libros, una pestaña `Zones` que define tus categorías, y una pestaña `Lists` para propietarios/idiomas (los encabezados de columna exactos están en [docs/sheet-setup.md](docs/sheet-setup.md)). mantenla **privada** (la app la lee a través del backend, así que nunca necesita compartirse por enlace)
-2. crea un apps script vinculado a tu hoja: `cd apps-script`, `npm install`, `npx clasp login`, luego `clasp clone <scriptId>` (o crea el proyecto desde Extensions → Apps Script de la hoja y `clasp push`). despliégalo como aplicación web ("execute as: me", "who has access: anyone"). ejecuta cualquier función una vez desde el editor para conceder los scopes (hoja de cálculo + solicitudes externas), pasando por la pantalla de consentimiento
-3. crea un google oauth client id (aplicación web) para el botón de inicio de sesión; añade el origen de tu sitio a sus authorized javascript origins
-4. configura los admin y el client id en el backend:
-   - ejecuta `setupUsersTab` desde el editor de apps script — crea una pestaña `Users` y te añade como primer admin; añade cada admin como una fila (`Email`, `Owner`). esta pestaña es la lista de quién puede escribir, y sus valores `Owner` son también las personas de las que la página de estadísticas informa datos de lectura — escribe cada nombre exactamente como aparece en las columnas `Owner` / `Read by` del catálogo (la comparación distingue mayúsculas y minúsculas)
-   - añade una script property `OAUTH_CLIENT_ID` (Project Settings → Script Properties) con el client id del paso 3, para que el backend pueda verificar los tokens de inicio de sesión
-5. copia `web/.env.example` a `web/.env.local` y completa `VITE_API_URL` (tu url `/exec`) y `VITE_GOOGLE_CLIENT_ID` — ambos son públicos, así que también pueden vivir en los secrets del repositorio de github para la acción de despliegue
-6. `npm install && npm run build` en `web/`, y aloja la carpeta `dist/` donde sea que tengas hosting estático (se incluye un `.htaccess` para el enrutamiento spa + cabeceras básicas para apache/cpanel)
-7. *(opcional)* para permitir que los admin guarden portadas en tu propio host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) en el servidor y añade las script properties `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` — ver [cpanel/README.md](cpanel/README.md)
-8. *(opcional)* para copias de seguridad diarias de la hoja, copia [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) en el servidor y añade un Cron Job de cPanel — ver [docs/backups.md](docs/backups.md)
+1. copia la plantilla de google sheet — una pestaña `Catalog` con las columnas de los libros, una pestaña `Zones` que define tus categorías, una pestaña `Lists` para propietarios/idiomas, y una pestaña `Users` con quién puede hacer cambios (los encabezados de columna exactos están en [docs/sheet-setup.md](docs/sheet-setup.md)). mantenla **privada** (la app la lee a través del backend, así que nunca necesita compartirse por enlace)
+2. crea un google oauth client id (aplicación web) para el botón de inicio de sesión; añade el origen de tu sitio a sus authorized javascript origins
+3. despliega el backend — un cloudflare worker con una base de datos d1, conectado a tu hoja mediante una service account de google — siguiendo [server/README.md](server/README.md). su primer "sync now" importa tu hoja
+4. copia `web/.env.example` a `web/.env.local` y completa `VITE_API_URL` (la dirección de tu worker) y `VITE_GOOGLE_CLIENT_ID` — ambos son públicos, así que también pueden vivir en los secrets del repositorio de github para la acción de despliegue
+5. `npm install` en `server/` y en `web/` (la app web importa el esquema del backend), luego `npm run build` en `web/`, y aloja la carpeta `dist/` donde sea que tengas hosting estático (se incluye un `.htaccess` para el enrutamiento spa + cabeceras básicas para apache/cpanel)
+6. *(opcional)* para permitir que los admin guarden portadas en tu propio host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) en el servidor y dale al worker su dirección y el secreto — ver [cpanel/README.md](cpanel/README.md)
+7. *(opcional)* para copias de seguridad diarias de la hoja, copia [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) en el servidor y añade un Cron Job de cPanel — ver [docs/backups.md](docs/backups.md)
 
-ambos valores de configuración son seguros de publicar (el client id de oauth es público por diseño, y cada escritura está protegida del lado del servidor mediante la verificación del id-token de google contra la lista `Users`) — ningún secreto llega jamás al repositorio.
+ambos valores de configuración son seguros de publicar (el client id de oauth es público por diseño, y cada escritura está protegida del lado del servidor: necesita la sesión de alguien que esté en la pestaña `Users`) — ningún secreto llega jamás al repositorio.
 
 ## guías para quien gestiona el catálogo
 
 las guías del día a día para gestionar tu catálogo viven en [`docs/`](docs/):
 
 - [configuración de la hoja](docs/sheet-setup.md) — el esquema exacto de columnas de `Catalog` / `Zones` / `Lists`
-- [ids de los libros](docs/book-ids.md) — cómo se generan los ids con formato de número de catálogo, `=MAKEID`, y el raro caso de regeneración manual
+- [ids de los libros](docs/book-ids.md) — cómo se generan los ids con formato de número de catálogo, añadir libros directamente en la hoja, y el raro caso de regeneración manual
 - [marcadores](docs/markers.md) — las insignias de propietario/lector/zona guiadas por columnas de la hoja
 - [traducciones](docs/translations.md) — traducir nombres y descripciones de zonas/temas, y nombres de idiomas
 - [alojamiento de portadas](cpanel/README.md) — el endpoint opcional para alojar portadas en tu propio servidor
@@ -100,16 +100,18 @@ las guías del día a día para gestionar tu catálogo viven en [`docs/`](docs/)
 el trabajo ocurre en la rama `develop`; el merge a `master` dispara la build y el despliegue ftp a cpanel vía github actions.
 
 ```bash
-cd web
+cd server
+npm install
+npm test        # todo el backend sobre una base de datos local, con una hoja mantenida en memoria
+
+cd ../web
 npm install
 npm run dev     # funciona con datos simulados hasta que se configure VITE_API_URL — no necesita backend
-npm test        # vitest (lógica pura: ids, mapeo, filtros, validación, metadatos)
+npm test        # vitest (el cliente de la api, filtros, validación, metadatos)
 npm run build   # verificación de tipos + build de producción
 ```
 
-la lógica pura (generación de ids, mapeo de columnas, análisis de la taxonomía) se mantiene
-independiente del framework para poder probarla sin una hoja en vivo; el backend de apps script
-tiene su propio `npm test` (`node --test`).
+el modelo de datos y sus reglas (columnas, validación, el id con formato de número de catálogo) están escritos una sola vez, en `server/src/schema.ts`, e importados por la app web — así que `server/` tiene que estar instalado para que `web/` compile. la lógica pura se mantiene independiente del framework para poder probarla sin una hoja en vivo.
 
 ## licencia
 
