@@ -15,7 +15,7 @@ a web app for managing our physical home library — browsing, cataloguing, lend
 the catalog lives in a small database behind a backend that answers in a fraction of a second. a google sheet stays a complete, editable copy of it, kept in sync both ways: a change made in the app reaches the sheet a few seconds later, and an edit made in the sheet reaches the app the next time someone opens it (or right away, from the sheet's own "sync" menu). a static web app reads and displays the catalog publicly; admins sign in with google to make changes.
 
 ```mermaid
-%{init: {'theme': 'dark'}}%
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
     V[visitor] -->|browse, search, filter| SPA[georgie web app]
     A[admin] -->|google sign-in| SPA

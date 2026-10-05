@@ -15,7 +15,7 @@ una aplicación web para gestionar nuestra biblioteca física de casa — explor
 el catálogo vive en una pequeña base de datos detrás de un backend que responde en una fracción de segundo. una google sheet sigue siendo una copia completa y editable, mantenida en sincronía en los dos sentidos: un cambio hecho en la app llega a la hoja unos segundos después, y una edición hecha en la hoja llega a la app la próxima vez que alguien la abre (o enseguida, desde el menú "sync" de la hoja). una app web estática lee y muestra el catálogo públicamente; los admin inician sesión con google para hacer cambios.
 
 ```mermaid
-%{init: {'theme': 'dark'}}%
+%%{init: {'theme': 'dark'}}%%
 flowchart LR
     V[visitante] -->|navega, busca, filtra| SPA[app web georgie]
     A[admin] -->|inicio de sesión con google| SPA
