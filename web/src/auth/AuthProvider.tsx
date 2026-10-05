@@ -1,11 +1,22 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { config, hasBackend } from '@/config'
-import { fetchMe, setIdTokenProvider } from '@/api/client'
+import { AuthProvider as SessionProvider, useAuth as useSession } from '@lndrstrll/pomuku-auth'
+import { auth } from '@/backend'
+import { config } from '@/config'
 
-/** The signed-in person's public profile (decoded from the Google ID token). */
+/**
+ * Sign-in for the SPA. Google vouches for a person once; the backend trades
+ * Google's ID token for a session, which every later request carries and which
+ * is remembered on this device — so the next visit opens signed in at once and
+ * re-checks with the backend in the background. Google's own script is not
+ * loaded with the page, only when someone asks to sign in.
+ *
+ * All of that lives in pomuku's auth package; this file only shapes it for
+ * Georgie's pages, where "may write" has always been called `isAdmin` and the
+ * person's name on the `Users` tab their `owner` label.
+ */
+
+/** The signed-in person as the header shows them. The email never reaches the page. */
 export interface AuthUser {
-  email: string
   name: string
   picture: string
 }
@@ -15,19 +26,19 @@ type AuthStatus = 'loading' | 'anonymous' | 'signed-in'
 export interface AuthContextValue {
   status: AuthStatus
   user: AuthUser | null
-  /** True when the backend confirmed this user is on the admin allowlist. */
+  /** True when this person is on the `Users` tab, and so may write. */
   isAdmin: boolean
-  /** Owner label mapped from the admin's email (e.g. `leandro`). */
+  /** Their owner label on the `Users` tab (e.g. `leandro`); '' when not on it. */
   owner: string
-  /** Whether Google sign-in is configured (a client ID is present). */
+  /** Whether sign-in can work here: a Google client ID is set, or the app runs on mock data. */
   configured: boolean
-  /** Whether the GIS library has loaded and initialized. */
+  /** Whether the app runs on mock data, signed in as a sample person. */
+  mock: boolean
+  /** Whether Google's sign-in library has loaded and initialized. */
   googleReady: boolean
-  /** Whether the GIS library is being loaded after a "sign in" click. */
+  /** Whether Google's sign-in library is being loaded after a "sign in" click. */
   googleLoading: boolean
   error: string | null
-  /** Triggers the Google account chooser / One Tap. */
-  signIn: () => void
   /** Loads Google sign-in on demand (never on page load). */
   startSignIn: () => void
   signOut: () => void
@@ -35,151 +46,29 @@ export interface AuthContextValue {
   renderButton: (el: HTMLElement | null) => void
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null)
-
-const GSI_SRC = 'https://accounts.google.com/gsi/client'
-
-/** Decodes the payload of a JWT (no verification — display only). */
-function decodeJwt(token: string): Record<string, unknown> {
-  const part = token.split('.')[1] ?? ''
-  const base64 = part.replace(/-/g, '+').replace(/_/g, '/')
-  const json = decodeURIComponent(
-    atob(base64)
-      .split('')
-      .map((ch) => '%' + ch.charCodeAt(0).toString(16).padStart(2, '0'))
-      .join(''),
-  )
-  return JSON.parse(json)
-}
-
-/** Loads the GIS client script once; resolves when `window.google` is ready. */
-function loadGsi(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (window.google?.accounts?.id) return resolve()
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${GSI_SRC}"]`)
-    if (existing) {
-      existing.addEventListener('load', () => resolve())
-      existing.addEventListener('error', () => reject(new Error('failed to load Google sign-in')))
-      return
-    }
-    const script = document.createElement('script')
-    script.src = GSI_SRC
-    script.async = true
-    script.defer = true
-    script.onload = () => resolve()
-    script.onerror = () => reject(new Error('failed to load Google sign-in'))
-    document.head.appendChild(script)
-  })
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const configured = config.googleClientId.length > 0
-  const [status, setStatus] = useState<AuthStatus>('anonymous')
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [owner, setOwner] = useState('')
-  const [googleReady, setGoogleReady] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const tokenRef = useRef<string | null>(null)
-  /** Set once GIS loading has started, so repeated clicks don't reload it. */
-  const gsiStartedRef = useRef(false)
-
-  // Writes carry the current ID token; register the provider once.
-  useEffect(() => {
-    setIdTokenProvider(() => tokenRef.current)
-  }, [])
-
-  const handleCredential = useCallback(async (credential: string) => {
-    tokenRef.current = credential
-    try {
-      const claims = decodeJwt(credential)
-      setUser({
-        email: String(claims.email ?? ''),
-        name: String(claims.name ?? claims.email ?? ''),
-        picture: String(claims.picture ?? ''),
-      })
-      const me = await fetchMe()
-      setIsAdmin(me.admin)
-      setOwner(me.owner)
-      setStatus('signed-in')
-      if (!me.admin) setError(`Signed in, but not an admin (${me.reason}).`)
-      else setError(null)
-    } catch (err) {
-      setError(String(err))
-      setStatus('signed-in')
-    }
-  }, [])
-
-  // Offline mock mode: no sign-in, treat the local dev as an admin.
-  useEffect(() => {
-    if (hasBackend) return
-    setUser({ email: 'dev@local', name: 'dev', picture: '' })
-    setIsAdmin(true)
-    setOwner('leandro')
-    setStatus('signed-in')
-  }, [])
-
-  /**
-   * Loads and initializes Google Identity Services on demand, the first time
-   * a visitor clicks "sign in". Once it's ready, AuthBar swaps its plain
-   * button for the official Google one.
-   */
-  const startSignIn = useCallback(() => {
-    if (gsiStartedRef.current) return
-    gsiStartedRef.current = true
-    setGoogleLoading(true)
-    loadGsi()
-      .then(() => {
-        if (!window.google) throw new Error('failed to load Google sign-in')
-        window.google.accounts.id.initialize({
-          client_id: config.googleClientId,
-          callback: (resp) => void handleCredential(resp.credential),
-          auto_select: false,
-          cancel_on_tap_outside: true,
-        })
-        setGoogleReady(true)
-      })
-      .catch((err) => {
-        // Let the visitor try again.
-        gsiStartedRef.current = false
-        setError(String(err))
-      })
-      .finally(() => setGoogleLoading(false))
-  }, [handleCredential])
-
-  const signIn = useCallback(() => {
-    window.google?.accounts.id.prompt()
-  }, [])
-
-  const signOut = useCallback(() => {
-    tokenRef.current = null
-    window.google?.accounts.id.disableAutoSelect()
-    setUser(null)
-    setIsAdmin(false)
-    setOwner('')
-    setError(null)
-    setStatus('anonymous')
-  }, [])
-
-  const renderButton = useCallback((el: HTMLElement | null) => {
-    if (el && window.google) {
-      el.innerHTML = ''
-      window.google.accounts.id.renderButton(el, { theme: 'outline', size: 'medium', shape: 'pill' })
-    }
-  }, [])
-
-  const value = useMemo<AuthContextValue>(
-    () => ({ status, user, isAdmin, owner, configured, googleReady, googleLoading, error, signIn, startSignIn, signOut, renderButton }),
-    [status, user, isAdmin, owner, configured, googleReady, googleLoading, error, signIn, startSignIn, signOut, renderButton],
+  return (
+    <SessionProvider auth={auth} googleClientId={config.googleClientId}>
+      {children}
+    </SessionProvider>
   )
-
-  return <AuthContext value={value}>{children}</AuthContext>
 }
 
 /** Access the auth state. Must be used within an {@link AuthProvider}. */
 export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within an AuthProvider')
-  return ctx
+  const session = useSession()
+  return {
+    status: session.status,
+    user: session.status === 'signed-in' ? { name: session.name, picture: session.picture } : null,
+    isAdmin: session.authorized,
+    owner: session.authorized ? session.name : '',
+    configured: session.configured || session.demo,
+    mock: session.demo,
+    googleReady: session.googleReady,
+    googleLoading: session.googleLoading,
+    error: session.error,
+    startSignIn: session.startSignIn,
+    signOut: session.signOut,
+    renderButton: session.renderButton,
+  }
 }

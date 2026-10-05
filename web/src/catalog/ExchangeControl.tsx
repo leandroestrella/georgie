@@ -6,16 +6,14 @@ import { completeExchange, setExchange } from '@/api/client'
 import type { Book } from '@/api/types'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { useAdminAction } from '@/catalog/useAdminAction'
-import { useBusy } from '@/components/BusyProvider'
-import { Button } from '@/components/ui/button'
 import {
+  useBusy,
+  Button,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -25,9 +23,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+  Input,
+  Label,
+} from '@lndrstrll/pomuku-ui'
 
 /**
  * Admin exchange-stage control (§3.9): offered → confirmed → in transit →

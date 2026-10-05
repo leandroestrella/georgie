@@ -1,9 +1,9 @@
 /**
  * Shared data model for the Georgie SPA.
  *
- * These types mirror the JSON the Apps Script backend returns (see
- * `apps-script/catalog.js` — same field names, same shapes). The backend does
- * all row↔object mapping; the SPA only ever sees already-typed objects.
+ * The shapes pages work with. `api/client.ts` builds them from what the backend
+ * sends (see `server/src/schema.ts` for the stored model): an empty field is ''
+ * / [] / false here, and a book carries its derived zone.
  */
 
 /** `''` = a known/exact edition year; `'circa'` = a first-publication year that still wants a colophon check. */
@@ -36,7 +36,7 @@ export interface Book {
   coverUrl: string
   /** The book's specific category — one of the taxonomy's themes. */
   theme: string
-  /** The theme's parent zone — derived server-side, never chosen independently. */
+  /** The theme's parent zone — derived from the taxonomy, never chosen independently. */
   zone: string
   owner: string
   referenceUrl: string
@@ -110,22 +110,24 @@ export interface Zone {
   themes: Theme[]
 }
 
-/** One row of the admin audit log (the `History` tab), newest first. */
+/** One entry of the log of changes to books, newest first. */
 export interface HistoryEntry {
+  /** The entry's place in the log: unique, and higher for a later change. */
+  seq: number
   /** ISO 8601 UTC. */
   timestamp: string
-  /** The acting admin's owner label (never a raw email). */
+  /** Who made the change: a person's owner label (never an email), or `sheet`
+   *  for an edit made in the spreadsheet itself. */
   actor: string
-  action: 'add' | 'update' | 'archive' | 'restore' | 'loan' | 'return' | 'exchange'
-  /** The book's call-number ID — always present (Georgie's "delete" is an
-   *  archive, so there's never a row this can't safely link back to). */
+  /** `delete` is a row removed outright (Georgie's own "delete" is an archive);
+   *  `conflict` is a spreadsheet edit that lost to a change made in the app —
+   *  the entry keeps the spreadsheet's value. */
+  action: 'add' | 'update' | 'archive' | 'restore' | 'loan' | 'return' | 'exchange' | 'delete' | 'conflict'
+  /** The book's call-number ID. */
   entityId: string
   title: string
-  author: string
-  theme: string
-  /** A field-by-field diff summary (`update`) or a short context line
-   *  (`loan`) — '' when the action name already says everything (`add`,
-   *  `archive`, `restore`, `return`). */
+  /** What changed, field by field (`year: 1998 → 1999`); every field of a book
+   *  just added. */
   changes: string
 }
 

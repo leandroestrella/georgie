@@ -12,17 +12,18 @@ a web app for managing our physical home library — browsing, cataloguing, lend
 
 ## how it works?
 
-the catalog lives in a google sheet. a static web app reads and displays it publicly; admins sign in with google to make changes, which flow through a google apps script api back into the sheet.
+the catalog lives in a small database behind a backend that answers in a fraction of a second. a google sheet stays a complete, editable copy of it, kept in sync both ways: a change made in the app reaches the sheet a few seconds later, and an edit made in the sheet reaches the app the next time someone opens it (or right away, from the sheet's own "sync" menu). a static web app reads and displays the catalog publicly; admins sign in with google to make changes.
 
 ```mermaid
-%%{init: {'theme': 'dark'}}%%
+%{init: {'theme': 'dark'}}%
 flowchart LR
     V[visitor] -->|browse, search, filter| SPA[georgie web app]
     A[admin] -->|google sign-in| SPA
     A -.->|scan barcode / lookup isbn| SPA
-    SPA -->|read catalog| GAS[apps script api]
-    SPA -->|writes, token-verified| GAS
-    GAS --> SHEET[(private google sheet)]
+    SPA -->|reads, and writes with a session| API[backend: cloudflare worker]
+    API --> DB[(database)]
+    API <-->|sync, both ways| SHEET[(private google sheet)]
+    A -.->|bulk edits| SHEET
     SPA -->|metadata| EXT[google books / open library]
     SPA -->|covers| COV[your host / open library / amazon]
 ```
@@ -51,9 +52,10 @@ flowchart LR
 - [react-router](https://reactrouter.com/) — client-side routing
 - [react-i18next](https://react.i18next.com/) — internationalization (english / italiano / español)
 - [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) — barcode scanning, with the browser's native `BarcodeDetector` when available
-- [google apps script](https://developers.google.com/apps-script) + [clasp](https://github.com/google/clasp) — backend api bound to the sheet
+- [pomuku](https://github.com/leandroestrella/pomuku) — the shared packages georgie is built on: components and theme, sign-in, the data client, translations, and the backend core
+- [hono](https://hono.dev) on [cloudflare workers](https://workers.cloudflare.com/) + [d1](https://developers.cloudflare.com/d1/) — the backend api and its database (the free plan is enough)
 - [google identity services](https://developers.google.com/identity) — admin sign-in
-- [google sheets](https://www.google.com/sheets/about/) — the database
+- [google sheets](https://www.google.com/sheets/about/) — the editable copy of the database, kept in sync both ways; a small [apps script](https://developers.google.com/apps-script) adds the sheet's "sync" menu
 - [ftp-deploy-action](https://github.com/SamKirkland/FTP-Deploy-Action) — deploys to cpanel on push to `master`
 - php — two small cpanel scripts: cover uploads and the daily spreadsheet backup (see [cpanel/README.md](cpanel/README.md), [docs/backups.md](docs/backups.md)); nothing else in the stack touches php
 
@@ -61,7 +63,8 @@ flowchart LR
 
 ```
 web/          the spa (vite + react)
-apps-script/  the backend api (synced with clasp)
+server/       the backend: a cloudflare worker with its database, kept in sync with the sheet
+apps-script/  the sheet's own script: its "sync" menu (and the previous backend, kept for a while as a fallback)
 cpanel/       optional php: cover hosting, and the daily spreadsheet-backup cron script
 docs/         maintainer guides (book ids, sheet markers, translations, backups)
 assets/       brand art
@@ -71,25 +74,22 @@ assets/       brand art
 
 georgie is a template for anyone who wants to catalog their own shelves:
 
-1. copy the google sheet template — a `Catalog` tab with the book columns, a `Zones` tab defining your categories, and a `Lists` tab for owners/languages (the exact column headers are in [docs/sheet-setup.md](docs/sheet-setup.md)). keep it **private** (the app reads it through the backend, so it never needs to be link-shared)
-2. create a bound apps script on your sheet: `cd apps-script`, `npm install`, `npx clasp login`, then `clasp clone <scriptId>` (or create the project via the sheet's Extensions → Apps Script and `clasp push`). deploy it as a web app ("execute as: me", "who has access: anyone"). run any function once from the editor to grant the scopes (spreadsheet + external requests), clicking through the consent screen
-3. create a google oauth client id (web application) for the sign-in button; add your site's origin to its authorized javascript origins
-4. configure admins & the client id on the backend:
-   - run `setupUsersTab` from the apps script editor — it creates a `Users` tab and seeds you; add each admin as a row (`Email`, `Owner`). this tab is the write allowlist, and its `Owner` labels are also the people the overview page reports reading stats for — spell each one exactly as it appears in the catalog's `Owner` / `Read by` columns (matching is case-sensitive)
-   - add a script property `OAUTH_CLIENT_ID` (Project Settings → Script Properties) with the client id from step 3, so the backend can verify sign-in tokens
-5. copy `web/.env.example` to `web/.env.local` and fill in `VITE_API_URL` (your `/exec` url) and `VITE_GOOGLE_CLIENT_ID` — both are public, so they can also live in github repo secrets for the deploy action
-6. `npm install && npm run build` in `web/`, and host the `dist/` folder anywhere static files live (an `.htaccess` for spa routing + basic headers is included for apache/cpanel)
-7. *(optional)* to let admins save covers to your own host, drop [`cpanel/upload-cover.php`](cpanel/upload-cover.php) on the server and add the `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` script properties — see [cpanel/README.md](cpanel/README.md)
-8. *(optional)* for daily spreadsheet backups, drop [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) on the server and add a cPanel Cron Job — see [docs/backups.md](docs/backups.md)
+1. copy the google sheet template — a `Catalog` tab with the book columns, a `Zones` tab defining your categories, a `Lists` tab for owners/languages, and a `Users` tab listing who may make changes (the exact column headers are in [docs/sheet-setup.md](docs/sheet-setup.md)). keep it **private** (the app reads it through the backend, so it never needs to be link-shared)
+2. create a google oauth client id (web application) for the sign-in button; add your site's origin to its authorized javascript origins
+3. deploy the backend — a cloudflare worker with a d1 database, connected to your sheet through a google service account — following [server/README.md](server/README.md). its first "sync now" imports your sheet
+4. copy `web/.env.example` to `web/.env.local` and fill in `VITE_API_URL` (your worker's address) and `VITE_GOOGLE_CLIENT_ID` — both are public, so they can also live in github repo secrets for the deploy action
+5. `npm install` in `server/` and in `web/` (the web app imports the backend's schema), then `npm run build` in `web/`, and host the `dist/` folder anywhere static files live (an `.htaccess` for spa routing + basic headers is included for apache/cpanel)
+6. *(optional)* to let admins save covers to your own host, drop [`cpanel/upload-cover.php`](cpanel/upload-cover.php) on the server and give the worker its address and secret — see [cpanel/README.md](cpanel/README.md)
+7. *(optional)* for daily spreadsheet backups, drop [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) on the server and add a cPanel Cron Job — see [docs/backups.md](docs/backups.md)
 
-both config values are safe to publish (the oauth client id is public by design, and every write is gated server-side by google id-token verification against the `Users` allowlist) — nothing secret ever lands in the repo.
+both config values are safe to publish (the oauth client id is public by design, and every write is gated server-side: it needs the session of someone on the `Users` tab) — nothing secret ever lands in the repo.
 
 ## maintainer guides
 
 day-to-day how-tos for running your catalog live in [`docs/`](docs/):
 
 - [sheet setup](docs/sheet-setup.md) — the exact `Catalog` / `Zones` / `Lists` column schema
-- [book ids](docs/book-ids.md) — how call-number ids are generated, `=MAKEID`, and the rare manual re-mint
+- [book ids](docs/book-ids.md) — how call-number ids are generated, adding books straight in the sheet, and the rare manual re-mint
 - [markers](docs/markers.md) — owner/reader/zone badges driven by sheet columns
 - [translations](docs/translations.md) — translating zone/theme names and descriptions, and language names
 - [cover hosting](cpanel/README.md) — the optional self-hosted cover endpoint
@@ -100,16 +100,18 @@ day-to-day how-tos for running your catalog live in [`docs/`](docs/):
 work happens on the `develop` branch; merging to `master` triggers the build and ftp deploy to cpanel via github actions.
 
 ```bash
-cd web
+cd server
+npm install
+npm test        # the whole backend on a local database, against a spreadsheet kept in memory
+
+cd ../web
 npm install
 npm run dev     # runs on mock fixtures until VITE_API_URL is set — no backend needed
-npm test        # vitest (pure logic: ids, mapping, filters, validation, metadata)
+npm test        # vitest (the api client, filters, validation, metadata)
 npm run build   # typecheck + production build
 ```
 
-pure logic (id generation, column mapping, taxonomy parsing) is kept
-framework-free so it's unit-tested without a live sheet; the apps script backend
-has its own `npm test` (`node --test`).
+the data model and its rules (columns, validation, the call-number id) are written once, in `server/src/schema.ts`, and imported by the web app — so `server/` has to be installed for `web/` to build. pure logic is kept framework-free, so it's unit-tested without a live sheet.
 
 ## license
 

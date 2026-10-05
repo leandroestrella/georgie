@@ -12,17 +12,18 @@ un'app web per gestire la nostra biblioteca fisica di casa — sfogliare, catalo
 
 ## come funziona?
 
-il catalogo vive in un google sheet. un'app web statica lo legge e lo mostra pubblicamente; gli admin accedono con google per apportare modifiche, che passano attraverso una api google apps script per tornare nel foglio.
+il catalogo vive in un piccolo database dietro un backend che risponde in una frazione di secondo. un google sheet ne resta una copia completa e modificabile, tenuta sincronizzata nei due sensi: una modifica fatta nell'app arriva nel foglio pochi secondi dopo, e una modifica fatta nel foglio arriva nell'app la prossima volta che qualcuno la apre (o subito, dal menu "sync" del foglio). un'app web statica legge e mostra il catalogo pubblicamente; gli admin accedono con google per apportare modifiche.
 
 ```mermaid
-%%{init: {'theme': 'dark'}}%%
+%{init: {'theme': 'dark'}}%
 flowchart LR
     V[visitatore] -->|sfoglia, cerca, filtra| SPA[app web georgie]
     A[admin] -->|accesso con google| SPA
     A -.->|scansiona codice a barre / cerca isbn| SPA
-    SPA -->|lettura catalogo| GAS[api apps script]
-    SPA -->|scritture, token verificato| GAS
-    GAS --> SHEET[(google sheet privato)]
+    SPA -->|letture, e scritture con una sessione| API[backend: cloudflare worker]
+    API --> DB[(database)]
+    API <-->|sincronizzazione, nei due sensi| SHEET[(google sheet privato)]
+    A -.->|modifiche in blocco| SHEET
     SPA -->|metadati| EXT[google books / open library]
     SPA -->|copertine| COV[il tuo host / open library / amazon]
 ```
@@ -51,9 +52,10 @@ flowchart LR
 - [react-router](https://reactrouter.com/) — routing lato client
 - [react-i18next](https://react.i18next.com/) — internazionalizzazione (english / italiano / español)
 - [zxing-wasm](https://github.com/Sec-ant/zxing-wasm) — scansione codici a barre, con il `BarcodeDetector` nativo del browser quando disponibile
-- [google apps script](https://developers.google.com/apps-script) + [clasp](https://github.com/google/clasp) — api di backend collegata al foglio
+- [pomuku](https://github.com/leandroestrella/pomuku) — i pacchetti condivisi su cui georgie è costruita: componenti e tema, accesso, client dei dati, traduzioni, e il nucleo del backend
+- [hono](https://hono.dev) su [cloudflare workers](https://workers.cloudflare.com/) + [d1](https://developers.cloudflare.com/d1/) — l'api di backend e il suo database (basta il piano gratuito)
 - [google identity services](https://developers.google.com/identity) — accesso admin
-- [google sheets](https://www.google.com/sheets/about/) — il database
+- [google sheets](https://www.google.com/sheets/about/) — la copia modificabile del database, tenuta sincronizzata nei due sensi; un piccolo [apps script](https://developers.google.com/apps-script) aggiunge al foglio il menu "sync"
 - [ftp-deploy-action](https://github.com/SamKirkland/FTP-Deploy-Action) — deploy su cpanel a ogni push su `master`
 - php — due piccoli script cpanel: upload delle copertine e il backup giornaliero del foglio (vedi [cpanel/README.md](cpanel/README.md), [docs/backups.md](docs/backups.md)); nient'altro nello stack usa php
 
@@ -61,7 +63,8 @@ flowchart LR
 
 ```
 web/          la spa (vite + react)
-apps-script/  l'api di backend (sincronizzata con clasp)
+server/       il backend: un cloudflare worker con il suo database, tenuto sincronizzato con il foglio
+apps-script/  lo script del foglio: il suo menu "sync" (e il backend precedente, tenuto per un po' come riserva)
 cpanel/       php opzionale: hosting delle copertine e lo script cron per il backup del foglio
 docs/         guide per chi gestisce il catalogo (id dei libri, marcatori del foglio, traduzioni)
 assets/       materiale grafico del brand
@@ -71,25 +74,22 @@ assets/       materiale grafico del brand
 
 georgie è un template per chiunque voglia catalogare i propri scaffali:
 
-1. copia il template del google sheet — una scheda `Catalog` con le colonne dei libri, una scheda `Zones` che definisce le tue categorie, e una scheda `Lists` per proprietari/lingue (le intestazioni di colonna esatte sono in [docs/sheet-setup.md](docs/sheet-setup.md)). tienilo **privato** (l'app lo legge tramite il backend, quindi non deve mai essere condiviso via link)
-2. crea un apps script collegato al tuo foglio: `cd apps-script`, `npm install`, `npx clasp login`, poi `clasp clone <scriptId>` (oppure crea il progetto tramite Extensions → Apps Script del foglio e `clasp push`). distribuiscilo come app web ("esegui come: me", "chi ha accesso: chiunque"). esegui una qualsiasi funzione una volta dall'editor per concedere gli scope (foglio di calcolo + richieste esterne), passando per la schermata di consenso
-3. crea un google oauth client id (applicazione web) per il pulsante di accesso; aggiungi l'origine del tuo sito alle sue authorized javascript origins
-4. configura gli admin e il client id sul backend:
-   - esegui `setupUsersTab` dall'editor di apps script — crea una scheda `Users` e ti aggiunge come primo admin; aggiungi ogni admin come riga (`Email`, `Owner`). questa scheda è la lista di chi può scrivere, e i suoi valori `Owner` sono anche le persone di cui la pagina statistiche riporta i dati di lettura — scrivi ciascun nome esattamente come appare nelle colonne `Owner` / `Read by` del catalogo (il confronto distingue maiuscole e minuscole)
-   - aggiungi una script property `OAUTH_CLIENT_ID` (Project Settings → Script Properties) con il client id del punto 3, così il backend può verificare i token di accesso
-5. copia `web/.env.example` in `web/.env.local` e compila `VITE_API_URL` (il tuo url `/exec`) e `VITE_GOOGLE_CLIENT_ID` — sono entrambi pubblici, quindi possono anche vivere nei repo secrets di github per l'azione di deploy
-6. `npm install && npm run build` in `web/`, e ospita la cartella `dist/` ovunque tu abbia hosting statico (è incluso un `.htaccess` per il routing spa + header di base per apache/cpanel)
-7. *(opzionale)* per permettere agli admin di salvare le copertine sul tuo host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) sul server e aggiungi le script property `COVERS_UPLOAD_URL` / `COVERS_UPLOAD_SECRET` — vedi [cpanel/README.md](cpanel/README.md)
-8. *(opzionale)* per i backup giornalieri del foglio, copia [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) sul server e aggiungi un Cron Job su cPanel — vedi [docs/backups.md](docs/backups.md)
+1. copia il template del google sheet — una scheda `Catalog` con le colonne dei libri, una scheda `Zones` che definisce le tue categorie, una scheda `Lists` per proprietari/lingue, e una scheda `Users` con chi può apportare modifiche (le intestazioni di colonna esatte sono in [docs/sheet-setup.md](docs/sheet-setup.md)). tienilo **privato** (l'app lo legge tramite il backend, quindi non deve mai essere condiviso via link)
+2. crea un google oauth client id (applicazione web) per il pulsante di accesso; aggiungi l'origine del tuo sito alle sue authorized javascript origins
+3. distribuisci il backend — un cloudflare worker con un database d1, collegato al tuo foglio tramite un service account di google — seguendo [server/README.md](server/README.md). il suo primo "sync now" importa il tuo foglio
+4. copia `web/.env.example` in `web/.env.local` e compila `VITE_API_URL` (l'indirizzo del tuo worker) e `VITE_GOOGLE_CLIENT_ID` — sono entrambi pubblici, quindi possono anche vivere nei repo secrets di github per l'azione di deploy
+5. `npm install` in `server/` e in `web/` (l'app web importa lo schema del backend), poi `npm run build` in `web/`, e ospita la cartella `dist/` ovunque tu abbia hosting statico (è incluso un `.htaccess` per il routing spa + header di base per apache/cpanel)
+6. *(opzionale)* per permettere agli admin di salvare le copertine sul tuo host, copia [`cpanel/upload-cover.php`](cpanel/upload-cover.php) sul server e dai al worker il suo indirizzo e il segreto — vedi [cpanel/README.md](cpanel/README.md)
+7. *(opzionale)* per i backup giornalieri del foglio, copia [`cpanel/backup/run-backup.php`](cpanel/backup/run-backup.php) sul server e aggiungi un Cron Job su cPanel — vedi [docs/backups.md](docs/backups.md)
 
-entrambi i valori di configurazione sono sicuri da pubblicare (il client id oauth è pubblico per design, e ogni scrittura è protetta lato server dalla verifica del token id google rispetto alla lista `Users`) — nessun segreto finisce mai nel repository.
+entrambi i valori di configurazione sono sicuri da pubblicare (il client id oauth è pubblico per design, e ogni scrittura è protetta lato server: richiede la sessione di qualcuno presente nella scheda `Users`) — nessun segreto finisce mai nel repository.
 
 ## guide per chi gestisce il catalogo
 
 le guide pratiche per la gestione quotidiana del catalogo vivono in [`docs/`](docs/):
 
 - [impostazione del foglio](docs/sheet-setup.md) — lo schema esatto delle colonne `Catalog` / `Zones` / `Lists`
-- [id dei libri](docs/book-ids.md) — come vengono generati gli id in stile numero di catalogo, `=MAKEID`, e il raro caso di rigenerazione manuale
+- [id dei libri](docs/book-ids.md) — come vengono generati gli id in stile numero di catalogo, aggiungere libri direttamente nel foglio, e il raro caso di rigenerazione manuale
 - [marcatori](docs/markers.md) — i badge di proprietario/lettore/zona guidati dalle colonne del foglio
 - [traduzioni](docs/translations.md) — tradurre nomi e descrizioni di zone/temi, e nomi delle lingue
 - [hosting delle copertine](cpanel/README.md) — l'endpoint opzionale per ospitare le copertine sul proprio server
@@ -100,16 +100,18 @@ le guide pratiche per la gestione quotidiana del catalogo vivono in [`docs/`](do
 il lavoro avviene sul branch `develop`; il merge su `master` avvia la build e il deploy ftp su cpanel tramite github actions.
 
 ```bash
-cd web
+cd server
+npm install
+npm test        # l'intero backend su un database locale, con un foglio tenuto in memoria
+
+cd ../web
 npm install
 npm run dev     # gira su dati mock finché VITE_API_URL non è impostata — non serve un backend
-npm test        # vitest (logica pura: id, mapping, filtri, validazione, metadati)
+npm test        # vitest (il client dell'api, filtri, validazione, metadati)
 npm run build   # controllo dei tipi + build di produzione
 ```
 
-la logica pura (generazione degli id, mapping delle colonne, parsing della tassonomia) è tenuta
-priva di dipendenze dal framework, così da poter essere testata senza un foglio live; il backend
-apps script ha il suo `npm test` (`node --test`).
+il modello dei dati e le sue regole (colonne, validazione, l'id in stile numero di catalogo) sono scritti una volta sola, in `server/src/schema.ts`, e importati dall'app web — quindi `server/` va installato perché `web/` compili. la logica pura è tenuta priva di dipendenze dal framework, così da poter essere testata senza un foglio live.
 
 ## licenza
 

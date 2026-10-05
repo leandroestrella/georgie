@@ -1,13 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { CameraIcon, GlobeIcon, ScanBarcodeIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from '@lndrstrll/pomuku-ui'
 import { NO_ISBN } from '@/catalog/constants'
 import { isValidIsbn } from '@/catalog/validation'
 import { lookupByIsbn, searchBooks, type BookMetadata } from './lookup'

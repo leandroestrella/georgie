@@ -1,6 +1,8 @@
 {
   "app": {
-    "tagline": "una casa accogliente per la tua biblioteca di casa.",
+    "tagline": "una casa accogliente per la tua biblioteca di casa."
+  },
+  "common": {
     "loading": "carico"
   },
   "nav": {
@@ -68,8 +70,6 @@
   "auth": {
     "signIn": "accedi",
     "signOut": "esci",
-    "admin": "admin · {{owner}}",
-    "notAdmin": "non sei admin",
     "notConfigured": "accesso non configurato"
   },
   "error": {
@@ -172,7 +172,9 @@
       "restore": "{{actor}} ha ripristinato “{{title}}”",
       "loan": "{{actor}} ha prestato “{{title}}”",
       "return": "{{actor}} ha segnato “{{title}}” come reso",
-      "exchange": "{{actor}} ha aggiornato lo scambio di “{{title}}”"
+      "exchange": "{{actor}} ha aggiornato lo scambio di “{{title}}”",
+      "delete": "{{actor}} ha rimosso “{{title}}”",
+      "conflict": "una modifica a “{{title}}” fatta nel foglio è stata sostituita da una fatta nell’app"
     }
   },
   "exchange": {

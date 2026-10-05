@@ -1,6 +1,8 @@
 {
   "app": {
-    "tagline": "a cozy little home for your home library.",
+    "tagline": "a cozy little home for your home library."
+  },
+  "common": {
     "loading": "loading"
   },
   "nav": {
@@ -68,8 +70,6 @@
   "auth": {
     "signIn": "sign in",
     "signOut": "sign out",
-    "admin": "admin · {{owner}}",
-    "notAdmin": "not an admin",
     "notConfigured": "sign-in not configured"
   },
   "error": {
@@ -172,7 +172,9 @@
       "restore": "{{actor}} restored “{{title}}”",
       "loan": "{{actor}} loaned out “{{title}}”",
       "return": "{{actor}} marked “{{title}}” returned",
-      "exchange": "{{actor}} updated the exchange for “{{title}}”"
+      "exchange": "{{actor}} updated the exchange for “{{title}}”",
+      "delete": "{{actor}} removed “{{title}}”",
+      "conflict": "a spreadsheet edit to “{{title}}” was replaced by one made in the app"
     }
   },
   "exchange": {

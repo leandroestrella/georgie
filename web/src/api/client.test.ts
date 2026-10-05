@@ -119,7 +119,7 @@ describe('writes', () => {
   })
 
   it('updateBook throws for an unknown id', async () => {
-    await expect(updateBook('NOPE-000-0000', { title: 'x' })).rejects.toThrow(/not found/i)
+    await expect(updateBook('NOPE-000-0000', { title: 'x' })).rejects.toThrow(/no books row/i)
   })
 
   it('walks the exchange flow offered → confirmed → in transit → received, linking and releasing the incoming book', async () => {

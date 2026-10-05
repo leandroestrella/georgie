@@ -1,16 +1,13 @@
 import { useCallback, useMemo } from 'react'
-import { createPortal } from 'react-dom'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArchiveIcon, PlusIcon } from 'lucide-react'
 import { useAuth } from '@/auth/AuthProvider'
-import { Button } from '@/components/ui/button'
+import { Button, HeaderAction, LoadingAvatar, SubHeader } from '@lndrstrll/pomuku-ui'
 import { useCatalog } from '@/catalog/CatalogProvider'
 import { BookCard } from '@/catalog/BookCard'
 import { FilterBar } from '@/catalog/FilterBar'
 import { BookTable } from '@/catalog/BookTable'
-import { LoadingAvatar } from '@/components/LoadingAvatar'
-import { useAdminSlotContainer, useSubHeaderContainer } from '@/components/subheader'
 import {
   authorOptions,
   filterBooks,
@@ -112,8 +109,6 @@ export function CatalogPage() {
   const readers = useMemo(() => readerOptions(books), [books])
   const authors = useMemo(() => authorOptions(books), [books])
   const languages = useMemo(() => languageOptions(books), [books])
-  const subHeader = useSubHeaderContainer()
-  const adminSlot = useAdminSlotContainer()
 
   if (error) {
     return <p className="text-destructive py-12 text-center">{t('error.load')}</p>
@@ -121,23 +116,21 @@ export function CatalogPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* The primary write action lives beside sign-in (see useAdminSlotContainer). */}
-      {adminSlot &&
-        isAdmin &&
-        createPortal(
+      {/* The primary write action lives beside sign-in, on the header's second row. */}
+      {isAdmin && (
+        <HeaderAction>
           <Button asChild size="sm" className="gap-1">
             <Link to="/book/new">
               <PlusIcon className="size-3.5" /> {t('admin.add')}
             </Link>
-          </Button>,
-          adminSlot,
-        )}
+          </Button>
+        </HeaderAction>
+      )}
 
-      {/* The filter bar lives in the sticky header slot so it anchors while scrolling. */}
-      {subHeader &&
-        taxonomies &&
-        createPortal(
-          <div className="mx-auto w-full max-w-6xl px-4 pb-3 sm:px-6">
+      {/* The filter bar lives in the sticky header so it anchors while scrolling. */}
+      {taxonomies && (
+        <SubHeader>
+          <div className="pb-3">
             <FilterBar
               filters={filters}
               onFilters={onFilters}
@@ -152,9 +145,9 @@ export function CatalogPage() {
               readers={readers}
               onClear={onClear}
             />
-          </div>,
-          subHeader,
-        )}
+          </div>
+        </SubHeader>
+      )}
 
       {loading ? (
         <LoadingAvatar />

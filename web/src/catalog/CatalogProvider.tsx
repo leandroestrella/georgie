@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { getAllBooks, getBooks, getTaxonomies } from '@/api/client'
+import { getAllBooks, getBooks, getTaxonomies, peekBooks, peekTaxonomies, watchBooks } from '@/api/client'
 import type { Book, Taxonomies } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { buildZoneColorMap, NEUTRAL_ZONE, type ZoneColors } from './zoneColors'
@@ -46,35 +46,63 @@ interface CatalogContextValue {
 const CatalogContext = createContext<CatalogContextValue | null>(null)
 
 /**
- * Loads the catalog + taxonomy once and caches them in memory. Admins get the
- * archived books too (via the token-gated read), so the Archived view and
- * restore work without a second round trip. Writes update this cache in place
- * rather than refetching the whole catalog.
+ * Holds the catalog + taxonomy for the pages. Both open on the copy kept on
+ * this device (so a returning visitor sees the catalog at once) and are then
+ * read fresh from the backend; whenever the device's copy changes — the fresh
+ * read arriving, a save, a save refused as outdated bringing the row as it is
+ * now — the books here follow. Signed-in people get the whole table, archived
+ * books included, so the Archived view and restore need no second round trip.
  */
 export function CatalogProvider({ children }: { children: ReactNode }) {
   const { isAdmin } = useAuth()
-  const [books, setBooks] = useState<Book[]>([])
-  const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(null)
+  const [rows, setRows] = useState<Book[] | null>(() => peekBooks(isAdmin))
+  const [taxonomies, setTaxonomies] = useState<Taxonomies | null>(() => peekTaxonomies())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  /** Whether the books on hand are the signed-in ones (null before the first load). */
+  const [loadedAsAdmin, setLoadedAsAdmin] = useState<boolean | null>(null)
+  /**
+   * Bumped on every reload. Signing in (or a remembered session being picked
+   * up) starts a second read while the public one may still be on its way;
+   * only the latest request may write its result.
+   */
+  const requestRef = useRef(0)
 
   const reload = useCallback(() => {
+    const request = ++requestRef.current
+    const current = () => request === requestRef.current
+    // The device's copy for whoever is looking now, shown while the fresh one loads.
+    const kept = peekBooks(isAdmin)
+    if (kept) setRows(kept)
     setLoading(true)
     setError(null)
     Promise.all([isAdmin ? getAllBooks() : getBooks(), getTaxonomies()])
       .then(([b, t]) => {
-        setBooks(b)
+        if (!current()) return
+        setRows(b)
         setTaxonomies(t)
       })
-      .catch((e) => setError(String(e)))
-      .finally(() => setLoading(false))
+      .catch((e) => {
+        // With a copy on screen, a backend that can't be reached isn't an error
+        // worth replacing it with.
+        if (current() && !peekBooks(isAdmin)) setError(e instanceof Error ? e.message : String(e))
+      })
+      .finally(() => {
+        if (!current()) return
+        setLoading(false)
+        setLoadedAsAdmin(isAdmin)
+      })
   }, [isAdmin])
 
-  // Re-runs when admin status flips, so signing in pulls in the archived books.
+  // Re-runs when sign-in status flips, so signing in pulls in the archived books.
   useEffect(() => reload(), [reload])
 
+  // Follows the device's copy: every save lands here without a refetch.
+  useEffect(() => watchBooks(isAdmin, setRows), [isAdmin])
+
   const applyBook = useCallback((book: Book) => {
-    setBooks((prev) => {
+    setRows((prev) => {
+      if (!prev) return [book]
       const i = prev.findIndex((b) => b.id === book.id)
       if (i === -1) return [...prev, book]
       const next = [...prev]
@@ -82,6 +110,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       return next
     })
   }, [])
+
+  // A book's zone is derived from its theme. Re-derived here so that books read
+  // from the device before the taxonomy arrived get theirs once it does.
+  const books = useMemo(() => {
+    const themeToZone = taxonomies?.themeToZone ?? {}
+    return (rows ?? []).map((book) => (book.zone || !themeToZone[book.theme] ? book : { ...book, zone: themeToZone[book.theme] }))
+  }, [rows, taxonomies])
 
   const zoneColorMap = useMemo(
     () => buildZoneColorMap((taxonomies?.zones ?? []).map((z) => z.name)),
@@ -133,6 +168,11 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const ownerMarkers = useMemo(() => taxonomies?.ownerMarkers ?? {}, [taxonomies])
   const activeBooks = useMemo(() => books.filter((b) => !b.archived), [books])
   const archivedBooks = useMemo(() => books.filter((b) => b.archived), [books])
+  // "Loading" only while there is nothing to show yet. Also for the render
+  // between someone signing in (or a remembered session being picked up) and
+  // their reload finishing, when the books on hand are still the public ones,
+  // without the archive.
+  const pending = (loading && (rows === null || taxonomies === null)) || (isAdmin && loadedAsAdmin === false && peekBooks(true) === null)
 
   const value = useMemo<CatalogContextValue>(
     () => ({
@@ -140,7 +180,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       activeBooks,
       archivedBooks,
       taxonomies,
-      loading,
+      loading: pending,
       error,
       reload,
       applyBook,
@@ -174,7 +214,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       activeBooks,
       archivedBooks,
       taxonomies,
-      loading,
+      pending,
       error,
       reload,
       applyBook,

@@ -5,17 +5,20 @@ import {
   ArchiveIcon,
   ArrowLeftIcon,
   CircleCheckIcon,
+  GitCompareArrowsIcon,
   HandCoinsIcon,
   PencilIcon,
   PlusIcon,
   RepeatIcon,
+  Trash2Icon,
   Undo2Icon,
 } from 'lucide-react'
 import { getHistory } from '@/api/client'
 import type { HistoryEntry } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
+import { useCatalog } from '@/catalog/CatalogProvider'
 import { OwnerBadge } from '@/catalog/OwnerBadge'
-import { LoadingAvatar } from '@/components/LoadingAvatar'
+import { LoadingAvatar } from '@lndrstrll/pomuku-ui'
 import { useVocab } from '@/i18n/vocab'
 
 const ACTION_ICONS: Record<HistoryEntry['action'], typeof PlusIcon> = {
@@ -26,6 +29,8 @@ const ACTION_ICONS: Record<HistoryEntry['action'], typeof PlusIcon> = {
   loan: HandCoinsIcon,
   return: CircleCheckIcon,
   exchange: RepeatIcon,
+  delete: Trash2Icon,
+  conflict: GitCompareArrowsIcon,
 }
 
 /**
@@ -45,16 +50,17 @@ function formatTimestamp(iso: string, lang: string): string {
 }
 
 /**
- * Admin-only audit log of every catalog write (the `History` tab), newest
- * first — reachable from the header's history icon (admin-only, alongside the
- * Overview link). Each entry links to its book: safe to do unconditionally
- * here since Georgie's "delete" is an archive (the row is never destroyed),
- * unlike a true delete which would need to leave `entityId` blank.
+ * Signed-in-only log of every change to a book, newest first — made in the app
+ * or in the spreadsheet itself. Reachable from the header's history icon
+ * (alongside the Overview link). Each entry links to its book, whose author and
+ * theme come from the catalog on hand; an entry for a book no longer there
+ * shows without them.
  */
 export function HistoryPage() {
   const { t, i18n } = useTranslation()
   const tv = useVocab()
   const { status, isAdmin } = useAuth()
+  const { getBook } = useCatalog()
   const [entries, setEntries] = useState<HistoryEntry[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -62,7 +68,7 @@ export function HistoryPage() {
     if (!isAdmin) return
     getHistory()
       .then(setEntries)
-      .catch((e) => setError(String(e)))
+      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
   }, [isAdmin])
 
   if (status !== 'loading' && !isAdmin) return <Navigate to="/" replace />
@@ -84,6 +90,7 @@ export function HistoryPage() {
         <ul className="flex flex-col divide-y rounded-lg border">
           {entries.map((entry) => {
             const Icon = ACTION_ICONS[entry.action]
+            const book = getBook(entry.entityId)
             const body = (
               <div className="flex items-start gap-3 p-3">
                 <OwnerBadge owner={entry.actor} className="mt-0.5 size-5" />
@@ -92,10 +99,12 @@ export function HistoryPage() {
                     <Icon className="text-muted-foreground mr-1 inline size-3.5 align-[-0.15em]" aria-hidden />
                     {t(`history.action.${entry.action}`, { actor: entry.actor, title: entry.title })}
                   </p>
-                  <p className="text-muted-foreground text-xs">
-                    {entry.author}
-                    {entry.theme && ` · ${tv('theme', entry.theme)}`}
-                  </p>
+                  {book && (
+                    <p className="text-muted-foreground text-xs">
+                      {book.author}
+                      {book.theme && ` · ${tv('theme', book.theme)}`}
+                    </p>
+                  )}
                   {entry.changes && <p className="text-muted-foreground mt-1 font-mono text-xs">{entry.changes}</p>}
                 </div>
                 <time dateTime={entry.timestamp} className="text-muted-foreground shrink-0 text-xs">
@@ -104,8 +113,8 @@ export function HistoryPage() {
               </div>
             )
             return (
-              <li key={`${entry.timestamp}_${entry.entityId}_${entry.action}`}>
-                {entry.entityId ? (
+              <li key={entry.seq}>
+                {book ? (
                   <Link to={`/book/${encodeURIComponent(entry.entityId)}`} className="hover:bg-accent block transition-colors">
                     {body}
                   </Link>

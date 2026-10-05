@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { CircleCheckIcon, HandCoinsIcon, RepeatIcon } from 'lucide-react'
 import type { Book } from '@/api/types'
-import { cn } from '@/lib/utils'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn, Tooltip, TooltipContent, TooltipTrigger } from '@lndrstrll/pomuku-ui'
 import { EXCHANGE_STATUS_KEY } from './exchangeStatus'
 
 /** An icon with a hover/focus tooltip. */

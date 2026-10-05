@@ -5,8 +5,7 @@ import { ArrowLeftIcon, RepeatIcon, Undo2Icon } from 'lucide-react'
 import { restoreBook } from '@/api/client'
 import { useAuth } from '@/auth/AuthProvider'
 import { useCatalog } from '@/catalog/CatalogProvider'
-import { Button } from '@/components/ui/button'
-import { LoadingAvatar } from '@/components/LoadingAvatar'
+import { Button, LoadingAvatar } from '@lndrstrll/pomuku-ui'
 
 /**
  * Admin-only view of archived (soft-deleted) books, with restore. Archived books
@@ -14,12 +13,12 @@ import { LoadingAvatar } from '@/components/LoadingAvatar'
  */
 export function ArchivedPage() {
   const { t } = useTranslation()
-  const { isAdmin } = useAuth()
+  const { status, isAdmin } = useAuth()
   const { archivedBooks, loading, applyBook } = useCatalog()
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  if (!isAdmin && !loading) return <Navigate to="/" replace />
+  if (status !== 'loading' && !isAdmin && !loading) return <Navigate to="/" replace />
 
   const restore = async (id: string) => {
     setBusy(id)

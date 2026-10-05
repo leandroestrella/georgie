@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger, cn } from '@lndrstrll/pomuku-ui'
 import { useVocab } from '@/i18n/vocab'
 import { useCatalog } from './CatalogProvider'
 import { isImageUrl } from './markers'

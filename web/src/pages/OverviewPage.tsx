@@ -7,8 +7,7 @@ import { ZoneEmoji } from '@/catalog/ZoneEmoji'
 import { CountPieChart, type PieCount } from '@/catalog/CountPieChart'
 import { bookOriginality, splitOwners } from '@/catalog/filter'
 import { languageFlag } from '@/catalog/languageFlags'
-import { LoadingAvatar } from '@/components/LoadingAvatar'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, LoadingAvatar, Mascot } from '@lndrstrll/pomuku-ui'
 import { useVocab } from '@/i18n/vocab'
 import type { Book } from '@/api/types'
 
@@ -127,7 +126,7 @@ export function OverviewPage() {
             <div className="absolute top-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[9px] border-t-[11px] border-x-transparent border-t-white" />
           </div>
         </div>
-        <img src="/georgie.gif" alt="" className="w-64 max-w-[80vw] sm:w-80" />
+        <Mascot large className="w-64 max-w-[80vw] sm:w-80" />
       </div>
     )
   }

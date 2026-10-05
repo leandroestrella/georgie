@@ -40,12 +40,10 @@ same owner markers automatically — there's no separate reader column.
 
 ## After editing the sheet
 
-Reload the app. Reads are public, so no sign-in is needed to see the new markers.
-
-> **First-time setup only:** the backend has to know about the two new columns.
-> They're parsed by header name, so once the Apps Script backend is deployed with
-> the current `apps-script/` code (`clasp push` + redeploy), adding/removing the
-> columns needs no further code changes.
+Run **Sync → Sync now** from the sheet's menu (or wait for the next visit to pick
+the edit up), then reload the app. Reads are public, so no sign-in is needed to
+see the new markers. The columns are found by header name, so adding or removing
+them needs no code change.
 
 ## Fallbacks (so nothing looks broken)
 

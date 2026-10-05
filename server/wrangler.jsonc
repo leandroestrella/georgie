@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "georgie",
+  "main": "src/worker.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  // Keeps each request's CPU time and outcome in the dashboard's logs.
+  "observability": { "enabled": true },
+  // Every value below is per-instance: fill in your own (see server/README.md).
+  "vars": {
+    // The Google OAuth client ID the SPA signs in with (public by design).
+    "GOOGLE_CLIENT_ID": "",
+    // The SPA's origins, comma-separated, allowed to call the API from a browser.
+    "ALLOWED_ORIGINS": "http://localhost:5173",
+    // Emails that are always admins, comma-separated; how the first person gets in.
+    "ADMIN_EMAILS": "",
+    // The library spreadsheet's ID, from its address; empty for no sync.
+    "SHEET_ID": "",
+    // The cover host's upload endpoint (cpanel/upload-cover.php); empty disables saving covers.
+    "COVERS_UPLOAD_URL": ""
+  },
+  // Secrets, set with `wrangler secret put`, never written here:
+  //   GOOGLE_SERVICE_ACCOUNT  the service account's key file, as JSON
+  //   SYNC_SECRET             what the sheet's "Sync now" script sends
+  //   COVERS_UPLOAD_SECRET    shared with cpanel/upload-cover.php
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "georgie",
+      // From `npx wrangler d1 create georgie`.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

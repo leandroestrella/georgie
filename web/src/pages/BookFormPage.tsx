@@ -7,8 +7,7 @@ import type { NewBook } from '@/api/types'
 import { useAuth } from '@/auth/AuthProvider'
 import { BookForm, emptyDraft } from '@/catalog/BookForm'
 import { useCatalog } from '@/catalog/CatalogProvider'
-import { useBusy } from '@/components/BusyProvider'
-import { LoadingAvatar } from '@/components/LoadingAvatar'
+import { useBusy, LoadingAvatar } from '@lndrstrll/pomuku-ui'
 
 /**
  * Add (`/book/new`) and edit (`/book/:id/edit`) pages. Admin-only in the UI; the
