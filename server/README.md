@@ -6,16 +6,12 @@ server package. The app reads and writes only this database, so it answers in a
 fraction of a second; the library spreadsheet stays a complete, editable copy,
 kept in sync in both directions.
 
-It replaces the Apps Script web app in [`../apps-script`](../apps-script), which
-read the sheet on every request and took seconds to answer. While both exist,
-`npm run compare` checks that they give the same answers.
-
 ```
 src/schema.ts     the data model: the Catalog tab as a table, Users as the allowlist, Zones and Lists kept whole
 src/taxonomy.ts   zones, themes, owners and languages, parsed from the Zones and Lists tabs
 src/worker.ts     the app: pomuku's routes plus Georgie's own
 migrations/       the database's tables, generated from the schema
-scripts/          compare.mjs: both backends side by side
+scripts/          measure.mjs: CPU time and rows per request, from the deployed worker's logs
 ```
 
 ## What it answers
@@ -147,6 +143,5 @@ npm run typecheck
 npm run migrations   # after changing src/schema.ts: writes the next migration file
 npm run migrate      # applies migrations to the deployed database
 npm run deploy
-npm run compare      # both backends side by side; see scripts/compare.mjs
 npm run measure      # CPU time and rows per request, from the deployed worker's logs; see scripts/measure.mjs
 ```

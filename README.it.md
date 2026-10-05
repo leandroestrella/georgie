@@ -64,7 +64,7 @@ flowchart LR
 ```
 web/          la spa (vite + react)
 server/       il backend: un cloudflare worker con il suo database, tenuto sincronizzato con il foglio
-apps-script/  lo script del foglio: il suo menu "sync" (e il backend precedente, tenuto per un po' come riserva)
+apps-script/  lo script del foglio: il suo menu "sync"
 cpanel/       php opzionale: hosting delle copertine e lo script cron per il backup del foglio
 docs/         guide per chi gestisce il catalogo (id dei libri, marcatori del foglio, traduzioni)
 assets/       materiale grafico del brand
