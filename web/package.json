@@ -21,10 +21,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@lndrstrll/pomuku-auth": "^0.1.1",
-    "@lndrstrll/pomuku-data": "^0.1.1",
-    "@lndrstrll/pomuku-i18n": "^0.1.1",
-    "@lndrstrll/pomuku-ui": "^0.1.1",
+    "@lndrstrll/pomuku-auth": "^0.1.2",
+    "@lndrstrll/pomuku-data": "^0.1.2",
+    "@lndrstrll/pomuku-i18n": "^0.1.2",
+    "@lndrstrll/pomuku-ui": "^0.1.2",
     "@tailwindcss/vite": "^4.3.2",
     "lucide-react": "^1.24.0",
     "mermaid": "^11.16.0",

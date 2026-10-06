@@ -122,7 +122,7 @@ from Cloudflare's own logs, with a catalog of 390 books (`npm run measure`):
 | --- | --- | --- | --- |
 | `GET /catalog` (246 KB) | 7 ms, 11 at most | 390 | 0 |
 | `GET /taxonomies` | 2–5 ms | 4 | 0 |
-| a save, with the push to the sheet that follows it | 9 ms, 12 at most | about 10 | about 6 |
+| a save, with the push to the sheet that follows it | 9 ms, 12 at most | about 10 | about 10 |
 | a visit, the last look at the sheet recent | 0 ms | 0 | 0 |
 | a pull of the `Catalog` tab, nothing changed | 20–23 ms | two per book | 1 |
 | the first import, 100 books per request | 23–45 ms | up to 603 | about 500 |
