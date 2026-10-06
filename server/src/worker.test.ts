@@ -182,6 +182,14 @@ describe('a signed-in person', () => {
     expect(json.entries[0].changes).toBe('borrowed: true → false; borrowerName: Ada → ; loanDate: 2023-03-15 → ')
   })
 
+  it('lends a book, whose loan date reaches the sheet as a date cell and not as text', async () => {
+    const saved = await call('PATCH', '/books/PRO-QUE-2007', { token, body: { borrowed: true, borrowerName: 'Ada', loanDate: '2026-10-02' } })
+    expect(saved.status).toBe(200)
+    await settle()
+    // the sheet's day count, which the column's own format shows as a date
+    expect([cell('PRO-QUE-2007', 'Borrowed'), cell('PRO-QUE-2007', 'Borrower name'), cell('PRO-QUE-2007', 'Loan date')]).toEqual([true, 'Ada', 46297])
+  })
+
   it('adds a book, whose id is minted once and never clashes', async () => {
     const added = await call('POST', '/books', { token, body: { title: '1984', author: 'George Orwell', year: 1950, language: ['English'], owner: 'maria' } })
     expect([added.status, added.json.row.id]).toEqual([201, 'ORW-198-1950-2'])
